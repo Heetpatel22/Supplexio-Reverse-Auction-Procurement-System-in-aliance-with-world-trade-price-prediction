@@ -1,0 +1,47 @@
+{
+  "projected_to_year": 2026,
+  "year_files": {
+    "2017": {
+      "path": "C:\\Users\\vaibh\\Documents\\Year_2017\\Year_2017.csv",
+      "exists": true,
+      "mtime": 1776410492.9759738,
+      "size": 40865996
+    },
+    "2018": {
+      "path": "C:\\Users\\vaibh\\Documents\\Year_2018\\Year_2018.csv",
+      "exists": true,
+      "mtime": 1776410586.0703883,
+      "size": 38712430
+    },
+    "2019": {
+      "path": "C:\\Users\\vaibh\\Documents\\Year_2019\\Year_2019.csv",
+      "exists": true,
+      "mtime": 1776410623.418511,
+      "size": 38626622
+    },
+    "2020": {
+      "path": "C:\\Users\\vaibh\\Documents\\Year_2020\\Year_2020.csv",
+      "exists": true,
+      "mtime": 1776410656.167464,
+      "size": 38651403
+    },
+    "2021": {
+      "path": "C:\\Users\\vaibh\\Documents\\Year_2021\\Year_2021.csv",
+      "exists": true,
+      "mtime": 1776410685.6263702,
+      "size": 38671156
+    }
+  },
+  "product_codes": {
+    "path": "C:\\Users\\vaibh\\Documents\\product_codes.csv",
+    "exists": true,
+    "mtime": 1684529084.0,
+    "size": 616690
+  },
+  "country_codes": {
+    "path": "C:\\Users\\vaibh\\Documents\\country_codes.csv",
+    "exists": true,
+    "mtime": 1684529084.0,
+    "size": 10431
+  }
+}

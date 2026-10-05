@@ -1,0 +1,381 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title></title><META http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body><table align="center"><tr><td colspan="6"><center><b>List of exporters for the selected product  </b></center></td></tr><tr><td colspan="6"><center>   Product: 280300 Carbon "carbon blacks and other forms of carbon", n.e.s.</center></td></tr></table><table><tr><td> </td></tr></table><table id="ctl00_PageContent_GridLegendTable" class="table_legend" border="0">
+	<tr>
+		<td>Sources: Calculations based on ITC statistics.</td>
+	</tr><tr>
+		<td></td>
+	</tr><tr>
+		<td></td>
+	</tr><tr>
+		<td>* Values shown in <i>italic</i> have been detected as outliers within their time series.<br/>&nbsp;&nbsp;&nbsp;&nbsp;For further information about the outliers detection methodology, please refer to the corresponding <a href="https://www.trademap.org/Docs/Metadata/Methodology_outliers_M_EN.pdf" target="_blank">explanatory note</a>.</td>
+	</tr>
+</table><table><tr><td> </td></tr></table><table id="ctl00_PageContent_GridLabelUnitTable" border="0">
+	<tr>
+		<td><span id="ctl00_PageContent_Label_Unit" class="Comment">Unit : US Dollar thousand</span></td>
+	</tr>
+</table><table><tr><td> </td></tr></table><div>
+	<table cellspacing="0" cellpadding="4" rules="all" border="1" id="ctl00_PageContent_MyGridView1" style="color:#002B54;border-color:#002B54;width:100%;border-collapse:collapse;">
+		<tr style="color:White;background-color:#5D7B9D;font-size:80%;font-weight:bold;">
+			<th scope="col">Exporters</th><th scope="col">Exported value in 2021-M04</th><th scope="col">Exported value in 2021-M05</th><th scope="col">Exported value in 2021-M06</th><th scope="col">Exported value in 2021-M07</th><th scope="col">Exported value in 2021-M08</th><th scope="col">Exported value in 2021-M09</th><th scope="col">Exported value in 2021-M10</th><th scope="col">Exported value in 2021-M11</th><th scope="col">Exported value in 2021-M12</th><th scope="col">Exported value in 2022-M01</th><th scope="col">Exported value in 2022-M02</th><th scope="col">Exported value in 2022-M03</th><th scope="col">Exported value in 2022-M04</th><th scope="col">Exported value in 2022-M05</th><th scope="col">Exported value in 2022-M06</th><th scope="col">Exported value in 2022-M07</th><th scope="col">Exported value in 2022-M08</th><th scope="col">Exported value in 2022-M09</th><th scope="col">Exported value in 2022-M10</th><th scope="col">Exported value in 2022-M11</th>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            China
+                                </td><td>100194</td><td>83934</td><td>77702</td><td>74619</td><td>66670</td><td>54873</td><td>59185</td><td>66833</td><td>91952</td><td>84306</td><td>57249</td><td>89047</td><td>126519</td><td>173625</td><td>167463</td><td>145878</td><td>116812</td><td>104141</td><td>91516</td><td>75223</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Germany
+                                </td><td>36273</td><td>32093</td><td>36133</td><td>31531</td><td>35829</td><td>36459</td><td>33579</td><td>35616</td><td>31975</td><td>38003</td><td>41353</td><td>44525</td><td>38385</td><td>41440</td><td>45707</td><td>40384</td><td>43601</td><td>53235</td><td>45109</td><td>49103</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Poland
+                                </td><td>22908</td><td>24780</td><td>28845</td><td>21745</td><td>20501</td><td>24636</td><td>23640</td><td>27916</td><td>19791</td><td>29182</td><td>27865</td><td>33732</td><td>36357</td><td>44635</td><td>51884</td><td>46350</td><td>41723</td><td>45763</td><td>48416</td><td>44850</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Korea, Republic of
+                                </td><td>28561</td><td>29549</td><td>30780</td><td>29714</td><td>29680</td><td>26561</td><td>26968</td><td>36040</td><td>35657</td><td>33200</td><td>33253</td><td>41214</td><td>39188</td><td>37796</td><td>37499</td><td>32094</td><td>32809</td><td>27517</td><td>37249</td><td>34711</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Belgium
+                                </td><td>24014</td><td>25889</td><td>25459</td><td>25905</td><td>22069</td><td>30673</td><td>22986</td><td>23844</td><td>23655</td><td>32780</td><td>33801</td><td>44750</td><td>34299</td><td>33128</td><td>32962</td><td>31581</td><td>30665</td><td>32551</td><td>37806</td><td>30585</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            United States of America
+                                </td><td>28811</td><td>30598</td><td>33050</td><td>29300</td><td>32721</td><td>26073</td><td>27168</td><td>29183</td><td>27909</td><td>29329</td><td>30804</td><td>34656</td><td>35902</td><td>39175</td><td>38099</td><td>37921</td><td>42306</td><td>39198</td><td>41281</td><td>30442</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Italy
+                                </td><td>19684</td><td>18934</td><td>19538</td><td>17500</td><td>19185</td><td>17815</td><td>18044</td><td>21093</td><td>17941</td><td>18926</td><td>21624</td><td>23784</td><td>24853</td><td>31280</td><td>30414</td><td>25662</td><td>28680</td><td>26268</td><td>26385</td><td>26510</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Canada
+                                </td><td>19414</td><td>18448</td><td>18665</td><td>18634</td><td>16803</td><td>18384</td><td>19707</td><td>18806</td><td>17124</td><td>18333</td><td>16907</td><td>26103</td><td>24535</td><td>25700</td><td>26960</td><td>24371</td><td>24605</td><td>19463</td><td>25647</td><td>22032</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            India
+                                </td><td>12726</td><td>72150</td><td>22264</td><td>18426</td><td>15961</td><td>18763</td><td>18866</td><td>18752</td><td>26541</td><td>27207</td><td>21580</td><td>20442</td><td>28986</td><td>30843</td><td>30792</td><td>27852</td><td>32706</td><td>28748</td><td>23461</td><td>21844</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Hungary
+                                </td><td>14434</td><td>15471</td><td>16327</td><td>14692</td><td>16412</td><td>18882</td><td>18373</td><td>18821</td><td>16137</td><td>20364</td><td>21135</td><td>17696</td><td>30089</td><td>44496</td><td>29904</td><td>22913</td><td>18686</td><td>21468</td><td>19653</td><td>19804</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Czech Republic
+                                </td><td>13095</td><td>13849</td><td>15177</td><td>12100</td><td>13381</td><td>15378</td><td>14707</td><td>16048</td><td>14108</td><td>17308</td><td>18341</td><td>18888</td><td>18606</td><td>21018</td><td>20424</td><td>16597</td><td>17271</td><td>18869</td><td>17579</td><td>17836</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Japan
+                                </td><td>18013</td><td>18359</td><td>18038</td><td>18287</td><td>16831</td><td>18468</td><td>15549</td><td>14116</td><td>18840</td><td>16141</td><td>21390</td><td>23676</td><td>19110</td><td>15574</td><td>19292</td><td>18827</td><td>18888</td><td>19632</td><td>16524</td><td>15915</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Thailand
+                                </td><td>10795</td><td>13339</td><td>9803</td><td>12784</td><td>12231</td><td>10518</td><td>10458</td><td>11811</td><td>12395</td><td>14778</td><td>15561</td><td>13803</td><td>13638</td><td>16547</td><td>13646</td><td>16995</td><td>18653</td><td>16821</td><td>14704</td><td>13230</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Netherlands
+                                </td><td>14570</td><td>14652</td><td>16554</td><td>12908</td><td>15470</td><td>15738</td><td>14570</td><td>15969</td><td>11264</td><td>15713</td><td>14759</td><td>16170</td><td>13598</td><td>16960</td><td>14463</td><td>13792</td><td>13826</td><td>9960</td><td>10644</td><td>10812</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Colombia
+                                </td><td>1749</td><td>4407</td><td>1825</td><td>6010</td><td>3356</td><td>4531</td><td>4709</td><td>4030</td><td>4102</td><td>3835</td><td>5923</td><td>2902</td><td>2255</td><td>12939</td><td>6983</td><td>6335</td><td>8974</td><td>5981</td><td>6897</td><td>9848</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Slovakia
+                                </td><td>2046</td><td>2351</td><td>2084</td><td>2017</td><td>1255</td><td>2020</td><td>2538</td><td>2454</td><td>1502</td><td>1907</td><td>2438</td><td>3030</td><td>2650</td><td>3065</td><td>3320</td><td>2142</td><td>1509</td><td>2201</td><td>2769</td><td>7382</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Taipei, Chinese
+                                </td><td>5011</td><td>3297</td><td>3450</td><td>5391</td><td>4973</td><td>3111</td><td>4256</td><td>5948</td><td>5684</td><td>7060</td><td>4516</td><td>6866</td><td>4022</td><td>4911</td><td>4133</td><td>5695</td><td>5588</td><td>5472</td><td>5807</td><td>7134</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            France
+                                </td><td>8691</td><td>7309</td><td>8618</td><td>7963</td><td>7552</td><td>9268</td><td>6089</td><td>6983</td><td>5079</td><td>8611</td><td>7747</td><td>12776</td><td>10076</td><td>9004</td><td>10002</td><td>10222</td><td>8189</td><td>8017</td><td>5751</td><td>7006</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Singapore
+                                </td><td>3745</td><td>6075</td><td>3915</td><td>3770</td><td>1696</td><td>2281</td><td>5511</td><td>3741</td><td>6573</td><td>3870</td><td>7207</td><td>5237</td><td>5375</td><td>4681</td><td>9588</td><td>6945</td><td>6085</td><td>5547</td><td>5931</td><td>6426</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Iran, Islamic Republic of
+                                </td><td>2653</td><td>2822</td><td>1874</td><td>3031</td><td>1932</td><td>3716</td><td>2001</td><td>4078</td><td>4668</td><td>3727</td><td>6276</td><td>5764</td><td>4479</td><td>9879</td><td>6536</td><td>5127</td><td>3565</td><td>3886</td><td>4094</td><td>4023</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Sweden
+                                </td><td>3487</td><td>2945</td><td>2292</td><td>2846</td><td>3504</td><td>3949</td><td>3572</td><td>3229</td><td>3575</td><td>4294</td><td>4741</td><td>4527</td><td>5288</td><td>5238</td><td>4169</td><td>4367</td><td>4717</td><td>3431</td><td>3109</td><td>3424</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Spain
+                                </td><td>4022</td><td>3269</td><td>3392</td><td>2472</td><td>2215</td><td>3539</td><td>2883</td><td>2989</td><td>3792</td><td>5162</td><td>4505</td><td>5817</td><td>4982</td><td>6329</td><td>5730</td><td>5235</td><td>5264</td><td>4540</td><td>3720</td><td>3244</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Türkiye
+                                </td><td>211</td><td>204</td><td>205</td><td>119</td><td>101</td><td>132</td><td>167</td><td>708</td><td>225</td><td>288</td><td>180</td><td>461</td><td>1181</td><td>1353</td><td>3690</td><td>4689</td><td>4661</td><td>4411</td><td>6267</td><td>3242</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Indonesia
+                                </td><td>1610</td><td>1444</td><td>1184</td><td>1409</td><td>868</td><td>1025</td><td>865</td><td>995</td><td>2631</td><td>2016</td><td>1948</td><td>1749</td><td>2313</td><td>2110</td><td>2159</td><td>2227</td><td>1879</td><td>3186</td><td>909</td><td>1730</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Saudi Arabia
+                                </td><td>595</td><td>3969</td><td>2883</td><td>2659</td><td>1669</td><td>3473</td><td>1723</td><td>3118</td><td>1812</td><td>1715</td><td>2460</td><td>3702</td><td>3026</td><td>4662</td><td>2487</td><td>1903</td><td>2963</td><td>2193</td><td>1975</td><td>1578</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Ukraine
+                                </td><td>5732</td><td>7711</td><td>7261</td><td>6152</td><td>6692</td><td>6625</td><td>6403</td><td>6534</td><td>6290</td><td>7779</td><td>6594</td><td>4241</td><td>3878</td><td>4728</td><td>4070</td><td>4507</td><td>3764</td><td>1221</td><td>995</td><td>1311</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            South Africa
+                                </td><td>355</td><td>2029</td><td>203</td><td>77</td><td>153</td><td>15</td><td>448</td><td>106</td><td>245</td><td>104</td><td>55</td><td>772</td><td>1272</td><td>1420</td><td>1582</td><td>1194</td><td>903</td><td>1657</td><td>388</td><td>1073</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Malaysia
+                                </td><td>833</td><td>421</td><td>922</td><td>609</td><td>779</td><td>606</td><td>903</td><td>975</td><td>454</td><td>686</td><td>808</td><td>462</td><td>714</td><td>578</td><td>812</td><td>814</td><td>475</td><td>484</td><td>460</td><td>777</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            United Kingdom
+                                </td><td>445</td><td>536</td><td>668</td><td>521</td><td>363</td><td>386</td><td>697</td><td>732</td><td>508</td><td>344</td><td>709</td><td>538</td><td>1439</td><td>563</td><td>637</td><td>860</td><td>449</td><td>588</td><td>607</td><td>656</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Lithuania
+                                </td><td>145</td><td>22</td><td>13</td><td>101</td><td>15</td><td>81</td><td>62</td><td>64</td><td>66</td><td>163</td><td>98</td><td>308</td><td>137</td><td>59</td><td>324</td><td>801</td><td>149</td><td>284</td><td>268</td><td>465</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Brazil
+                                </td><td>368</td><td>720</td><td>389</td><td>508</td><td>742</td><td>1143</td><td>754</td><td>685</td><td>829</td><td>468</td><td>694</td><td>911</td><td>805</td><td>875</td><td>1030</td><td>667</td><td>407</td><td>506</td><td>559</td><td>381</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Switzerland
+                                </td><td>67</td><td>107</td><td>78</td><td>84</td><td>87</td><td>75</td><td>97</td><td>101</td><td>89</td><td>109</td><td>128</td><td>168</td><td>223</td><td>125</td><td>281</td><td>124</td><td>146</td><td title="Outlier in value: please read the caption" style="font-size:8pt;font-style:italic;">208</td><td>72</td><td title="Outlier in value: please read the caption" style="font-size:8pt;font-style:italic;">276</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Serbia
+                                </td><td>7</td><td>48</td><td>49</td><td>6</td><td>16</td><td>4</td><td>21</td><td>21</td><td>0</td><td>19</td><td>58</td><td>678</td><td>623</td><td>467</td><td>448</td><td>154</td><td>327</td><td>359</td><td>227</td><td>271</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Denmark
+                                </td><td>475</td><td>360</td><td>537</td><td>676</td><td>456</td><td>525</td><td>694</td><td>1076</td><td>604</td><td>542</td><td>909</td><td>803</td><td>388</td><td>601</td><td>796</td><td>1137</td><td>287</td><td>246</td><td>417</td><td>246</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Australia
+                                </td><td>114</td><td>144</td><td>21</td><td>0</td><td>66</td><td>16</td><td>3</td><td>144</td><td>109</td><td>4</td><td>345</td><td>186</td><td>8</td><td>64</td><td>258</td><td>0</td><td>0</td><td>172</td><td>5</td><td>162</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Hong Kong, China
+                                </td><td>1271</td><td>329</td><td>179</td><td>321</td><td>467</td><td>745</td><td>175</td><td>1188</td><td>642</td><td>522</td><td>132</td><td>570</td><td>258</td><td>175</td><td>195</td><td>212</td><td>65</td><td>120</td><td>169</td><td>111</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Slovenia
+                                </td><td>86</td><td>72</td><td>9</td><td>84</td><td>0</td><td>1</td><td>73</td><td>2</td><td>0</td><td>60</td><td>7</td><td>2</td><td>7</td><td>219</td><td>915</td><td>59</td><td>118</td><td>3</td><td>168</td><td>109</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Austria
+                                </td><td>336</td><td>402</td><td>240</td><td>217</td><td>60</td><td>118</td><td>287</td><td>177</td><td>119</td><td>168</td><td>105</td><td>56</td><td>120</td><td>234</td><td>208</td><td>321</td><td>233</td><td>57</td><td>61</td><td>90</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Guatemala
+                                </td><td>2</td><td>0</td><td>2</td><td>0</td><td>5</td><td>5</td><td>0</td><td>0</td><td>8</td><td>0</td><td>3</td><td>2</td><td>0</td><td>2</td><td>1</td><td>3</td><td>0</td><td>2</td><td>4</td><td>41</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Ireland
+                                </td><td>1651</td><td>246</td><td>397</td><td>421</td><td>82</td><td>210</td><td>254</td><td>132</td><td>106</td><td>94</td><td>101</td><td>200</td><td>231</td><td>31</td><td>266</td><td>194</td><td>112</td><td>0</td><td>76</td><td>40</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Romania
+                                </td><td>124</td><td>143</td><td>177</td><td>97</td><td>0</td><td>89</td><td>126</td><td>139</td><td>194</td><td>191</td><td>258</td><td>526</td><td>298</td><td>549</td><td>558</td><td>647</td><td>179</td><td>331</td><td>1001</td><td>36</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Israel
+                                </td><td>1</td><td>96</td><td>0</td><td>25</td><td>3</td><td>3</td><td>93</td><td>17</td><td>3</td><td>46</td><td>7</td><td>8</td><td>11</td><td>122</td><td>5</td><td>7</td><td>4</td><td>46</td><td>60</td><td>35</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Argentina
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>2200</td><td>17</td><td>18</td><td>0</td><td>1392</td><td>13</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>3971</td><td>0</td><td>33</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Latvia
+                                </td><td>0</td><td>1</td><td>0</td><td>2</td><td>0</td><td>0</td><td>0</td><td>9</td><td>0</td><td>0</td><td>11</td><td>0</td><td>19</td><td>44</td><td>7</td><td>0</td><td>17</td><td>7</td><td>1</td><td>23</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Philippines
+                                </td><td>14</td><td>16</td><td>0</td><td>10</td><td>14</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>10</td><td>14</td><td>17</td><td>0</td><td>0</td><td>25</td><td>25</td><td>3</td><td>40</td><td>10</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Kazakhstan
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>8</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Dominican Republic
+                                </td><td>11</td><td>0</td><td>0</td><td>4</td><td>3</td><td>7</td><td>11</td><td>0</td><td>3</td><td>3</td><td>4</td><td>1</td><td>4</td><td>4</td><td>4</td><td>60</td><td>20</td><td>8</td><td>5</td><td>8</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Luxembourg
+                                </td><td>527</td><td>757</td><td>510</td><td>95</td><td>2</td><td>439</td><td>2</td><td>33</td><td>32</td><td>3</td><td>39</td><td>160</td><td>63</td><td>6</td><td>5</td><td>36</td><td>2</td><td>19</td><td>3</td><td>7</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Kenya
+                                </td><td>1</td><td>0</td><td>6</td><td>3</td><td>0</td><td>2</td><td>0</td><td>10</td><td>0</td><td>8</td><td>1</td><td>3</td><td>5</td><td>1</td><td>15</td><td>22</td><td>4</td><td>5</td><td>22</td><td>5</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Croatia
+                                </td><td>3</td><td>5</td><td>22</td><td>8</td><td>12</td><td>3</td><td>4</td><td>12</td><td>14</td><td>0</td><td>3</td><td>16</td><td>5</td><td>0</td><td>37</td><td>0</td><td>0</td><td>32</td><td>19</td><td>4</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Greece
+                                </td><td>3</td><td>10</td><td>24</td><td>21</td><td>9</td><td>21</td><td>17</td><td>12</td><td>2</td><td>5</td><td>12</td><td>35</td><td>10</td><td>28</td><td>22</td><td>52</td><td>23</td><td>30</td><td>47</td><td>3</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Finland
+                                </td><td>21</td><td>33</td><td>4</td><td>4</td><td>21</td><td>23</td><td>31</td><td>60</td><td>11</td><td>32</td><td>20</td><td>76</td><td>16</td><td>282</td><td>17</td><td>2</td><td>2</td><td>10</td><td>7</td><td>3</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Peru
+                                </td><td>1</td><td>8</td><td>1</td><td>0</td><td>5</td><td>2</td><td>8</td><td>1</td><td>6</td><td>0</td><td>7</td><td>4</td><td>21</td><td>7</td><td>124</td><td>7</td><td>15</td><td>3</td><td>13</td><td>3</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Portugal
+                                </td><td>0</td><td>195</td><td>7</td><td>8</td><td>0</td><td>7</td><td>46</td><td>8</td><td>11</td><td>0</td><td>7</td><td>3</td><td>2</td><td>63</td><td>182</td><td>9</td><td>25</td><td>2</td><td>1</td><td>2</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            New Zealand
+                                </td><td>0</td><td>10</td><td>0</td><td>1</td><td>9</td><td>1</td><td>0</td><td>1</td><td>1</td><td>1</td><td>1</td><td>2</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>3</td><td>6</td><td>2</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Costa Rica
+                                </td><td>44</td><td>4</td><td>2</td><td>0</td><td>134</td><td>89</td><td>1</td><td>0</td><td>46</td><td>57</td><td>120</td><td>6</td><td>0</td><td>0</td><td>0</td><td>9</td><td>38</td><td>0</td><td>7</td><td>2</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Sri Lanka
+                                </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>2</td><td>3</td><td>1</td><td>0</td><td>3</td><td>5</td><td>1</td><td>7</td><td>3</td><td>3</td><td>1</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Bulgaria
+                                </td><td>20</td><td>201</td><td>73</td><td>69</td><td>108</td><td>80</td><td>76</td><td>58</td><td>53</td><td>36</td><td>52</td><td>79</td><td>107</td><td>51</td><td>70</td><td>111</td><td>120</td><td>25</td><td>48</td><td>1</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Estonia
+                                </td><td>36</td><td>48</td><td>66</td><td>15</td><td>2</td><td>27</td><td>3</td><td>3</td><td>14</td><td>61</td><td>41</td><td>41</td><td>1</td><td>17</td><td>0</td><td>35</td><td>0</td><td>6</td><td>1</td><td>1</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Norway
+                                </td><td>11</td><td>0</td><td>31</td><td>9</td><td>3</td><td>0</td><td>3</td><td>10</td><td>0</td><td>1</td><td>19</td><td>0</td><td>5</td><td>0</td><td>119</td><td>0</td><td>0</td><td>203</td><td>10</td><td>1</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Malta
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Mauritius
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>4</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Mali
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Morocco
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>2</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>2</td><td>6</td><td>2</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Mozambique
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Namibia
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Nepal
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>5</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Madagascar
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Kuwait
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Panama
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>3</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Papua New Guinea
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Senegal
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>2</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Ecuador
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>5</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Burundi
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>3</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Bosnia and Herzegovina
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Botswana
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Bahrain
+                                </td><td>83</td><td>88</td><td>10</td><td>11</td><td>0</td><td>0</td><td>1</td><td>22</td><td>13</td><td>1</td><td>1</td><td>16</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Armenia
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Chile
+                                </td><td>0</td><td>0</td><td>0</td><td>10</td><td>12</td><td>19</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td><td>131</td><td>0</td><td>2</td><td>260</td><td>5</td><td>0</td><td>29</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Congo, Democratic Republic of the
+                                </td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Cyprus
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>9</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Togo
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>20</td><td>19</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Trinidad and Tobago
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>19</td><td>0</td><td>20</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>3</td><td>0</td><td>0</td><td>0</td><td>13</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Tanzania, United Republic of
+                                </td><td>49</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>2</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>47</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Uganda
+                                </td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>2</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Burkina Faso
+                                </td><td>0</td><td>0</td><td>2</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Uruguay
+                                </td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>4</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Tunisia
+                                </td><td>6</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+		</tr><tr align="right" style="background-color:#F7F6F3;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Russian Federation
+                                </td><td>67338</td><td>47010</td><td>72786</td><td>56946</td><td>58809</td><td>77513</td><td>56677</td><td>46892</td><td>59775</td><td>75654</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+		</tr><tr align="right" style="background-color:White;font-size:80%;">
+			<td align="left" style="width:30%;">
+                            Kyrgyzstan
+                                </td><td>0</td><td>2</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+		</tr>
+	</table>
+</div></body></html>
