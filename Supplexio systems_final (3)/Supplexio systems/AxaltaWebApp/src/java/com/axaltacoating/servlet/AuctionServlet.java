@@ -159,6 +159,20 @@ public class AuctionServlet extends HttpServlet {
     private void listAuctions(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String flashSuccess = (String) session.getAttribute("flash_success");
+            if (flashSuccess != null) {
+                request.setAttribute("success", flashSuccess);
+                session.removeAttribute("flash_success");
+            }
+            String flashError = (String) session.getAttribute("flash_error");
+            if (flashError != null) {
+                request.setAttribute("error", flashError);
+                session.removeAttribute("flash_error");
+            }
+        }
+
         List<ReverseAuction> auctions = new ArrayList<>();
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -780,12 +794,13 @@ if ("DELIVERED".equalsIgnoreCase(poStatus)) {
                 int affectedRows = stmt.executeUpdate();
 
                 if (affectedRows > 0) {
-                    request.setAttribute("success", "Auction created successfully");
+                    request.getSession(true).setAttribute("flash_success", "Auction created successfully");
                 } else {
-                    request.setAttribute("error", "Failed to create auction");
+                    request.getSession(true).setAttribute("flash_error", "Failed to create auction");
                 }
 
-                listAuctions(request, response);
+                response.sendRedirect(request.getContextPath() + "/auction");
+                return;
 
             } catch (SQLException e) {
                 throw new ServletException("Error creating auction", e);
