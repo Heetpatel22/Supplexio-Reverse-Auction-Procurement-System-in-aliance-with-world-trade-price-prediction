@@ -21,6 +21,9 @@ All experiment metrics are logged to MLflow (local tracking URI: mlruns/).
 """
 
 import os
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 import warnings
 import numpy as np
 import pandas as pd
@@ -407,7 +410,7 @@ if __name__ == "__main__":
 
     # ── LSTM (optional — requires TensorFlow) ─────────────────────────────────
     print("\n" + "─" * 60)
-    print("MODEL 5: LSTM Time-Series Forecasting (requires TensorFlow + Optuna)")
+    print("MODEL 5: LSTM Time-Series Forecasting (TensorFlow Stacked LSTM)")
     print("─" * 60)
     try:
         import subprocess, sys
@@ -419,7 +422,21 @@ if __name__ == "__main__":
             print("  ⚠  LSTM training exited with errors. Check lstm_model.py output above.")
     except Exception as e:
         print(f"  ⚠  LSTM training skipped: {e}")
-        print("     Install TensorFlow + Optuna and run:  python lstm_model.py")
+
+    # ── 1D-ResNet with Skip Connections (Deep Learning Unit 3 & 4) ────────────
+    print("\n" + "─" * 60)
+    print("MODEL 6: 1D-ResNet with Skip Connections (He et al. Residual Networks)")
+    print("─" * 60)
+    try:
+        import subprocess, sys
+        result = subprocess.run(
+            [sys.executable, os.path.join(os.path.dirname(__file__), "resnet_trade_model.py")],
+            capture_output=False, text=True
+        )
+        if result.returncode != 0:
+            print("  ⚠  1D-ResNet training exited with errors.")
+    except Exception as e:
+        print(f"  ⚠  1D-ResNet training skipped: {e}")
 
     # ────────────────────────────────────────────────────────────────────────────
     # ACCURACY & METRICS SUMMARY

@@ -1,0 +1,372 @@
+/* ==========================================================================
+   SUPPLEXIO NEXT-GEN COMMAND COCKPIT & PROCUREMENT DASHBOARD STYLES
+   ========================================================================== */
+
+:root, [data-theme="light"] {
+    --primary-color: #1E3A8A; /* Deep Navy */
+    --secondary-color: #2DD4BF; /* Cyber Teal */
+    --accent-color: #F59E0B; /* Warm Gold */
+    --neutral-color: #F8FAFC; /* Slate Canvas */
+    --text-color: #0F172A; /* Slate 900 */
+    --card-bg: #ffffff;
+    --border-color: #E2E8F0;
+    --muted-color: #64748B;
+    --success-emerald: #10B981;
+    --danger-coral: #EF4444;
+    --info-cyan: #06B6D4;
+    --purple-violet: #8B5CF6;
+    --command-bg: linear-gradient(135deg, #0b1528 0%, #112240 50%, #1e3a8a 100%);
+    --card-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+    --card-shadow-hover: 0 12px 30px rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="dark"] {
+    --primary-color: #3B82F6;
+    --secondary-color: #2DD4BF;
+    --accent-color: #FBBF24;
+    --neutral-color: #0B1120;
+    --text-color: #F1F5F9;
+    --card-bg: #131E35;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --muted-color: #94A3B8;
+    --success-emerald: #10B981;
+    --danger-coral: #EF4444;
+    --info-cyan: #38BDF8;
+    --purple-violet: #A78BFA;
+    --command-bg: linear-gradient(135deg, #060B17 0%, #0D1627 50%, #172554 100%);
+    --card-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    --card-shadow-hover: 0 16px 36px rgba(0, 0, 0, 0.55);
+}
+
+/* 1. Command Hero Cockpit Banner */
+.command-hero {
+    background: var(--command-bg);
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 2.2rem 2.4rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 36px rgba(14, 30, 68, 0.25);
+    border: 1px solid rgba(45, 212, 191, 0.2);
+    margin-bottom: 1.5rem;
+}
+
+.command-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(45, 212, 191, 0.12) 0%, rgba(30, 58, 138, 0) 70%);
+    pointer-events: none;
+}
+
+.radar-dot {
+    width: 10px;
+    height: 10px;
+    background-color: #10B981;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: radarPulse 2s infinite;
+}
+
+@keyframes radarPulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.command-badge {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #e2e8f0;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* 2. Global Trade Spot Commodity Ticker */
+.ticker-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.65rem 1.25rem;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.ticker-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: #1E3A8A;
+    background: #e0f2fe;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .ticker-label {
+    background: #1e3a8a;
+    color: #93c5fd;
+}
+
+.ticker-items {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-size: 0.86rem;
+    flex-grow: 1;
+}
+
+.ticker-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.03);
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .ticker-chip {
+    background: rgba(255,255,255,0.04);
+}
+
+.ticker-up { color: #10B981; font-weight: 700; font-size: 0.8rem; }
+.ticker-down { color: #EF4444; font-weight: 700; font-size: 0.8rem; }
+.ticker-arb { color: #8B5CF6; font-weight: 700; font-size: 0.8rem; }
+
+/* 3. Executive KPI Metric Cards */
+.kpi-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.5rem 1.6rem;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.kpi-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-color);
+}
+
+.kpi-card.accent-emerald::after { background: var(--success-emerald); }
+.kpi-card.accent-purple::after { background: var(--purple-violet); }
+.kpi-card.accent-amber::after { background: var(--accent-color); }
+.kpi-card.accent-cyan::after { background: var(--secondary-color); }
+
+.kpi-icon-box {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+}
+
+.kpi-val {
+    font-size: 1.85rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text-color);
+    line-height: 1.2;
+    margin: 0.4rem 0 0.2rem;
+}
+
+.kpi-sub {
+    font-size: 0.84rem;
+    color: var(--muted-color);
+    margin-bottom: 0;
+    font-weight: 500;
+}
+
+.kpi-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+}
+
+/* 4. "Nudge in Beak" AI Intelligence Cockpit Grid */
+.ai-cockpit-banner {
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.05) 0%, rgba(45, 212, 191, 0.08) 100%);
+    border: 1px solid rgba(45, 212, 191, 0.25);
+    border-radius: 14px;
+    padding: 1.4rem 1.6rem;
+    margin-bottom: 1.8rem;
+}
+
+[data-theme="dark"] .ai-cockpit-banner {
+    background: linear-gradient(135deg, rgba(30, 58, 138, 0.2) 0%, rgba(13, 22, 39, 0.4) 100%);
+}
+
+.ai-nudge-tile {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.25s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-nudge-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--card-shadow-hover);
+    border-color: var(--secondary-color);
+}
+
+/* 5. Modern Data Visualization Card Styles */
+.dashboard-chart-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.dashboard-chart-card:hover {
+    box-shadow: var(--card-shadow-hover);
+}
+
+.dashboard-chart-card .card-header {
+    background: transparent !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.1rem 1.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-chart-card .card-title-text {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+}
+
+/* 6. Live Reverse Auction Floor Pulse Table */
+.pulse-table-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    margin-bottom: 1.8rem;
+}
+
+.pulse-table th {
+    background: rgba(0, 0, 0, 0.02);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted-color);
+    border-top: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.85rem 1rem;
+}
+
+[data-theme="dark"] .pulse-table th {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.pulse-table td {
+    padding: 0.95rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.live-pill {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+[data-theme="dark"] .live-pill {
+    background: rgba(220, 38, 38, 0.15);
+    border-color: rgba(220, 38, 38, 0.3);
+    color: #f87171;
+}
+
+/* 7. Action Launchpad Tiles */
+.launch-tile {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.25s ease;
+    box-shadow: var(--card-shadow);
+}
+
+.launch-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--card-shadow-hover);
+    border-color: var(--primary-color);
+    text-decoration: none;
+    color: var(--primary-color);
+}

@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#F4F7FC]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title-[#0B1E3D]>Supplexio - Enterprise Purchase Orders</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            navy: '#0B1E3D',
+                            royalDark: '#172E6E',
+                            royalMid: '#1E3E96',
+                            royalBase: '#1B3680',
+                            royalAccent: '#2563EB',
+                            cyan: '#2DD4BF',
+                            amber: '#F59E0B',
+                            amberHover: '#D97706',
+                            iceBg: '#F4F7FC',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar styling for dense enterprise layout */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-document, #printable-document * {
+                visibility: visible;
+            }
+            #printable-document {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="h-full font-sans antialiased text-slate-800 bg-[#F4F7FC] flex flex-col min-h-screen">
+
+    <!-- TOP TOAST CONTAINER -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- SIDEBAR (Preserving Exact Royal Blue Gradient & Brand Badge) -->
+        <aside class="w-64 bg-gradient-to-b from-[#172E6E] via-[#1E3E96] to-[#1B3680] text-white flex flex-col flex-shrink-0 shadow-xl border-r border-blue-900/40 relative z-20">
+            <!-- Brand Badge Header -->
+            <div class="p-4 border-b border-white/10">
+                <div class="bg-[#0B1E3D] rounded-xl p-3 border border-white/10 shadow-lg flex flex-col items-center text-center">
+                    <div class="flex items-center gap-1">
+                        <span class="text-2xl font-black tracking-tight text-white">Supple</span>
+                        <span class="text-2xl font-black tracking-tight text-[#2DD4BF]">xio</span>
+                    </div>
+                    <span class="text-[9px] font-bold tracking-widest text-slate-300 uppercase mt-0.5">BID BOLD • SOURCE SMART</span>
+                </div>
+            </div>
+
+            <!-- Top CTA Button: Launch Dashboard -->
+            <div class="p-4 pb-2">
+                <button onclick="showToast('Navigating to Live Bidding Dashboard...', 'info')" 
+                        class="w-full bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold py-2.5 px-4 rounded-lg shadow-md flex items-center justify-center gap-2 transition-all duration-150 transform active:scale-95 text-sm">
+                    <i data-lucide="rocket" class="w-4 h-4 fill-slate-950 text-slate-950"></i>
+                    <span>Launch Dashboard</span>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto text-sm font-medium">
+                <a href="#" onclick="setActiveNav(this)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-colors">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-300"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="setActiveNav(this)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-colors">
+                    <i data-lucide="package" class="w-4 h-4 text-slate-300"></i>
+                    <span>Products</span>
+                </a>
+                <a href="#" onclick="setActiveNav(this)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-colors">
+                    <i data-lucide="gavel" class="w-4 h-4 text-slate-300"></i>
+                    <span>Reverse Auctions</span>
+                </a>
+                <a href="#" onclick="setActiveNav(this)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-colors">
+                    <i data-lucide="users" class="w-4 h-4 text-slate-300"></i>
+                    <span>Suppliers</span>
+                </a>
+                <a href="#" onclick="setActiveNav(this)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-colors">
+                    <i data-lucide="credit-card" class="w-4 h-4 text-slate-300"></i>
+                    <span>Payments</span>
+                </a>
+                <a href="#" onclick="setActiveNav(this)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-colors">
+                    <i data-lucide="check-square" class="w-4 h-4 text-slate-300"></i>
+                    <span>To-Do List</span>
+                </a>
+                <a href="#" onclick="setActiveNav(this)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-colors">
+                    <i data-lucide="boxes" class="w-4 h-4 text-slate-300"></i>
+                    <span>Inventory Management</span>
+                </a>
+                <a href="#" onclick="setActiveNav(this)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-colors">
+                    <i data-lucide="globe-2" class="w-4 h-4 text-slate-300"></i>
+                    <span>Global Trade Intel</span>
+                </a>
+
+                <!-- ACTIVE PAGE: Purchase Orders -->
+                <a href="#" class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-white/15 text-white font-semibold shadow-inner border border-white/20 backdrop-blur-sm">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="file-text" class="w-4 h-4 text-[#2DD4BF]"></i>
+                        <span>Purchase Orders</span>
+                    </div>
+                    <span class="bg-[#2DD4BF] text-slate-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full" id="po-total-badge">26</span>
+                </a>
+
+                <a href="#" onclick="setActiveNav(this)" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-white/10 hover:text-white transition-colors">
+                    <i data-lucide="settings" class="w-4 h-4 text-slate-300"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <!-- Sidebar User Profile Footer -->
+            <div class="p-3 border-t border-white/10 bg-black/20">
+                <div class="flex items-center gap-3 p-2 rounded-lg">
+                    <div class="w-9 h-9 rounded-full bg-[#2DD4BF] text-slate-950 font-bold flex items-center justify-center text-xs shadow">
+                        PO
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-semibold text-white truncate">Procurement Officer</p>
+                        <p class="text-[10px] text-slate-300 truncate">procurement@supplexio.com</p>
+                    </div>
+                    <i data-lucide="shield-check" class="w-4 h-4 text-[#2DD4BF]"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT CANVAS -->
+        <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+
+            <!-- GLOBAL BAR -->
+            <header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-50 text-brand-royalMid p-2 rounded-lg border border-blue-100">
+                        <i data-lucide="file-check-2" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                            Purchase Orders
+                            <span class="text-xs font-medium bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">GST Compliance 1.5% Active</span>
+                        </h1>
+                        <p class="text-xs text-slate-500">Track purchase orders, audit supplier transmissions, verify GST compliance, and manage billing documents.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="exportToCSV()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-semibold px-3.5 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-all">
+                        <i data-lucide="download" class="w-3.5 h-3.5 text-slate-500"></i>
+                        <span>Export CSV</span>
+                    </button>
+                    <button onclick="openCreateModal()" class="bg-brand-royalMid hover:bg-brand-royalDark text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-2 shadow-md transition-all active:scale-95">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>+ Create PO</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="p-6 space-y-6 flex-1">
+
+                <!-- EXECUTIVE KPI SUMMARY STRIP (DYNAMICALLY COMPUTED) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    <!-- KPI 1: Total Procurement Volume -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-2 h-full bg-slate-900"></div>
+                        <div class="flex items-center justify-between text-slate-500 mb-1">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Total Volume (incl. GST)</span>
+                            <i data-lucide="wallet" class="w-4 h-4 text-slate-400"></i>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpi-total-val" class="text-2xl font-extrabold text-slate-900 font-mono tabular-nums">₹ 0.00</span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-slate-500 flex items-center justify-between">
+                            <span>Total System POs</span>
+                            <span id="kpi-total-count" class="font-mono font-bold text-slate-700">0 orders</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2: Action Required (Audit / Pending) -->
+                    <div onclick="filterByStatusQuick('ACTION_REQ')" class="bg-white p-4 rounded-xl border border-amber-200 bg-amber-50/20 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-2 h-full bg-amber-500"></div>
+                        <div class="flex items-center justify-between text-amber-700 mb-1">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Action Required</span>
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpi-pending-count" class="text-2xl font-extrabold text-amber-900 font-mono tabular-nums">0</span>
+                            <span class="text-xs font-semibold text-amber-600">POs pending audit</span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-amber-700 flex items-center justify-between">
+                            <span>Created + Awaiting Accept</span>
+                            <span class="font-medium text-amber-800 underline group-hover:text-amber-900">Click to filter &rarr;</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 3: Ready for Settlement -->
+                    <div onclick="filterByStatusQuick('SENT')" class="bg-white p-4 rounded-xl border border-blue-200 bg-blue-50/20 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-2 h-full bg-brand-royalMid"></div>
+                        <div class="flex items-center justify-between text-blue-800 mb-1">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Ready for Settlement</span>
+                            <i data-lucide="clock" class="w-4 h-4 text-brand-royalMid"></i>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpi-sent-val" class="text-2xl font-extrabold text-blue-950 font-mono tabular-nums">₹ 0.00</span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-blue-700 flex items-center justify-between">
+                            <span>Dispatched & Awaiting Payment</span>
+                            <span id="kpi-sent-count" class="font-mono font-semibold text-blue-900">0 orders</span>
+                        </div>
+                    </div>
+
+                    <!-- KPI 4: Fulfilled & Settled -->
+                    <div onclick="filterByStatusQuick('SETTLED')" class="bg-white p-4 rounded-xl border border-emerald-200 bg-emerald-50/20 shadow-sm hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-2 h-full bg-emerald-500"></div>
+                        <div class="flex items-center justify-between text-emerald-800 mb-1">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Fulfilled & Settled</span>
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <span id="kpi-settled-count" class="text-2xl font-extrabold text-emerald-950 font-mono tabular-nums">0</span>
+                            <span class="text-xs font-semibold text-emerald-700">Delivered / Paid</span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-emerald-700 flex items-center justify-between">
+                            <span>GST Tracked (1.5%)</span>
+                            <span id="kpi-gst-val" class="font-mono font-bold text-emerald-900">₹ 0.00</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- SMART FILTER & SEARCH TOOLBAR -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <!-- Status Filter Pills -->
+                        <div class="flex flex-wrap items-center gap-1.5" id="status-pill-container">
+                            <!-- Populated via JS -->
+                        </div>
+
+                        <!-- Secondary Filters & Search -->
+                        <div class="flex items-center gap-3 flex-1 max-w-xl">
+                            <!-- Supplier Filter Dropdown -->
+                            <div class="relative min-w-[160px]">
+                                <select id="supplier-select" onchange="handleFilterChange()" class="w-full text-xs font-medium text-slate-700 bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-royalMid focus:border-brand-royalMid outline-none appearance-none pr-8 cursor-pointer">
+                                    <option value="ALL">All Suppliers</option>
+                                    <option value="Heet Patel">Heet Patel</option>
+                                    <option value="Vaibhav Suthar">Vaibhav Suthar</option>
+                                    <option value="Supplier 001">Supplier 001</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none"></i>
+                            </div>
+
+                            <!-- Live Search Input -->
+                            <div class="relative flex-1">
+                                <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 pointer-events-none"></i>
+                                <input type="text" id="search-input" onkeyup="handleFilterChange()" placeholder="Search PO ID, material, supplier..." class="w-full text-xs text-slate-800 bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-brand-royalMid focus:border-brand-royalMid outline-none placeholder:text-slate-400">
+                            </div>
+
+                            <!-- Clear Filters -->
+                            <button onclick="clearAllFilters()" class="text-xs text-slate-500 hover:text-slate-800 font-medium px-2 py-1 flex items-center gap-1 transition-colors">
+                                <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- HIGH DENSITY DATA TABLE -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider select-none">
+                                    <th class="py-3 px-4 cursor-pointer hover:bg-slate-100/70" onclick="sortTable('id')">
+                                        <div class="flex items-center gap-1">
+                                            <span>PO ID</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 px-4 cursor-pointer hover:bg-slate-100/70" onclick="sortTable('supplier')">
+                                        <div class="flex items-center gap-1">
+                                            <span>Supplier Name</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 px-4 cursor-pointer hover:bg-slate-100/70" onclick="sortTable('material')">
+                                        <div class="flex items-center gap-1">
+                                            <span>Material / Description</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 px-4 text-right cursor-pointer hover:bg-slate-100/70" onclick="sortTable('amount')">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <span>Base Amount</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 px-4 text-right cursor-pointer hover:bg-slate-100/70" onclick="sortTable('gst')">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <span>GST (1.5%)</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 px-4 text-right cursor-pointer hover:bg-slate-100/70" onclick="sortTable('total')">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <span>Total (incl. GST)</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 px-4 cursor-pointer hover:bg-slate-100/70 text-center" onclick="sortTable('status')">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <span>Status</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 px-4 cursor-pointer hover:bg-slate-100/70" onclick="sortTable('created_at')">
+                                        <div class="flex items-center gap-1">
+                                            <span>Created At</span>
+                                            <i data-lucide="arrow-up-down" class="w-3 h-3 text-slate-400"></i>
+                                        </div>
+                                    </th>
+                                    <th class="py-3 px-4 text-center">Actions & Documents</th>
+                                </tr>
+                            </thead>
+                            <tbody id="po-table-body" class="divide-y divide-slate-200 text-xs text-slate-700">
+                                <!-- Dynamic Rows Injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- PAGINATION BAR -->
+                    <div class="bg-slate-50 px-4 py-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+                        <div class="flex items-center gap-2">
+                            <span>Rows per page:</span>
+                            <select id="rows-per-page" onchange="handleRowsPerPageChange()" class="bg-white border border-slate-300 rounded px-2 py-1 font-medium text-slate-700 focus:outline-none">
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="all">All</option>
+                            </select>
+                            <span id="pagination-summary" class="ml-2 font-mono font-medium text-slate-700">Showing 1 to 10 of 26 POs</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button id="btn-prev-page" onclick="changePage(-1)" class="px-2.5 py-1 bg-white border border-slate-300 rounded text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium flex items-center gap-1">
+                                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Prev
+                            </button>
+                            <span id="page-indicator" class="font-mono font-semibold text-slate-800 px-2">Page 1 of 3</span>
+                            <button id="btn-next-page" onclick="changePage(1)" class="px-2.5 py-1 bg-white border border-slate-300 rounded text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium flex items-center gap-1">
+                                Next <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- COMPACT BRANDED FOOTER -->
+            <footer class="mt-auto bg-[#172E6E] text-slate-200 border-t border-blue-900/60 pt-6 pb-4 px-6">
+                <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-xs mb-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-base font-bold text-white">SUPPLEXIO</span>
+                            <span class="text-[10px] bg-[#2DD4BF] text-slate-950 font-extrabold px-1.5 py-0.5 rounded">INDIA</span>
+                        </div>
+                        <p class="text-slate-300 leading-relaxed">Supplexio Systems India<br>HITEC City, Madhapur<br>Hyderabad, Telangana 500081</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white mb-2 uppercase tracking-wider text-[11px]">Quick Links</h4>
+                        <ul class="space-y-1 text-slate-300">
+                            <li><a href="#" class="hover:text-white hover:underline flex items-center gap-1"><i data-lucide="chevron-right" class="w-3 h-3 text-[#2DD4BF]"></i> Products Directory</a></li>
+                            <li><a href="#" class="hover:text-white hover:underline flex items-center gap-1"><i data-lucide="chevron-right" class="w-3 h-3 text-[#2DD4BF]"></i> Supplier Onboarding</a></li>
+                            <li><a href="#" class="hover:text-white hover:underline flex items-center gap-1"><i data-lucide="chevron-right" class="w-3 h-3 text-[#2DD4BF]"></i> Reverse Auctions</a></li>
+                            <li><a href="#" class="hover:text-white hover:underline flex items-center gap-1"><i data-lucide="chevron-right" class="w-3 h-3 text-[#2DD4BF]"></i> Payment Settlements</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white mb-2 uppercase tracking-wider text-[11px]">Contact Us</h4>
+                        <p class="text-slate-300 leading-relaxed space-y-1">
+                            <span class="flex items-center gap-2"><i data-lucide="phone" class="w-3.5 h-3.5 text-[#2DD4BF]"></i> +91 98765 43210</span>
+                            <span class="flex items-center gap-2"><i data-lucide="mail" class="w-3.5 h-3.5 text-[#2DD4BF]"></i> procurement@supplexio.com</span>
+                        </p>
+                        <div class="flex gap-3 mt-3">
+                            <a href="#" class="w-7 h-7 rounded bg-white/10 flex items-center justify-center hover:bg-[#2DD4BF] hover:text-slate-950 transition-colors"><i data-lucide="facebook" class="w-3.5 h-3.5"></i></a>
+                            <a href="#" class="w-7 h-7 rounded bg-white/10 flex items-center justify-center hover:bg-[#2DD4BF] hover:text-slate-950 transition-colors"><i data-lucide="twitter" class="w-3.5 h-3.5"></i></a>
+                            <a href="#" class="w-7 h-7 rounded bg-white/10 flex items-center justify-center hover:bg-[#2DD4BF] hover:text-slate-950 transition-colors"><i data-lucide="linkedin" class="w-3.5 h-3.5"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t border-white/10 pt-3 text-center text-[11px] text-slate-400">
+                    © 2026 Supplexio. All Rights Reserved. Enterprise Procurement Portal v4.2
+                </div>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- FLOATING AI ASSISTANT BUTTON -->
+    <div class="fixed bottom-5 right-5 z-40">
+        <button onclick="toggleAiDrawer()" class="bg-[#0B1E3D] hover:bg-slate-900 text-white p-3.5 rounded-full shadow-2xl border-2 border-[#2DD4BF] flex items-center justify-center transition-transform duration-200 hover:scale-105 group relative">
+            <i data-lucide="bot" class="w-6 h-6 text-[#2DD4BF]"></i>
+            <span class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white animate-pulse"></span>
+        </button>
+    </div>
+
+    <!-- AI ASSISTANT CHAT MODAL -->
+    <div id="ai-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[520px]">
+            <div class="bg-[#0B1E3D] p-4 text-white flex items-center justify-between border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-[#2DD4BF] flex items-center justify-center text-slate-950 font-bold">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold">Supplexio Procurement AI</h3>
+                        <p class="text-[10px] text-teal-300">GST Auditor & Dispatch Copilot</p>
+                    </div>
+                </div>
+                <button onclick="toggleAiDrawer()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div id="ai-chat-body" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs bg-slate-50">
+                <div class="bg-blue-100/70 border border-blue-200 text-slate-800 p-3 rounded-xl max-w-[85%]">
+                    Hello! I'm your Supplexio Procurement Assistant. I can summarize your PO compliance status, highlight pending vendor approvals, or draft quick compliance queries. How can I assist you today?
+                </div>
+            </div>
+            <div class="p-3 bg-white border-t border-slate-200 flex gap-2">
+                <input type="text" id="ai-input" placeholder="Ask AI about PO #36 compliance or vendor status..." onkeydown="if(event.key==='Enter') sendAiMessage()" class="flex-1 text-xs border border-slate-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-brand-royalMid">
+                <button onclick="sendAiMessage()" class="bg-brand-royalMid text-white px-3 py-2 rounded-lg font-bold text-xs hover:bg-brand-royalDark flex items-center justify-center">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: CREATE MANUAL PO -->
+    <div id="create-po-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="bg-brand-royalDark text-white p-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="file-plus-2" class="w-5 h-5 text-[#2DD4BF]"></i>
+                    <h3 class="text-sm font-bold">Create Purchase Order</h3>
+                </div>
+                <button onclick="closeModal('create-po-modal')" class="text-slate-300 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleCreatePOSubmit(event)" class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Supplier Name</label>
+                    <select id="modal-create-supplier" required class="w-full text-xs border border-slate-300 rounded-lg p-2.5 bg-slate-50 font-medium focus:ring-2 focus:ring-brand-royalMid outline-none">
+                        <option value="Heet Patel">Heet Patel</option>
+                        <option value="Vaibhav Suthar">Vaibhav Suthar</option>
+                        <option value="Supplier 001">Supplier 001</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Material / Item Description</label>
+                    <input type="text" id="modal-create-material" required placeholder="e.g. Copper Sheets, Industrial Valves..." class="w-full text-xs border border-slate-300 rounded-lg p-2.5 bg-slate-50 focus:ring-2 focus:ring-brand-royalMid outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Base Amount (₹)</label>
+                    <input type="number" step="0.01" id="modal-create-amount" required oninput="calculateModalGST()" placeholder="1000.00" class="w-full text-xs font-mono border border-slate-300 rounded-lg p-2.5 bg-slate-50 focus:ring-2 focus:ring-brand-royalMid outline-none">
+                </div>
+                
+                <!-- GST Auto Calculation Summary Box -->
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs space-y-1.5 font-mono">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Base Subtotal:</span>
+                        <span id="calc-base" class="font-semibold">₹ 0.00</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>GST Tax (1.5% Standard Rate):</span>
+                        <span id="calc-gst" class="font-semibold text-amber-700">₹ 0.00</span>
+                    </div>
+                    <div class="border-t border-slate-200 pt-1 flex justify-between font-bold text-slate-900 text-sm">
+                        <span>Total Payable:</span>
+                        <span id="calc-total" class="text-brand-royalMid">₹ 0.00</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('create-po-modal')" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-royalMid hover:bg-brand-royalDark text-white rounded-lg text-xs font-bold shadow-md">Generate Purchase Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: AUDIT VERIFICATION & DISPATCH MODAL -->
+    <div id="audit-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="bg-amber-500 text-slate-950 p-4 flex items-center justify-between font-bold">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                    <h3 class="text-sm">Audit Verification & Supplier Transmission</h3>
+                </div>
+                <button onclick="closeModal('audit-modal')" class="text-slate-900 hover:text-black"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-900 space-y-2">
+                    <div class="flex justify-between font-bold border-b border-amber-200 pb-2">
+                        <span id="audit-po-id" class="font-mono text-sm">PO #36</span>
+                        <span id="audit-status" class="bg-amber-200 text-amber-900 px-2 py-0.5 rounded font-mono">CREATED</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1 font-sans">
+                        <div>
+                            <span class="text-amber-700 block">Supplier:</span>
+                            <span id="audit-supplier" class="font-semibold text-slate-900">Heet Patel</span>
+                        </div>
+                        <div>
+                            <span class="text-amber-700 block">Material:</span>
+                            <span id="audit-material" class="font-semibold text-slate-900">Exhaust Fan</span>
+                        </div>
+                        <div>
+                            <span class="text-amber-700 block">Base Amount:</span>
+                            <span id="audit-base" class="font-mono text-slate-900">₹ 1,500.00</span>
+                        </div>
+                        <div>
+                            <span class="text-amber-700 block">Total incl. GST (1.5%):</span>
+                            <span id="audit-total" class="font-mono font-bold text-slate-900">₹ 1,522.50</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mandatory Checkbox Verification -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start gap-3">
+                    <input type="checkbox" id="audit-check" onchange="toggleAuditSubmitButton()" class="mt-0.5 w-4 h-4 text-brand-royalMid rounded border-slate-300 focus:ring-brand-royalMid cursor-pointer">
+                    <label for="audit-check" class="text-xs font-semibold text-slate-800 leading-snug cursor-pointer">
+                        AUDIT VERIFICATION REQUIRED: <span class="font-normal text-slate-600">I confirm that quantity, unit pricing, GST tax computation (1.5%), and delivery terms have been verified and approved for transmission.</span>
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('audit-modal')" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+                    <button id="btn-dispatch-po" disabled onclick="executeDispatchPO()" class="px-5 py-2 bg-brand-royalMid disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md flex items-center gap-1.5 transition-all">
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                        <span>Send PO to Supplier</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: PAYMENT SETTLEMENT MODAL -->
+    <div id="payment-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="bg-emerald-600 text-white p-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="credit-card" class="w-5 h-5 text-emerald-200"></i>
+                    <h3 class="text-sm font-bold">Process Supplier Payment Settlement</h3>
+                </div>
+                <button onclick="closeModal('payment-modal')" class="text-white hover:text-emerald-200"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handlePaymentSubmit(event)" class="p-5 space-y-4">
+                <input type="hidden" id="pay-po-id-val">
+                
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-950 flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-slate-800" id="pay-po-label">PO #42 - Heet Patel</p>
+                        <p class="text-[11px] text-emerald-700" id="pay-material-label">Material: Screws</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-emerald-700 font-semibold uppercase">Settlement Amount</p>
+                        <p class="text-base font-extrabold font-mono text-emerald-900" id="pay-amount-label">₹ 558.25</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Payment Rail</label>
+                    <select id="pay-rail" required class="w-full text-xs border border-slate-300 rounded-lg p-2.5 bg-slate-50 font-medium focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <option value="NEFT/RTGS">NEFT / RTGS Corporate Direct</option>
+                        <option value="Corporate Escrow">Supplexio Corporate Escrow Rail</option>
+                        <option value="UPI Business">UPI Corporate VPA Instant Settlement</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Transaction Ref / Remarks</label>
+                    <input type="text" id="pay-ref" required placeholder="TXN-2026-994821" value="TXN-2026-994821" class="w-full text-xs font-mono border border-slate-300 rounded-lg p-2.5 bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('payment-modal')" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-md flex items-center gap-1.5">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        <span>Confirm & Settle Payment</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DOCUMENT PREVIEW SLIDE-OVER DRAWER -->
+    <div id="document-drawer" class="fixed inset-0 z-50 hidden overflow-hidden">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeDrawer()"></div>
+        <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div class="w-screen max-w-2xl bg-white shadow-2xl flex flex-col">
+                
+                <!-- Drawer Header -->
+                <div class="bg-brand-navy p-4 text-white flex items-center justify-between border-b border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-white/10 rounded-lg">
+                            <i data-lucide="file-text" class="w-5 h-5 text-[#2DD4BF]"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-sm font-bold flex items-center gap-2" id="doc-title-header">
+                                Document Viewer
+                            </h2>
+                            <p class="text-[11px] text-slate-300">Official Supplexio Systems B2B Audit Record</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.print()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print
+                        </button>
+                        <button onclick="closeDrawer()" class="text-slate-400 hover:text-white p-1">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Printable Document Canvas -->
+                <div class="flex-1 overflow-y-auto p-8 bg-slate-50" id="printable-document">
+                    <!-- Dynamic Document Layout Populated by JS -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC & STATE MANAGEMENT -->
+    <script>
+        // -------------------------------------------------------------------
+        // REALISTIC DATASET FROM SUPPLEXIO SOURCE (26 REAL RECORDS)
+        // -------------------------------------------------------------------
+        const initialPOData = [
+            { id: 44, supplier: "Heet Patel", material: "Hose", amount: 500.00, gst: 7.50, total: 507.50, status: "PAID", created_at: "2026-04-16 11:27" },
+            { id: 43, supplier: "Heet Patel", material: "Granite Slab", amount: 100.00, gst: 1.50, total: 101.50, status: "PAID", created_at: "2026-03-10 17:58" },
+            { id: 42, supplier: "Heet Patel", material: "Screws", amount: 550.00, gst: 8.25, total: 558.25, status: "SENT", created_at: "2026-03-10 17:58" },
+            { id: 41, supplier: "Heet Patel", material: "Pliers", amount: 1500.00, gst: 22.50, total: 1522.50, status: "PAID", created_at: "2026-03-10 16:47" },
+            { id: 40, supplier: "Heet Patel", material: "Exhaust Fan", amount: 600.00, gst: 9.00, total: 609.00, status: "PAID", created_at: "2026-03-10 16:45" },
+            { id: 39, supplier: "Heet Patel", material: "Hose", amount: 500.00, gst: 7.50, total: 507.50, status: "AWAITING ACCEPT", created_at: "2026-03-10 16:41" },
+            { id: 38, supplier: "Heet Patel", material: "Vibrator Needle", amount: 1500.00, gst: 22.50, total: 1522.50, status: "DELIVERED", created_at: "2026-03-10 12:49" },
+            { id: 37, supplier: "Heet Patel", material: "Oil Seal", amount: 1000.00, gst: 15.00, total: 1015.00, status: "DELIVERED", created_at: "2026-03-10 12:48" },
+            { id: 36, supplier: "Heet Patel", material: "Exhaust Fan", amount: 1500.00, gst: 22.50, total: 1522.50, status: "CREATED", created_at: "2026-03-10 12:35" },
+            { id: 35, supplier: "Vaibhav Suthar", material: "Chain Block 1 Ton", amount: 10000.00, gst: 150.00, total: 10150.00, status: "DELIVERED", created_at: "2026-01-11 15:27" },
+            { id: 34, supplier: "Heet Patel", material: "Ground Cover", amount: 12000.00, gst: 180.00, total: 12180.00, status: "DELIVERED", created_at: "2026-01-11 12:48" },
+            { id: 33, supplier: "Heet Patel", material: "LED Tube 18W", amount: 15000.00, gst: 225.00, total: 15225.00, status: "DELIVERED", created_at: "2026-01-03 18:22" },
+            { id: 32, supplier: "Vaibhav Suthar", material: "Pressure Sprayer", amount: 15000.00, gst: 225.00, total: 15225.00, status: "DELIVERED", created_at: "2025-12-23 11:02" },
+            { id: 31, supplier: "Heet Patel", material: "Ceiling Fan", amount: 15000.00, gst: 225.00, total: 15225.00, status: "DELIVERED", created_at: "2025-12-03 10:55" },
+            { id: 30, supplier: "Supplier 001", material: "Stainless Steel Bowl", amount: 500.00, gst: 7.50, total: 507.50, status: "DELIVERED", created_at: "2025-11-27 20:58" },
+            { id: 29, supplier: "Heet Patel", material: "Stainless Steel Bowl", amount: 1000.00, gst: 15.00, total: 1015.00, status: "DELIVERED", created_at: "2025-11-26 15:47" },
+            { id: 28, supplier: "Supplier 001", material: "Emulsion Paint (White)", amount: 15000.00, gst: 225.00, total: 15225.00, status: "DELIVERED", created_at: "2025-11-26 15:39" },
+            { id: 27, supplier: "Vaibhav Suthar", material: "Aluminum Section", amount: 12000.00, gst: 180.00, total: 12180.00, status: "DELIVERED", created_at: "2025-11-25 11:45" },
+            { id: 26, supplier: "Supplier 001", material: "Cutting Disc 4 inch", amount: 15000.00, gst: 225.00, total: 15225.00, status: "DELIVERED", created_at: "2025-11-25 10:14" },
+            { id: 25, supplier: "Supplier 001", material: "Barbed Wire", amount: 10000.00, gst: 150.00, total: 10150.00, status: "DELIVERED", created_at: "2025-11-24 19:16" },
+            { id: 24, supplier: "Supplier 001", material: "Aluminum Plates", amount: 450000.00, gst: 6750.00, total: 456750.00, status: "DELIVERED", created_at: "2025-11-18 18:24" },
+            { id: 23, supplier: "Supplier 001", material: "Chain Link Mesh", amount: 50000.00, gst: 750.00, total: 50750.00, status: "DELIVERED", created_at: "2025-11-18 17:58" },
+            { id: 12, supplier: "Vaibhav Suthar", material: "Copper Sheets", amount: 8900.00, gst: 133.50, total: 9033.50, status: "DELIVERED", created_at: "2025-10-09 10:49" },
+            { id: 9, supplier: "Vaibhav Suthar", material: "Paint Buckets", amount: 89000.00, gst: 1335.00, total: 90335.00, status: "DELIVERED", created_at: "2025-09-23 15:44" },
+            { id: 6, supplier: "Vaibhav Suthar", material: "Steel Rods", amount: 90000.00, gst: 1350.00, total: 91350.00, status: "DELIVERED", created_at: "2025-09-23 13:59" },
+            { id: 1, supplier: "Vaibhav Suthar", material: "Copper Sheets", amount: 120000.00, gst: 1800.00, total: 121800.00, status: "DELIVERED", created_at: "2025-06-30 18:17" }
+        ];
+
+        // State Store
+        let state = {
+            pos: [...initialPOData],
+            activeStatusFilter: 'ALL',
+            activeSupplierFilter: 'ALL',
+            searchQuery: '',
+            sortField: 'id',
+            sortAsc: false,
+            currentPage: 1,
+            pageSize: 10,
+            selectedAuditPOId: null,
+        };
+
+        // -------------------------------------------------------------------
+        // INITIALIZATION
+        // -------------------------------------------------------------------
+        window.onload = function() {
+            renderDashboard();
+            lucide.createIcons();
+        };
+
+        function renderDashboard() {
+            updateKPIs();
+            renderStatusPills();
+            renderTable();
+            document.getElementById('po-total-badge').textContent = state.pos.length;
+        }
+
+        // -------------------------------------------------------------------
+        // FORMATTERS
+        // -------------------------------------------------------------------
+        function formatINR(val) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(val).replace('INR', '₹');
+        }
+
+        function getSupplierInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+
+        // -------------------------------------------------------------------
+        // DYNAMIC KPI CALCULATIONS
+        // -------------------------------------------------------------------
+        function updateKPIs() {
+            const totalVol = state.pos.reduce((acc, item) => acc + item.total, 0);
+            const pendingCount = state.pos.filter(p => p.status === 'CREATED' || p.status === 'AWAITING ACCEPT').length;
+            const sentPOs = state.pos.filter(p => p.status === 'SENT');
+            const sentVal = sentPOs.reduce((acc, item) => acc + item.total, 0);
+            const settledPOs = state.pos.filter(p => p.status === 'DELIVERED' || p.status === 'PAID');
+            const totalGST = state.pos.reduce((acc, item) => acc + item.gst, 0);
+
+            document.getElementById('kpi-total-val').textContent = formatINR(totalVol);
+            document.getElementById('kpi-total-count').textContent = `${state.pos.length} orders total`;
+
+            document.getElementById('kpi-pending-count').textContent = pendingCount;
+            document.getElementById('kpi-sent-val').textContent = formatINR(sentVal);
+            document.getElementById('kpi-sent-count').textContent = `${sentPOs.length} orders`;
+
+            document.getElementById('kpi-settled-count').textContent = settledPOs.length;
+            document.getElementById('kpi-gst-val').textContent = formatINR(totalGST);
+        }
+
+        // -------------------------------------------------------------------
+        // STATUS PILLS RENDER
+        // -------------------------------------------------------------------
+        function renderStatusPills() {
+            const container = document.getElementById('status-pill-container');
+            const statuses = [
+                { key: 'ALL', label: 'All POs' },
+                { key: 'CREATED', label: 'Created' },
+                { key: 'AWAITING ACCEPT', label: 'Awaiting Accept' },
+                { key: 'SENT', label: 'Sent' },
+                { key: 'DELIVERED', label: 'Delivered' },
+                { key: 'PAID', label: 'Paid' },
+            ];
+
+            container.innerHTML = statuses.map(s => {
+                const count = s.key === 'ALL' 
+                    ? state.pos.length 
+                    : state.pos.filter(p => p.status === s.key).length;
+                
+                const isActive = state.activeStatusFilter === s.key;
+                const activeClass = isActive 
+                    ? 'bg-brand-royalMid text-white shadow-sm font-bold' 
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium';
+
+                return `
+                    <button onclick="setStatusFilter('${s.key}')" class="px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-all ${activeClass}">
+                        <span>${s.label}</span>
+                        <span class="${isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'} text-[10px] px-1.5 py-0.2 rounded-full font-mono">${count}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // -------------------------------------------------------------------
+        // FILTERING & SORTING LOGIC
+        // -------------------------------------------------------------------
+        function setStatusFilter(status) {
+            state.activeStatusFilter = status;
+            state.currentPage = 1;
+            renderDashboard();
+        }
+
+        function filterByStatusQuick(type) {
+            if (type === 'ACTION_REQ') state.activeStatusFilter = 'CREATED';
+            else if (type === 'SENT') state.activeStatusFilter = 'SENT';
+            else if (type === 'SETTLED') state.activeStatusFilter = 'DELIVERED';
+            state.currentPage = 1;
+            renderDashboard();
+        }
+
+        function handleFilterChange() {
+            state.activeSupplierFilter = document.getElementById('supplier-select').value;
+            state.searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+            state.currentPage = 1;
+            renderTable();
+        }
+
+        function clearAllFilters() {
+            state.activeStatusFilter = 'ALL';
+            state.activeSupplierFilter = 'ALL';
+            state.searchQuery = '';
+            document.getElementById('supplier-select').value = 'ALL';
+            document.getElementById('search-input').value = '';
+            state.currentPage = 1;
+            renderDashboard();
+        }
+
+        function sortTable(field) {
+            if (state.sortField === field) {
+                state.sortAsc = !state.sortAsc;
+            } else {
+                state.sortField = field;
+                state.sortAsc = true;
+            }
+            renderTable();
+        }
+
+        function getFilteredData() {
+            return state.pos.filter(po => {
+                const matchStatus = (state.activeStatusFilter === 'ALL') || (po.status === state.activeStatusFilter);
+                const matchSupplier = (state.activeSupplierFilter === 'ALL') || (po.supplier === state.activeSupplierFilter);
+                const query = state.searchQuery;
+                const matchSearch = !query || 
+                    po.id.toString().includes(query) || 
+                    po.supplier.toLowerCase().includes(query) || 
+                    po.material.toLowerCase().includes(query);
+
+                return matchStatus && matchSupplier && matchSearch;
+            }).sort((a, b) => {
+                let valA = a[state.sortField];
+                let valB = b[state.sortField];
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                if (valA < valB) return state.sortAsc ? -1 : 1;
+                if (valA > valB) return state.sortAsc ? 1 : -1;
+                return 0;
+            });
+        }
+
+        // -------------------------------------------------------------------
+        // TABLE RENDER & PAGINATION
+        // -------------------------------------------------------------------
+        function renderTable() {
+            const filtered = getFilteredData();
+            const totalCount = filtered.length;
+            const tbody = document.getElementById('po-table-body');
+
+            // Pagination window calculation
+            let limit = state.pageSize === 'all' ? totalCount : parseInt(state.pageSize);
+            const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+            if (state.currentPage > totalPages) state.currentPage = totalPages;
+
+            const startIndex = (state.currentPage - 1) * limit;
+            const pageData = filtered.slice(startIndex, startIndex + limit);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="py-12 text-center text-slate-400">
+                            <div class="flex flex-col items-center justify-center gap-2">
+                                <i data-lucide="folder-search" class="w-8 h-8 text-slate-300"></i>
+                                <p class="text-sm font-medium">No purchase orders found matching your filters.</p>
+                                <button onclick="clearAllFilters()" class="text-xs text-brand-royalMid font-semibold hover:underline mt-1">Reset All Filters</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = pageData.map(po => {
+                    const statusBadge = getStatusBadge(po.status);
+                    const actionsHtml = renderActionsColumn(po);
+                    
+                    return `
+                        <tr class="hover:bg-slate-50/80 transition-colors group">
+                            <!-- PO ID -->
+                            <td class="py-3 px-4 font-mono font-bold text-brand-royalMid text-xs">
+                                #${po.id}
+                            </td>
+
+                            <!-- Supplier -->
+                            <td class="py-3 px-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold flex items-center justify-center border border-slate-300">
+                                        ${getSupplierInitials(po.supplier)}
+                                    </div>
+                                    <span class="font-semibold text-slate-900">${po.supplier}</span>
+                                </div>
+                            </td>
+
+                            <!-- Material -->
+                            <td class="py-3 px-4 font-medium text-slate-800">
+                                ${po.material}
+                            </td>
+
+                            <!-- Base Amount -->
+                            <td class="py-3 px-4 text-right font-mono tabular-nums text-slate-600">
+                                ${formatINR(po.amount)}
+                            </td>
+
+                            <!-- GST 1.5% -->
+                            <td class="py-3 px-4 text-right font-mono tabular-nums text-amber-700">
+                                ${formatINR(po.gst)}
+                            </td>
+
+                            <!-- Total -->
+                            <td class="py-3 px-4 text-right font-mono tabular-nums font-bold text-slate-900">
+                                ${formatINR(po.total)}
+                            </td>
+
+                            <!-- Status -->
+                            <td class="py-3 px-4 text-center">
+                                ${statusBadge}
+                            </td>
+
+                            <!-- Created At -->
+                            <td class="py-3 px-4 font-mono text-[11px] text-slate-500">
+                                <div>${po.created_at.split(' ')[0]}</div>
+                                <div class="text-[10px] text-slate-400">${po.created_at.split(' ')[1]}</div>
+                            </td>
+
+                            <!-- Actions & Documents -->
+                            <td class="py-3 px-4 text-center">
+                                ${actionsHtml}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Update Pagination Bar Text & Buttons
+            const endItem = Math.min(startIndex + limit, totalCount);
+            const startItem = totalCount > 0 ? startIndex + 1 : 0;
+            document.getElementById('pagination-summary').textContent = `Showing ${startItem} to ${endItem} of ${totalCount} POs`;
+            document.getElementById('page-indicator').textContent = `Page ${state.currentPage} of ${totalPages}`;
+            document.getElementById('btn-prev-page').disabled = state.currentPage <= 1;
+            document.getElementById('btn-next-page').disabled = state.currentPage >= totalPages;
+
+            lucide.createIcons();
+        }
+
+        // -------------------------------------------------------------------
+        // STATUS BADGE RENDERER
+        // -------------------------------------------------------------------
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'CREATED':
+                    return `<span class="inline-flex items-center gap-1 bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-full text-[10px] border border-amber-300 shadow-sm">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                CREATED
+                            </span>`;
+                case 'AWAITING ACCEPT':
+                    return `<span class="inline-flex items-center gap-1 bg-sky-100 text-sky-900 font-bold px-2.5 py-1 rounded-full text-[10px] border border-sky-300">
+                                <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                                AWAITING ACCEPT
+                            </span>`;
+                case 'SENT':
+                    return `<span class="inline-flex items-center gap-1 bg-indigo-100 text-indigo-900 font-bold px-2.5 py-1 rounded-full text-[10px] border border-indigo-300">
+                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                                SENT
+                            </span>`;
+                case 'DELIVERED':
+                    return `<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-900 font-bold px-2.5 py-1 rounded-full text-[10px] border border-emerald-300">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                DELIVERED
+                            </span>`;
+                case 'PAID':
+                    return `<span class="inline-flex items-center gap-1 bg-slate-900 text-emerald-400 font-bold px-2.5 py-1 rounded-full text-[10px] border border-slate-700">
+                                <i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-400"></i>
+                                PAID & SETTLED
+                            </span>`;
+                default:
+                    return `<span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-[10px]">${status}</span>`;
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // HIGH DENSITY ACTIONS COLUMN RENDERER
+        // -------------------------------------------------------------------
+        function renderActionsColumn(po) {
+            let primaryBtn = '';
+            
+            if (po.status === 'CREATED') {
+                primaryBtn = `
+                    <button onclick="openAuditModal(${po.id})" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-[11px] px-2.5 py-1 rounded shadow-sm flex items-center gap-1 transition-transform active:scale-95">
+                        <i data-lucide="shield-check" class="w-3 h-3"></i> Verify & Send
+                    </button>
+                `;
+            } else if (po.status === 'AWAITING ACCEPT') {
+                primaryBtn = `
+                    <span class="bg-slate-100 text-slate-500 text-[10px] font-semibold px-2 py-1 rounded border border-slate-200 flex items-center gap-1">
+                        <i data-lucide="clock" class="w-3 h-3 text-sky-600"></i> Pending Supplier
+                    </span>
+                `;
+            } else if (po.status === 'SENT') {
+                primaryBtn = `
+                    <button onclick="openPaymentModal(${po.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] px-2.5 py-1 rounded shadow-sm flex items-center gap-1 transition-transform active:scale-95">
+                        <i data-lucide="credit-card" class="w-3 h-3"></i> Pay Now
+                    </button>
+                `;
+            } else if (po.status === 'DELIVERED') {
+                primaryBtn = `
+                    <button onclick="dispatchInvoiceToast(${po.id})" class="bg-brand-royalMid hover:bg-brand-royalDark text-white font-semibold text-[11px] px-2.5 py-1 rounded shadow-sm flex items-center gap-1 transition-transform active:scale-95">
+                        <i data-lucide="send" class="w-3 h-3"></i> Send Invoice
+                    </button>
+                `;
+            } else if (po.status === 'PAID') {
+                primaryBtn = `
+                    <span class="text-emerald-700 font-bold text-[10px] flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 rounded border border-emerald-200">
+                        <i data-lucide="check" class="w-3 h-3"></i> Settled
+                    </span>
+                `;
+            }
+
+            // Compact Document Buttons
+            const docButtons = `
+                <div class="flex items-center gap-1">
+                    <button onclick="openDocumentDrawer(${po.id}, 'PO')" title="View PO Document" class="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] font-mono font-bold border border-slate-300 transition-colors">
+                        PO
+                    </button>
+                    ${po.status !== 'CREATED' ? `
+                    <button onclick="openDocumentDrawer(${po.id}, 'CHALLAN')" title="View Delivery Challan" class="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] font-mono font-bold border border-slate-300 transition-colors">
+                        CH
+                    </button>` : ''}
+                    ${['SENT', 'DELIVERED', 'PAID', 'AWAITING ACCEPT'].includes(po.status) ? `
+                    <button onclick="openDocumentDrawer(${po.id}, 'INVOICE')" title="View Tax Invoice" class="px-1.5 py-0.5 bg-blue-50 hover:bg-blue-100 text-brand-royalMid rounded text-[10px] font-mono font-bold border border-blue-200 transition-colors">
+                        INV
+                    </button>` : ''}
+                </div>
+            `;
+
+            return `
+                <div class="flex items-center justify-center gap-2">
+                    ${primaryBtn}
+                    ${docButtons}
+                </div>
+            `;
+        }
+
+        // -------------------------------------------------------------------
+        // PAGINATION & ROWS HANDLERS
+        // -------------------------------------------------------------------
+        function handleRowsPerPageChange() {
+            state.pageSize = document.getElementById('rows-per-page').value;
+            state.currentPage = 1;
+            renderTable();
+        }
+
+        function changePage(delta) {
+            state.currentPage += delta;
+            renderTable();
+        }
+
+        // -------------------------------------------------------------------
+        // CREATE PO MODAL & COMPUTATION
+        // -------------------------------------------------------------------
+        function openCreateModal() {
+            document.getElementById('create-po-modal').classList.remove('hidden');
+            calculateModalGST();
+        }
+
+        function calculateModalGST() {
+            const amt = parseFloat(document.getElementById('modal-create-amount').value) || 0;
+            const gst = amt * 0.015;
+            const total = amt + gst;
+
+            document.getElementById('calc-base').textContent = formatINR(amt);
+            document.getElementById('calc-gst').textContent = formatINR(gst);
+            document.getElementById('calc-total').textContent = formatINR(total);
+        }
+
+        function handleCreatePOSubmit(e) {
+            e.preventDefault();
+            const supplier = document.getElementById('modal-create-supplier').value;
+            const material = document.getElementById('modal-create-material').value;
+            const baseAmount = parseFloat(document.getElementById('modal-create-amount').value);
+            const gstAmount = baseAmount * 0.015;
+            const totalAmount = baseAmount + gstAmount;
+
+            const newId = Math.max(...state.pos.map(p => p.id), 0) + 1;
+            const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+            const newPO = {
+                id: newId,
+                supplier: supplier,
+                material: material,
+                amount: baseAmount,
+                gst: gstAmount,
+                total: totalAmount,
+                status: 'CREATED',
+                created_at: nowStr
+            };
+
+            state.pos.unshift(newPO);
+            closeModal('create-po-modal');
+            renderDashboard();
+            showToast(`PO #${newId} created successfully in CREATED status!`, 'success');
+        }
+
+        // -------------------------------------------------------------------
+        // AUDIT VERIFICATION MODAL
+        // -------------------------------------------------------------------
+        function openAuditModal(poId) {
+            const po = state.pos.find(p => p.id === poId);
+            if (!po) return;
+
+            state.selectedAuditPOId = poId;
+            document.getElementById('audit-po-id').textContent = `PO #${po.id}`;
+            document.getElementById('audit-supplier').textContent = po.supplier;
+            document.getElementById('audit-material').textContent = po.material;
+            document.getElementById('audit-base').textContent = formatINR(po.amount);
+            document.getElementById('audit-total').textContent = formatINR(po.total);
+            document.getElementById('audit-check').checked = false;
+            document.getElementById('btn-dispatch-po').disabled = true;
+
+            document.getElementById('audit-modal').classList.remove('hidden');
+        }
+
+        function toggleAuditSubmitButton() {
+            const isChecked = document.getElementById('audit-check').checked;
+            document.getElementById('btn-dispatch-po').disabled = !isChecked;
+        }
+
+        function executeDispatchPO() {
+            const po = state.pos.find(p => p.id === state.selectedAuditPOId);
+            if (po) {
+                po.status = 'AWAITING ACCEPT';
+                closeModal('audit-modal');
+                renderDashboard();
+                showToast(`PO #${po.id} verified and dispatched to ${po.supplier}!`, 'info');
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // PAYMENT SETTLEMENT MODAL
+        // -------------------------------------------------------------------
+        function openPaymentModal(poId) {
+            const po = state.pos.find(p => p.id === poId);
+            if (!po) return;
+
+            document.getElementById('pay-po-id-val').value = poId;
+            document.getElementById('pay-po-label').textContent = `PO #${po.id} - ${po.supplier}`;
+            document.getElementById('pay-material-label').textContent = `Material: ${po.material}`;
+            document.getElementById('pay-amount-label').textContent = formatINR(po.total);
+
+            document.getElementById('payment-modal').classList.remove('hidden');
+        }
+
+        function handlePaymentSubmit(e) {
+            e.preventDefault();
+            const poId = parseInt(document.getElementById('pay-po-id-val').value);
+            const rail = document.getElementById('pay-rail').value;
+            const ref = document.getElementById('pay-ref').value;
+
+            const po = state.pos.find(p => p.id === poId);
+            if (po) {
+                po.status = 'PAID';
+                closeModal('payment-modal');
+                renderDashboard();
+                showToast(`Payment of ${formatINR(po.total)} settled via ${rail} (Ref: ${ref})!`, 'success');
+            }
+        }
+
+        // -------------------------------------------------------------------
+        // INVOICE DISPATCH TOAST
+        // -------------------------------------------------------------------
+        function dispatchInvoiceToast(poId) {
+            const po = state.pos.find(p => p.id === poId);
+            showToast(`Tax Invoice dispatched to ${po.supplier} for PO #${po.id}.`, 'info');
+        }
+
+        // -------------------------------------------------------------------
+        // DOCUMENT SLIDE-OVER DRAWER (PO, CHALLAN, TAX INVOICE)
+        // -------------------------------------------------------------------
+        function openDocumentDrawer(poId, docType) {
+            const po = state.pos.find(p => p.id === poId);
+            if (!po) return;
+
+            const docCanvas = document.getElementById('printable-document');
+            document.getElementById('doc-title-header').textContent = `${docType === 'PO' ? 'Purchase Order' : docType === 'CHALLAN' ? 'Delivery Challan' : 'Tax Invoice'} — #${po.id}`;
+
+            docCanvas.innerHTML = `
+                <div class="bg-white border border-slate-300 p-8 rounded-xl shadow-lg max-w-xl mx-auto space-y-6 font-sans text-slate-800">
+                    
+                    <!-- Letterhead -->
+                    <div class="flex justify-between items-start border-b border-slate-200 pb-6">
+                        <div>
+                            <div class="bg-[#0B1E3D] text-white px-3 py-1.5 rounded-lg inline-flex items-center gap-1 font-bold text-lg mb-2">
+                                Supple<span class="text-[#2DD4BF]">xio</span>
+                            </div>
+                            <p class="text-xs text-slate-500 leading-tight">
+                                Supplexio Systems India Private Limited<br>
+                                HITEC City, Madhapur, Hyderabad, Telangana 500081<br>
+                                GSTIN: 36AAACS9981F1Z8 | CIN: U72900TG2024PTC18234
+                            </p>
+                        </div>
+                        <div class="text-right font-mono">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-1">${docType === 'PO' ? 'PURCHASE ORDER' : docType === 'CHALLAN' ? 'DELIVERY CHALLAN' : 'TAX INVOICE'}</span>
+                            <span class="text-lg font-bold text-brand-royalMid block">#PO-${po.id}</span>
+                            <span class="text-xs text-slate-500 block">${po.created_at}</span>
+                        </div>
+                    </div>
+
+                    <!-- Vendor & Ship To Grid -->
+                    <div class="grid grid-cols-2 gap-6 text-xs bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <div>
+                            <p class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-1">VENDOR / SUPPLIER</p>
+                            <p class="font-bold text-slate-900 text-sm">${po.supplier}</p>
+                            <p class="text-slate-600 mt-0.5">Verified B2B Vendor</p>
+                            <p class="text-slate-500">GST Compliance Verified</p>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-400 uppercase tracking-wider text-[10px] mb-1">DELIVER TO</p>
+                            <p class="font-bold text-slate-900 text-sm">Supplexio Warehouse Hub #4</p>
+                            <p class="text-slate-600 mt-0.5">Plot 88, Logistics Corridor</p>
+                            <p class="text-slate-500">Hyderabad, TS 500081</p>
+                        </div>
+                    </div>
+
+                    <!-- Line Item Breakdown -->
+                    <div>
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 border-b border-slate-300 font-bold text-slate-700">
+                                    <th class="py-2.5 px-3">Item / Description</th>
+                                    <th class="py-2.5 px-3 text-right">Qty</th>
+                                    <th class="py-2.5 px-3 text-right">Base Price</th>
+                                    <th class="py-2.5 px-3 text-right">GST (1.5%)</th>
+                                    <th class="py-2.5 px-3 text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 font-mono">
+                                <tr>
+                                    <td class="py-3 px-3 font-sans font-semibold text-slate-900">${po.material}</td>
+                                    <td class="py-3 px-3 text-right text-slate-600">1 Lot</td>
+                                    <td class="py-3 px-3 text-right text-slate-700">${formatINR(po.amount)}</td>
+                                    <td class="py-3 px-3 text-right text-amber-700">${formatINR(po.gst)}</td>
+                                    <td class="py-3 px-3 text-right font-bold text-slate-900">${formatINR(po.total)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Totals Box -->
+                    <div class="flex justify-end pt-2">
+                        <div class="w-64 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2 font-mono">
+                            <div class="flex justify-between text-slate-600">
+                                <span>Subtotal:</span>
+                                <span>${formatINR(po.amount)}</span>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>GST (1.5% Rate):</span>
+                                <span class="text-amber-700">${formatINR(po.gst)}</span>
+                            </div>
+                            <div class="border-t border-slate-300 pt-2 flex justify-between font-bold text-slate-900 text-sm">
+                                <span>Grand Total:</span>
+                                <span class="text-brand-royalMid">${formatINR(po.total)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Authorization & Status Stamp -->
+                    <div class="border-t border-slate-200 pt-6 flex items-center justify-between text-xs">
+                        <div>
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Document Status</span>
+                            <span class="font-bold text-slate-900">${po.status}</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-32 border-b border-slate-400 mb-1"></div>
+                            <span class="text-[10px] text-slate-500 font-medium">Authorized Signatory</span>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+
+            document.getElementById('document-drawer').classList.remove('hidden');
+        }
+
+        function closeDrawer() {
+            document.getElementById('document-drawer').classList.add('hidden');
+        }
+
+        // -------------------------------------------------------------------
+        // CSV EXPORT FUNCTIONALITY
+        // -------------------------------------------------------------------
+        function exportToCSV() {
+            const data = getFilteredData();
+            if (data.length === 0) {
+                showToast("No data available to export.", "error");
+                return;
+            }
+
+            const headers = ["PO ID", "Supplier", "Material", "Base Amount (INR)", "GST 1.5% (INR)", "Total (INR)", "Status", "Created At"];
+            const rows = data.map(p => [
+                p.id,
+                `"${p.supplier}"`,
+                `"${p.material}"`,
+                p.amount.toFixed(2),
+                p.gst.toFixed(2),
+                p.total.toFixed(2),
+                p.status,
+                `"${p.created_at}"`
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Supplexio_Purchase_Orders_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast(`Exported ${data.length} PO rows to CSV!`, "success");
+        }
+
+        // -------------------------------------------------------------------
+        // GENERAL MODAL HELPERS & NAV HIGHLIGHT
+        // -------------------------------------------------------------------
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function setActiveNav(el) {
+            showToast("Navigating to selected workspace...", "info");
+        }
+
+        // -------------------------------------------------------------------
+        // TOAST NOTIFICATION ENGINE
+        // -------------------------------------------------------------------
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-slate-900 text-white';
+            let icon = 'info';
+
+            if (type === 'success') {
+                bgClass = 'bg-emerald-700 text-white shadow-lg';
+                icon = 'check-circle';
+            } else if (type === 'error') {
+                bgClass = 'bg-rose-700 text-white shadow-lg';
+                icon = 'alert-octagon';
+            } else if (type === 'info') {
+                bgClass = 'bg-brand-royalMid text-white shadow-lg';
+                icon = 'bell';
+            }
+
+            toast.className = `${bgClass} text-xs font-semibold px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto border border-white/20`;
+            toast.innerHTML = `
+                <i data-lucide="${icon}" class="w-4 h-4 text-[#2DD4BF]"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // -------------------------------------------------------------------
+        // AI ASSISTANT POPUP LOGIC
+        // -------------------------------------------------------------------
+        function toggleAiDrawer() {
+            const modal = document.getElementById('ai-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function sendAiMessage() {
+            const input = document.getElementById('ai-input');
+            const txt = input.value.trim();
+            if (!txt) return;
+
+            const chatBody = document.getElementById('ai-chat-body');
+
+            // User message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'bg-brand-royalMid text-white p-3 rounded-xl max-w-[85%] ml-auto text-xs';
+            userMsg.textContent = txt;
+            chatBody.appendChild(userMsg);
+
+            input.value = '';
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // AI response simulation
+            setTimeout(() => {
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'bg-white border border-slate-200 text-slate-800 p-3 rounded-xl max-w-[85%] shadow-sm text-xs';
+                aiMsg.innerHTML = `<strong>Supplexio AI Copilot:</strong> Analyzed purchase orders state. All ${state.pos.length} records reflect proper 1.5% GST computation. PO #36 is ready for audit verification prior to dispatch.`;
+                chatBody.appendChild(aiMsg);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 600);
+        }
+    </script>
+</body>
+</html>

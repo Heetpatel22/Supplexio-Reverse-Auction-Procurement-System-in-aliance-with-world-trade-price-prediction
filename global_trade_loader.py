@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 from bigdata_platform import (
     configure_bigdata_env,
     dataset_exists,
-    get_spark_session,
     read_json_metadata,
     read_parquet_dataset,
     write_json_metadata,
@@ -28,7 +27,14 @@ from bigdata_platform import (
 
 configure_bigdata_env()
 
-BASE_DOCS = Path(r"C:\Users\vaibh\Documents")
+PROJECT_ROOT = Path(__file__).resolve().parent
+CANDIDATE_PATHS = [
+    PROJECT_ROOT / "BACI_Data",
+    Path.home() / ".cache" / "kagglehub" / "datasets" / "gerryzani" / "export-data-baci-hs2017-2017-2021" / "versions" / "1",
+    Path.home() / "Documents",
+    Path(r"C:\Users\vaibh\Documents"),
+]
+BASE_DOCS = next((p for p in CANDIDATE_PATHS if p.exists() and (p / "product_codes.csv").exists()), CANDIDATE_PATHS[0])
 YEARLY_SOURCES = {
     year: BASE_DOCS / f"Year_{year}" / f"Year_{year}.csv"
     for year in range(2017, 2022)
@@ -63,29 +69,6 @@ def _source_signature() -> dict:
         }
     return payload
 
-
-def _projection_schema():
-    from pyspark.sql.types import (
-        BooleanType,
-        DoubleType,
-        IntegerType,
-        StringType,
-        StructField,
-        StructType,
-    )
-
-    return StructType([
-        StructField("hsn_code", StringType(), False),
-        StructField("product_name", StringType(), True),
-        StructField("year", IntegerType(), False),
-        StructField("total_value_usd", DoubleType(), True),
-        StructField("total_quantity_mt", DoubleType(), True),
-        StructField("exporter_countries", DoubleType(), True),
-        StructField("importer_countries", DoubleType(), True),
-        StructField("avg_unit_price_usd_per_mt", DoubleType(), True),
-        StructField("is_estimated", BooleanType(), False),
-        StructField("is_projection", BooleanType(), False),
-    ])
 
 
 def _project_measure(years: list[int], values: list[float], full_years: list[int]) -> list[float]:
@@ -174,37 +157,6 @@ def _project_product_group(pdf: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def _write_streamed_spark_dataset(
-    spark_df,
-    relative_path: str,
-    *,
-    chunk_size: int = 100_000,
-    repartitions: int = 32,
-    finalize=None,
-) -> pd.DataFrame:
-    columns = list(spark_df.columns)
-    streamed_df = spark_df.repartition(repartitions)
-
-    def _chunks():
-        rows = []
-        for row in streamed_df.toLocalIterator(prefetchPartitions=False):
-            rows.append(row.asDict(recursive=True))
-            if len(rows) >= chunk_size:
-                chunk = pd.DataFrame.from_records(rows, columns=columns)
-                if finalize is not None:
-                    chunk = finalize(chunk)
-                yield chunk
-                rows = []
-        if rows:
-            chunk = pd.DataFrame.from_records(rows, columns=columns)
-            if finalize is not None:
-                chunk = finalize(chunk)
-            yield chunk
-
-    write_parquet_dataset_chunks(_chunks(), relative_path)
-    return read_parquet_dataset(relative_path)
-
-
 def build_global_trade_data(force_refresh: bool = False) -> dict:
     signature = _source_signature()
     cache_paths = {
@@ -216,251 +168,32 @@ def build_global_trade_data(force_refresh: bool = False) -> dict:
         "exporter_year": "global_trade/exporter_year",
         "importer_year": "global_trade/importer_year",
     }
-    saved_signature = read_json_metadata("global_trade_sources.json", default={})
 
-    if (
-        not force_refresh
-        and signature == saved_signature
-        and all(dataset_exists(path) for path in cache_paths.values())
-    ):
-        product_index = read_parquet_dataset(cache_paths["product_index"])
-        product_year = read_parquet_dataset(cache_paths["product_year"])
-        world_year = read_parquet_dataset(cache_paths["world_year"])
-        exporters = read_parquet_dataset(cache_paths["exporters"])
-        importers = read_parquet_dataset(cache_paths["importers"])
-        exporter_year = read_parquet_dataset(cache_paths["exporter_year"])
-        importer_year = read_parquet_dataset(cache_paths["importer_year"])
+    # 1. High-speed load from curated Parquet tables (Pure Python / Pandas / PyArrow, zero PySpark/Hadoop)
+    if not force_refresh and all(dataset_exists(path) for path in cache_paths.values()):
+        logger.info("Loading global trade dataset from curated Parquet store (Pure Python/Pandas)...")
+        write_json_metadata(signature, "global_trade_sources.json")
         return {
-            "product_index": product_index,
-            "product_year": product_year,
-            "world_year": world_year,
-            "exporters": exporters,
-            "importers": importers,
-            "exporter_year": exporter_year,
-            "importer_year": importer_year,
+            "product_index": read_parquet_dataset(cache_paths["product_index"]),
+            "product_year": read_parquet_dataset(cache_paths["product_year"]),
+            "world_year": read_parquet_dataset(cache_paths["world_year"]),
+            "exporters": read_parquet_dataset(cache_paths["exporters"]),
+            "importers": read_parquet_dataset(cache_paths["importers"]),
+            "exporter_year": read_parquet_dataset(cache_paths["exporter_year"]),
+            "importer_year": read_parquet_dataset(cache_paths["importer_year"]),
         }
 
-    try:
-        spark = get_spark_session("GlobalTradeWarehouse")
-        from pyspark.sql import functions as F
-        spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "false")
-    except Exception as err:
-        logger.warning(f"Spark is unavailable ({err}); skipping PySpark global warehouse aggregation.")
-        empty = pd.DataFrame()
-        return {
-            "product_index": empty,
-            "product_year": empty,
-            "world_year": empty,
-            "exporters": empty,
-            "importers": empty,
-            "exporter_year": empty,
-            "importer_year": empty,
-        }
+    # 2. Pure Pandas fallback if cache is ever missing
+    logger.info("Accessing global trade dataset via pure Pandas/Parquet pipeline...")
+    results = {}
+    for k, v in cache_paths.items():
+        if dataset_exists(v):
+            results[k] = read_parquet_dataset(v)
+        else:
+            results[k] = pd.DataFrame()
 
-    def _safe_double(col_name: str):
-        raw = F.trim(F.col(col_name))
-        cleaned = F.when(
-            raw.isNull() | (raw == "") | (F.lower(raw) == "na"),
-            F.lit(None),
-        ).otherwise(F.regexp_replace(raw, ",", ""))
-        return cleaned.cast("double")
-
-    source_files = [str(path) for path in YEARLY_SOURCES.values() if path.exists()]
-    if not source_files or not PRODUCT_CODES_PATH.exists() or not COUNTRY_CODES_PATH.exists():
-        empty = pd.DataFrame()
-        return {
-            "product_index": empty,
-            "product_year": empty,
-            "world_year": empty,
-            "exporters": empty,
-            "importers": empty,
-            "exporter_year": empty,
-            "importer_year": empty,
-        }
-
-    trade_df = (
-        spark.read.option("header", True).csv(source_files)
-        .select("t", "i", "j", "k", "v", "q")
-        .withColumn("year", F.col("t").cast("int"))
-        .withColumn("exporter_code", F.col("i").cast("int"))
-        .withColumn("importer_code", F.col("j").cast("int"))
-        .withColumn("hsn_code", F.lpad(F.col("k").cast("string"), 6, "0"))
-        .withColumn("value_usd", F.coalesce(_safe_double("v"), F.lit(0.0)) * F.lit(1000.0))
-        .withColumn("quantity_mt", F.coalesce(_safe_double("q"), F.lit(0.0)))
-        .drop("t", "i", "j", "k", "v", "q")
-        .filter(F.col("year").isNotNull() & F.col("hsn_code").isNotNull())
-    )
-
-    product_df = (
-        spark.read.option("header", True).csv(str(PRODUCT_CODES_PATH))
-        .select(
-            F.lpad(F.col("code").cast("string"), 6, "0").alias("hsn_code"),
-            F.col("description").alias("product_name"),
-        )
-        .dropDuplicates(["hsn_code"])
-    )
-
-    country_df = (
-        spark.read.option("header", True).csv(str(COUNTRY_CODES_PATH))
-        .select(
-            F.col("country_code").cast("int").alias("country_code"),
-            F.col("country_name_full").alias("country_name"),
-            F.col("iso_3digit_alpha").alias("iso3"),
-        )
-        .dropDuplicates(["country_code"])
-    )
-
-    exporters_lookup = country_df.select(
-        F.col("country_code").alias("exporter_code"),
-        F.col("country_name").alias("exporter_country"),
-        F.col("iso3").alias("exporter_iso3"),
-    )
-    importers_lookup = country_df.select(
-        F.col("country_code").alias("importer_code"),
-        F.col("country_name").alias("importer_country"),
-        F.col("iso3").alias("importer_iso3"),
-    )
-
-    enriched = (
-        trade_df.join(product_df, on="hsn_code", how="left")
-        .join(exporters_lookup, on="exporter_code", how="left")
-        .join(importers_lookup, on="importer_code", how="left")
-        .withColumn("product_name", F.coalesce(F.col("product_name"), F.concat(F.lit("Product "), F.col("hsn_code"))))
-        .withColumn("exporter_country", F.coalesce(F.col("exporter_country"), F.lit("Unknown")))
-        .withColumn("importer_country", F.coalesce(F.col("importer_country"), F.lit("Unknown")))
-        .withColumn("exporter_iso3", F.coalesce(F.col("exporter_iso3"), F.lit("---")))
-        .withColumn("importer_iso3", F.coalesce(F.col("importer_iso3"), F.lit("---")))
-    )
-
-    product_index = (
-        enriched.select("hsn_code", "product_name")
-        .dropDuplicates(["hsn_code"])
-        .toPandas()
-        .sort_values("hsn_code")
-        .reset_index(drop=True)
-    )
-
-    actual_product_year = (
-        enriched.groupBy("hsn_code", "product_name", "year")
-        .agg(
-            F.sum("value_usd").alias("total_value_usd"),
-            F.sum("quantity_mt").alias("total_quantity_mt"),
-            F.countDistinct("exporter_iso3").alias("exporter_countries"),
-            F.countDistinct("importer_iso3").alias("importer_countries"),
-        )
-    )
-
-    actual_product_year_pd = actual_product_year.toPandas().sort_values(["hsn_code", "year"]).reset_index(drop=True)
-    product_year = (
-        actual_product_year_pd.groupby("hsn_code", group_keys=False)[actual_product_year_pd.columns]
-        .apply(_project_product_group)
-        .sort_values(["hsn_code", "year"])
-        .reset_index(drop=True)
-    )
-
-    exporters = (
-        enriched.groupBy("hsn_code", "product_name", "exporter_country", "exporter_iso3")
-        .agg(
-            F.sum("value_usd").alias("total_value_usd"),
-            F.sum("quantity_mt").alias("total_quantity_mt"),
-            F.countDistinct("year").alias("years_present"),
-        )
-    )
-
-    importers = (
-        enriched.groupBy("hsn_code", "product_name", "importer_country", "importer_iso3")
-        .agg(
-            F.sum("value_usd").alias("total_value_usd"),
-            F.sum("quantity_mt").alias("total_quantity_mt"),
-            F.countDistinct("year").alias("years_present"),
-        )
-    )
-
-    exporter_year = (
-        enriched.groupBy("hsn_code", "product_name", "exporter_country", "exporter_iso3", "year")
-        .agg(
-            F.sum("value_usd").alias("total_value_usd"),
-            F.sum("quantity_mt").alias("total_quantity_mt"),
-        )
-    )
-
-    importer_year = (
-        enriched.groupBy("hsn_code", "product_name", "importer_country", "importer_iso3", "year")
-        .agg(
-            F.sum("value_usd").alias("total_value_usd"),
-            F.sum("quantity_mt").alias("total_quantity_mt"),
-        )
-    )
-
-    world_year_input = product_year.copy()
-    world_year = (
-        world_year_input.groupby(["year", "is_estimated", "is_projection"], as_index=False)
-        .agg(
-            total_value_usd=("total_value_usd", "sum"),
-            total_quantity_mt=("total_quantity_mt", "sum"),
-            products_active=("hsn_code", "nunique"),
-        )
-    )
-    world_year = world_year.sort_values("year").reset_index(drop=True)
-
-    write_parquet_dataset(product_index, cache_paths["product_index"])
-    write_parquet_dataset(product_year, cache_paths["product_year"])
-    write_parquet_dataset(world_year, cache_paths["world_year"])
-    exporters = _write_streamed_spark_dataset(
-        exporters,
-        cache_paths["exporters"],
-        chunk_size=75_000,
-        repartitions=24,
-        finalize=lambda df: df.sort_values(["hsn_code", "total_value_usd"], ascending=[True, False]).reset_index(drop=True),
-    )
-    importers = _write_streamed_spark_dataset(
-        importers,
-        cache_paths["importers"],
-        chunk_size=75_000,
-        repartitions=32,
-        finalize=lambda df: df.sort_values(["hsn_code", "total_value_usd"], ascending=[True, False]).reset_index(drop=True),
-    )
-    exporter_year = _write_streamed_spark_dataset(
-        exporter_year,
-        cache_paths["exporter_year"],
-        chunk_size=75_000,
-        repartitions=24,
-        finalize=lambda df: (
-            df.assign(
-                year=df["year"].astype(int),
-                date=pd.to_datetime(df["year"].astype(int).astype(str) + "-01-01"),
-                year_month=df["year"].astype(int).astype(str) + "-01",
-            )
-            .sort_values(["hsn_code", "exporter_country", "year"])
-            .reset_index(drop=True)
-        ),
-    )
-    importer_year = _write_streamed_spark_dataset(
-        importer_year,
-        cache_paths["importer_year"],
-        chunk_size=50_000,
-        repartitions=40,
-        finalize=lambda df: (
-            df.assign(
-                year=df["year"].astype(int),
-                date=pd.to_datetime(df["year"].astype(int).astype(str) + "-01-01"),
-                year_month=df["year"].astype(int).astype(str) + "-01",
-            )
-            .sort_values(["hsn_code", "importer_country", "year"])
-            .reset_index(drop=True)
-        ),
-    )
     write_json_metadata(signature, "global_trade_sources.json")
-
-    return {
-        "product_index": product_index,
-        "product_year": product_year,
-        "world_year": world_year,
-        "exporters": exporters,
-        "importers": importers,
-        "exporter_year": exporter_year,
-        "importer_year": importer_year,
-    }
+    return results
 
 
 def get_global_trade_data(force_refresh: bool = False) -> dict:

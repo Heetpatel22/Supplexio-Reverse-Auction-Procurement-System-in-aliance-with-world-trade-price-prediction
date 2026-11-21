@@ -19,7 +19,6 @@ import logging
 from bigdata_platform import (
     configure_bigdata_env,
     dataset_exists,
-    get_spark_session,
     read_json_metadata,
     read_parquet_dataset,
     write_json_metadata,
@@ -467,63 +466,10 @@ def load_all_trademap_data():
         hsn_pd = hsn_totals.sort_values(f"total_{value_col}", ascending=False).reset_index(drop=True)
         return monthly_pd, country_pd, hsn_pd
 
-    def _spark_transform(records_df, value_col):
-        if records_df.empty:
-            empty = pd.DataFrame()
-            return empty, empty, empty
-
-        try:
-            spark = get_spark_session("PaintTradeTrademap")
-            sdf = spark.createDataFrame(records_df)
-
-            from pyspark.sql import functions as F
-            from pyspark.sql.window import Window
-        except Exception as err:
-            logger.warning(f"Spark unavailable ({err}), falling back to Pandas transformation.")
-            return _pandas_transform(records_df, value_col)
-
-        dedup_window = Window.partitionBy("hsn_code", "country", "year", "month").orderBy(F.desc(value_col))
-        sdf = (
-            sdf.withColumn("row_num", F.row_number().over(dedup_window))
-               .filter(F.col("row_num") == 1)
-               .drop("row_num")
-               .withColumn("year_month", F.concat_ws("-", F.col("year").cast("string"), F.lpad(F.col("month").cast("string"), 2, "0")))
-               .withColumn("date", F.to_date(F.col("year_month"), "yyyy-MM"))
-        )
-
-        latest_struct = F.max(F.struct(F.col("date"), F.col(value_col))).alias("latest_struct")
-        country_totals = (
-            sdf.groupBy("hsn_code", "product_name", "country")
-               .agg(
-                   F.sum(value_col).alias(f"total_{value_col}"),
-                   F.avg(value_col).alias("avg_monthly_value"),
-                   F.count(value_col).alias("num_months"),
-                   latest_struct,
-               )
-               .withColumn("latest_month_value", F.col("latest_struct")[value_col])
-               .drop("latest_struct")
-        )
-
-        hsn_totals = (
-            sdf.groupBy("hsn_code", "product_name")
-               .agg(
-                   F.sum(value_col).alias(f"total_{value_col}"),
-                   F.countDistinct("country").alias("num_countries"),
-                   F.countDistinct("year_month").alias("num_months_data"),
-               )
-        )
-
-        monthly_pd = sdf.toPandas().sort_values(["hsn_code", "country", "date"]).reset_index(drop=True)
-        country_pd = country_totals.toPandas().sort_values(["hsn_code", f"total_{value_col}"], ascending=[True, False]).reset_index(drop=True)
-        hsn_pd = hsn_totals.toPandas().sort_values(f"total_{value_col}", ascending=False).reset_index(drop=True)
-        hsn_pd["price_per_mt"] = hsn_pd["hsn_code"].map(lambda x: MARKET_PRICES.get(x, {}).get("price"))
-        hsn_pd["unit"] = hsn_pd["hsn_code"].map(lambda x: MARKET_PRICES.get(x, {}).get("unit"))
-        return monthly_pd, country_pd, hsn_pd
-
     import_input = pd.concat(import_frames, ignore_index=True) if import_frames else pd.DataFrame()
     export_input = pd.concat(export_frames, ignore_index=True) if export_frames else pd.DataFrame()
-    import_monthly, import_country_totals, import_hsn_totals = _spark_transform(import_input, "import_value_usd")
-    export_monthly, export_country_totals, export_hsn_totals = _spark_transform(export_input, "export_value_usd")
+    import_monthly, import_country_totals, import_hsn_totals = _pandas_transform(import_input, "import_value_usd")
+    export_monthly, export_country_totals, export_hsn_totals = _pandas_transform(export_input, "export_value_usd")
 
     write_json_metadata(hsn_mapping, "trademap_hsn_mapping.json")
     write_parquet_dataset(import_monthly, cached_tables["import_monthly"])

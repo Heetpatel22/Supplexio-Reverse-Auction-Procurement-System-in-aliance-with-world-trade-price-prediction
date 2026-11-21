@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supplexio — Reverse Auction Management</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            navy: {
+              800: '#1E293B',
+              900: '#0F172A',
+              950: '#080D1A',
+            },
+            amber: {
+              400: '#FBBF24',
+              500: '#F59E0B',
+              600: '#D97706',
+            },
+            emerald: {
+              500: '#10B981',
+              600: '#059669',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbars and tabular numbers support */
+    .font-mono-tabular {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.03);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.6);
+    }
+    
+    @keyframes pulse-emerald {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+    }
+    .animate-pulse-emerald {
+      animation: pulse-emerald 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Modal Backdrop Blur */
+    .glass-backdrop {
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body class="h-full font-sans text-slate-800 bg-slate-50 antialiased flex flex-col md:flex-row overflow-x-hidden">
+
+  <!-- MOBILE HEADER (visible on small screens) -->
+  <header class="md:hidden bg-navy-900 text-white p-4 flex items-center justify-between border-b border-slate-800 z-30 sticky top-0">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center font-bold text-navy-900 shadow-md">
+        S
+      </div>
+      <div>
+        <h1 class="font-bold tracking-tight text-white leading-none">Supplexio</h1>
+        <p class="text-[9px] tracking-wider uppercase text-amber-400 font-semibold mt-0.5">Bid Bold • Source Smart</p>
+      </div>
+    </div>
+    <button id="mobileMenuBtn" class="p-2 text-slate-300 hover:text-white focus:outline-none">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+  </header>
+
+  <!-- LEFT FIXED SIDEBAR -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-navy-900 text-slate-300 transform -translate-x-full md:translate-x-0 md:static md:inset-auto transition-transform duration-300 ease-in-out flex flex-col justify-between shrink-0 border-r border-slate-800 shadow-xl">
+    <div>
+      <!-- Brand Logo Header -->
+      <div class="p-5 border-b border-slate-800/80 flex items-center space-x-3.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-black text-navy-950 text-xl shadow-lg shadow-amber-500/20 ring-2 ring-amber-400/30">
+          S
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg text-white tracking-tight leading-none">Supplexio</h1>
+          <span class="inline-block text-[9px] tracking-widest uppercase text-amber-400 font-bold mt-1 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+            BID BOLD • SOURCE SMART
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Action Pill CTA -->
+      <div class="px-4 pt-5 pb-2">
+        <button onclick="openCreateModal()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-navy-950 font-bold py-2.5 px-4 rounded-xl shadow-md hover:shadow-amber-500/20 transition-all duration-200 flex items-center justify-center space-x-2 text-sm group">
+          <svg class="w-4 h-4 text-navy-950 transform group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.24A9.953 9.953 0 012 12c0-5.523 4.477-10 10-10s10 4.477 10 10c0 1.285-.242 2.513-.684 3.64m-6.42-3.64a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Launch Dashboard</span>
+        </button>
+      </div>
+
+      <!-- Navigation Section -->
+      <nav class="px-3 py-4 space-y-1 text-sm font-medium">
+        <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          <span>Products</span>
+        </a>
+
+        <!-- ACTIVE NAV ITEM -->
+        <a href="#" class="relative flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-slate-800 text-amber-400 font-semibold shadow-inner border border-slate-700/60 group">
+          <div class="absolute left-0 top-1.5 bottom-1.5 w-1 bg-amber-500 rounded-r-md"></div>
+          <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span class="text-white">Reverse Auctions</span>
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-mono-tabular">LIVE</span>
+        </a>
+
+        <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          <span>Suppliers</span>
+        </a>
+
+        <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <span>Payments</span>
+        </a>
+
+        <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          <span>To-Do List</span>
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono-tabular">4</span>
+        </a>
+
+        <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          <span>Inventory Mgmt</span>
+        </a>
+
+        <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 drop-shadow-smM15 17.5l.5.5L18 15.5l-1.5-1.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Global Trade Intel</span>
+        </a>
+
+        <a href="#" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors">
+          <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>Purchase Orders</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Bottom User Settings -->
+    <div class="p-4 border-t border-slate-800/80 bg-navy-950/40">
+      <a href="#" class="flex items-center space-x-3 p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors">
+        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-semibold text-slate-200 truncate">Enterprise Admin</p>
+          <p class="text-[10px] text-slate-500 truncate">supplexio@org.com</p>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN CANVAS -->
+  <main class="flex-1 min-w-0 flex flex-col min-h-screen overflow-y-auto">
+    
+    <!-- TOP EXECUTIVE HEADER BAR -->
+    <header class="bg-white border-b border-slate-200 px-6 py-5 sticky top-0 z-20 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center space-x-3">
+          <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Reverse Auction Management</h1>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse-emerald"></span>
+            Live Engine Active
+          </span>
+        </div>
+        <p class="text-sm text-slate-500 mt-1">Create, monitor, and award competitive reverse auctions to optimize raw material procurement costs.</p>
+      </div>
+
+      <div class="flex items-center space-x-3 shrink-0">
+        <button onclick="exportCSV()" class="px-3.5 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium text-sm transition-colors flex items-center space-x-2 shadow-xs">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>Export Data</span>
+        </button>
+
+        <button onclick="openCreateModal()" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-navy-950 font-bold rounded-lg shadow-md hover:shadow-amber-500/20 text-sm transition-all duration-150 flex items-center space-x-2">
+          <svg class="w-4 h-4 text-navy-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+          <span>+ Create New Auction</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY CONTAINER -->
+    <div class="p-6 space-y-6 flex-1 max-w-7xl mx-auto w-full">
+
+      <!-- EXECUTIVE KPI SUMMARY STRIP (4 Cards) -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpiStrip">
+        <!-- Card 1: Total Auctions -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-slate-400"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Auctions</span>
+            <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+          </div>
+          <div class="mt-3 flex items-baseline space-x-2">
+            <span id="kpiTotalAuctions" class="text-3xl font-bold font-mono-tabular text-slate-900">0</span>
+            <span class="text-xs font-medium text-slate-500">Auctions</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2 flex items-center">
+            <span class="text-emerald-600 font-semibold mr-1">↑ 100%</span> logged on Supplexio
+          </p>
+        </div>
+
+        <!-- Card 2: Live Active Auctions -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-emerald-500"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Live Active</span>
+            <div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse-emerald"></span>
+            </div>
+          </div>
+          <div class="mt-3 flex items-baseline space-x-2">
+            <span id="kpiLiveAuctions" class="text-3xl font-bold font-mono-tabular text-emerald-600">0</span>
+            <span class="text-xs font-medium text-slate-500">Bidding Now</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-2 flex items-center">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1.5"></span> Real-time supplier ticker
+          </p>
+        </div>
+
+        <!-- Card 3: Awaiting PO Award -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-amber-500"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Awaiting PO Award</span>
+            <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+          </div>
+          <div class="mt-3 flex items-baseline space-x-2">
+            <span id="kpiAwardPending" class="text-3xl font-bold font-mono-tabular text-amber-600">0</span>
+            <span class="text-xs font-medium text-slate-500">Actions Pending</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Requires buyer decision</p>
+        </div>
+
+        <!-- Card 4: Realized Cost Savings -->
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-indigo-600"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Realized Savings</span>
+            <div class="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+          </div>
+          <div class="mt-3 flex items-baseline space-x-2">
+            <span id="kpiRealizedSavings" class="text-2xl font-bold font-mono-tabular text-slate-900">₹0.00</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-2 flex items-center justify-between">
+            <span>Avg reduction:</span>
+            <span id="kpiAvgSavingsPct" class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded font-mono-tabular font-bold text-[11px]">-0.0%</span>
+          </p>
+        </div>
+      </section>
+
+      <!-- FILTER & TOOLBAR CARD -->
+      <section class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- Search & Filter Controls -->
+        <div class="flex flex-wrap items-center gap-3 flex-1">
+          <!-- Search Input -->
+          <div class="relative min-w-[240px] flex-1 sm:flex-initial">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Search auctions by ID, product, winner..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all placeholder:text-slate-400">
+          </div>
+
+          <!-- Status Dropdown Filter -->
+          <select id="statusFilter" onchange="applyFilters()" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 p-2 font-medium">
+            <option value="ALL">All Statuses</option>
+            <option value="Live Bidding">Live Bidding</option>
+            <option value="Completed — Award PO">Completed — Award PO</option>
+            <option value="Delivered">Delivered</option>
+          </select>
+
+          <!-- Product Dropdown Filter (Dynamically populated) -->
+          <select id="productFilter" onchange="applyFilters()" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 p-2 font-medium">
+            <option value="ALL">All Products</option>
+          </select>
+
+          <!-- Clear Filters Button -->
+          <button onclick="resetFilters()" class="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">
+            Reset Filters
+          </button>
+        </div>
+
+        <!-- Filter Metrics Badge -->
+        <div class="text-xs text-slate-500 font-medium shrink-0 flex items-center space-x-2">
+          <span>Active View:</span>
+          <span id="filteredCountBadge" class="bg-navy-900 text-amber-400 font-mono-tabular font-bold px-2.5 py-1 rounded-full text-xs">
+            12 Auctions
+          </span>
+        </div>
+      </section>
+
+      <!-- HIGH-DENSITY REVERSE AUCTIONS DATA TABLE -->
+      <section class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50/80 text-xs text-slate-500 uppercase tracking-wider border-b border-slate-200 font-semibold select-none">
+              <tr>
+                <th scope="col" class="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortTable('id')">
+                  <div class="flex items-center space-x-1">
+                    <span>ID</span>
+                    <span id="sortIcon_id" class="text-slate-400">↕</span>
+                  </div>
+                </th>
+                <th scope="col" class="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortTable('product')">
+                  <div class="flex items-center space-x-1">
+                    <span>Product & Quantity</span>
+                    <span id="sortIcon_product" class="text-slate-400">↕</span>
+                  </div>
+                </th>
+                <th scope="col" class="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors text-right" onclick="sortTable('startPrice')">
+                  <div class="flex items-center justify-end space-x-1">
+                    <span>Start Price (₹)</span>
+                    <span id="sortIcon_startPrice" class="text-slate-400">↕</span>
+                  </div>
+                </th>
+                <th scope="col" class="py-3.5 px-4 cursor-pointer hover:bg-slate-100 transition-colors text-right" onclick="sortTable('currentBid')">
+                  <div class="flex items-center justify-end space-x-1">
+                    <span>Current Best (₹)</span>
+                    <span id="sortIcon_currentBid" class="text-slate-400">↕</span>
+                  </div>
+                </th>
+                <th scope="col" class="py-3.5 px-4">
+                  <span>Schedule / Live Countdown</span>
+                </th>
+                <th scope="col" class="py-3.5 px-4">
+                  <span>Status & Winner</span>
+                </th>
+                <th scope="col" class="py-3.5 px-4 text-center">
+                  <span>Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="auctionTableBody" class="divide-y divide-slate-100">
+              <!-- Rendered via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TABLE FOOTER & PAGINATION -->
+        <div class="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <div class="flex items-center space-x-3">
+            <span>Rows per page:</span>
+            <select id="pageSizeSelect" onchange="changePageSize(this.value)" class="bg-white border border-slate-300 rounded px-2 py-1 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+            <span id="paginationInfo" class="font-mono-tabular">Showing 1 to 10 of 12 entries</span>
+          </div>
+
+          <div class="flex items-center space-x-1" id="paginationButtons">
+            <!-- Buttons rendered via JS -->
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- SLIDE-OVER BID ROOM DRAWER -->
+  <div id="drawerBackdrop" onclick="closeDrawer()" class="fixed inset-0 glass-backdrop z-50 hidden opacity-0 transition-opacity duration-300"></div>
+  <aside id="bidRoomDrawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <!-- Drawer Header -->
+    <div class="p-6 bg-navy-900 text-white border-b border-slate-800 flex items-center justify-between">
+      <div>
+        <div class="flex items-center space-x-2">
+          <span id="drawerAuctionId" class="text-xs font-mono-tabular px-2 py-0.5 rounded bg-slate-800 text-amber-400 font-bold">#--</span>
+          <span id="drawerStatusBadge" class="px-2 py-0.5 rounded text-xs font-semibold">Status</span>
+        </div>
+        <h2 id="drawerProductName" class="text-xl font-bold mt-1 text-white">Product Name</h2>
+        <p id="drawerQuantity" class="text-xs text-slate-400 mt-0.5">Quantity Details</p>
+      </div>
+      <button onclick="closeDrawer()" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Drawer Body Content -->
+    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+      
+      <!-- Countdown Bar if Live -->
+      <div id="drawerTimerBox" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse-emerald"></span>
+          <div>
+            <p class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Live Reverse Bidding</p>
+            <p class="text-xs text-emerald-600">Suppliers competing in real-time</p>
+          </div>
+        </div>
+        <div id="drawerCountdown" class="text-lg font-bold font-mono-tabular text-emerald-700 bg-white px-3 py-1 rounded border border-emerald-200 shadow-xs">
+          00:00:00
+        </div>
+      </div>
+
+      <!-- 3 Price Mini Cards -->
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+          <span class="text-[10px] uppercase font-semibold text-slate-400 block">Ceiling / Start</span>
+          <span id="drawerStartPrice" class="text-sm font-bold font-mono-tabular text-slate-700 mt-1 block">₹0.00</span>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+          <span class="text-[10px] uppercase font-semibold text-slate-400 block">Current Best</span>
+          <span id="drawerCurrentBid" class="text-sm font-bold font-mono-tabular text-emerald-600 mt-1 block">₹0.00</span>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+          <span class="text-[10px] uppercase font-semibold text-slate-400 block">Total Savings</span>
+          <span id="drawerSavings" class="text-sm font-bold font-mono-tabular text-indigo-600 mt-1 block">₹0.00</span>
+        </div>
+      </div>
+
+      <!-- Interactive Actions Bar -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Bid Room Operator Controls</h4>
+        <div class="flex flex-wrap gap-2" id="drawerActionButtons">
+          <!-- Rendered dynamically depending on auction status -->
+        </div>
+      </div>
+
+      <!-- Chronological Supplier Bid History -->
+      <div>
+        <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center justify-between">
+          <span>Supplier Bid Audit History</span>
+          <span id="bidCountBadge" class="text-xs font-normal text-slate-500 font-mono-tabular">0 bids logged</span>
+        </h3>
+        
+        <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 bg-white overflow-hidden shadow-xs">
+          <div class="bg-slate-50 px-4 py-2 text-[11px] font-semibold text-slate-400 uppercase flex justify-between">
+            <span>Supplier</span>
+            <span>Bid Amount & Delta</span>
+          </div>
+          <div id="drawerBidTimeline" class="max-h-64 overflow-y-auto divide-y divide-slate-100">
+            <!-- Timeline items rendered via JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- CREATE NEW AUCTION MODAL -->
+  <div id="createModal" class="fixed inset-0 z-50 glass-backdrop hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden transform transition-all">
+      <!-- Modal Header -->
+      <div class="bg-navy-900 px-6 py-4 flex items-center justify-between text-white border-b border-slate-800">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-amber-500 text-navy-950 font-bold flex items-center justify-center text-sm">+</div>
+          <h3 class="text-base font-bold">Launch New Reverse Auction</h3>
+        </div>
+        <button onclick="closeCreateModal()" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Form -->
+      <form id="createAuctionForm" onsubmit="handleCreateAuction(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Product Description</label>
+          <input type="text" id="newProduct" required placeholder="e.g. Bitumen Primer, Steel Rods" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Quantity & Unit</label>
+            <input type="text" id="newQuantity" required placeholder="e.g. 50 drums, 2 tons" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Start Price (₹)</label>
+            <input type="number" id="newStartPrice" required min="1" step="0.01" placeholder="e.g. 50000" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm font-mono-tabular focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Auction Duration (Hours)</label>
+            <select id="newDuration" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <option value="2">2 Hours (Fast Auction)</option>
+              <option value="6" selected>6 Hours</option>
+              <option value="24">24 Hours</option>
+              <option value="48">48 Hours</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Target Suppliers</label>
+            <input type="text" id="newSuppliers" placeholder="e.g. Vaibhav Suthar, Apex Corp" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+        </div>
+
+        <div class="pt-4 flex items-center justify-end space-x-3 border-t border-slate-100">
+          <button type="button" onclick="closeCreateModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-navy-950 font-bold text-sm rounded-lg shadow-md transition-all">
+            Launch Live Auction
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FLOATING SUPPLEXIO AI ASSISTANT WIDGET -->
+  <div class="fixed bottom-6 right-6 z-40">
+    <div id="aiPopover" class="hidden mb-3 w-80 bg-navy-900 border border-slate-700 rounded-2xl shadow-2xl text-slate-200 p-4 transform transition-all">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400">Supplexio Procurement AI</h4>
+        </div>
+        <button onclick="toggleAiWidget()" class="text-slate-400 hover:text-white text-xs">✕</button>
+      </div>
+      <div class="space-y-2.5 text-xs">
+        <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
+          <p class="font-semibold text-white">💡 Bitumen Primer Insight</p>
+          <p class="text-slate-400 mt-1">Live bidding #64 experienced an 8.2% reduction. Top supplier Apex Petrochem is active.</p>
+        </div>
+        <div class="bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
+          <p class="font-semibold text-white">⚠️ Action Recommended</p>
+          <p class="text-slate-400 mt-1">3 Completed auctions await PO award. Immediate award recommended to lock price.</p>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="toggleAiWidget()" class="w-13 h-13 bg-gradient-to-tr from-navy-900 to-slate-800 hover:from-navy-800 hover:to-slate-700 text-amber-400 p-3.5 rounded-full shadow-2xl border-2 border-amber-500/40 flex items-center justify-center group transition-transform duration-200 hover:scale-105">
+      <svg class="w-6 h-6 text-amber-400 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    </button>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- APPLICATION LOGIC (VANILLA JS) -->
+  <script>
+    // INITIAL REVERSE AUCTION DATASET (Exact 10 original records + 2 Active Live items)
+    let auctionsData = [
+      {
+        id: 64,
+        product: 'Bitumen Primer',
+        quantity: '40 drums',
+        startPrice: 2625.00,
+        currentBid: 2410.00,
+        status: 'Live Bidding',
+        winner: null,
+        startTime: 'Live Now',
+        endTime: 'Countdown',
+        remainingSeconds: 8075, // ~ 02:14:35
+        bids: [
+          { supplier: 'Vanguard Materials', amount: 2410.00, time: '2 mins ago' },
+          { supplier: 'Industrial Supply Co', amount: 2500.00, time: '12 mins ago' },
+          { supplier: 'Apex Petrochem Ltd', amount: 2600.00, time: '25 mins ago' }
+        ]
+      },
+      {
+        id: 63,
+        product: 'Acrylic Sheet',
+        quantity: '35 sheets',
+        startPrice: 45000.00,
+        currentBid: 41200.00,
+        status: 'Live Bidding',
+        winner: null,
+        startTime: 'Live Now',
+        endTime: 'Countdown',
+        remainingSeconds: 20530, // ~ 05:42:10
+        bids: [
+          { supplier: 'Shree Acrylics', amount: 41200.00, time: '5 mins ago' },
+          { supplier: 'PolyTech Polymers', amount: 43500.00, time: '18 mins ago' }
+        ]
+      },
+      {
+        id: 1,
+        product: 'Paint Buckets',
+        quantity: '1 bucket',
+        startPrice: 300000.00,
+        currentBid: 300000.00,
+        status: 'Completed — Award PO',
+        winner: null,
+        startTime: '2025-06-27 17:54',
+        endTime: '2025-06-30 23:27',
+        remainingSeconds: 0,
+        bids: []
+      },
+      {
+        id: 10,
+        product: 'Aluminum Plates',
+        quantity: '1 ton',
+        startPrice: 100000.00,
+        currentBid: 90000.00,
+        status: 'Delivered',
+        winner: 'Vaibhav Suthar',
+        startTime: '2025-09-23 06:24',
+        endTime: '2025-09-30 07:24',
+        remainingSeconds: 0,
+        bids: [{ supplier: 'Vaibhav Suthar', amount: 90000.00, time: '2025-09-29 18:20' }]
+      },
+      {
+        id: 11,
+        product: 'Paint Buckets',
+        quantity: '1 bucket',
+        startPrice: 111111.00,
+        currentBid: 1111.00,
+        status: 'Delivered',
+        winner: 'Vaibhav Suthar',
+        startTime: '2025-09-23 10:06',
+        endTime: '2025-09-30 09:06',
+        remainingSeconds: 0,
+        bids: [{ supplier: 'Vaibhav Suthar', amount: 1111.00, time: '2025-09-29 11:45' }]
+      },
+      {
+        id: 12,
+        product: 'Paint Buckets',
+        quantity: '1 bucket',
+        startPrice: 90000.00,
+        currentBid: 89000.00,
+        status: 'Delivered',
+        winner: 'Vaibhav Suthar',
+        startTime: '2025-09-23 10:43',
+        endTime: '2025-09-30 09:43',
+        remainingSeconds: 0,
+        bids: [{ supplier: 'Vaibhav Suthar', amount: 89000.00, time: '2025-09-28 14:10' }]
+      },
+      {
+        id: 13,
+        product: 'Copper Sheets',
+        quantity: '1 ton',
+        startPrice: 90000.00,
+        currentBid: 8900.00,
+        status: 'Delivered',
+        winner: 'Vaibhav Suthar',
+        startTime: '2025-10-09 09:34',
+        endTime: '2025-10-16 08:34',
+        remainingSeconds: 0,
+        bids: [{ supplier: 'Vaibhav Suthar', amount: 8900.00, time: '2025-10-15 10:00' }]
+      },
+      {
+        id: 14,
+        product: 'Steel Rods',
+        quantity: '1 ton',
+        startPrice: 7000.00,
+        currentBid: 5600.00,
+        status: 'Delivered',
+        winner: 'Vaibhav Suthar',
+        startTime: '2025-10-09 10:25',
+        endTime: '2025-10-16 09:25',
+        remainingSeconds: 0,
+        bids: [{ supplier: 'Vaibhav Suthar', amount: 5600.00, time: '2025-10-15 16:30' }]
+      },
+      {
+        id: 15,
+        product: 'Aluminum Plates',
+        quantity: '1 ton',
+        startPrice: 12345.00,
+        currentBid: 9800.00,
+        status: 'Delivered',
+        winner: 'Vaibhav Suthar',
+        startTime: '2025-10-09 12:58',
+        endTime: '2025-10-16 11:58',
+        remainingSeconds: 0,
+        bids: [{ supplier: 'Vaibhav Suthar', amount: 9800.00, time: '2025-10-15 11:15' }]
+      },
+      {
+        id: 16,
+        product: 'Aluminum Plates',
+        quantity: '1 ton',
+        startPrice: 12345.00,
+        currentBid: 10000.00,
+        status: 'Delivered',
+        winner: 'Vaibhav Suthar',
+        startTime: '2025-10-09 12:58',
+        endTime: '2025-10-16 11:58',
+        remainingSeconds: 0,
+        bids: [{ supplier: 'Vaibhav Suthar', amount: 10000.00, time: '2025-10-14 09:00' }]
+      },
+      {
+        id: 17,
+        product: 'Aluminum Plates',
+        quantity: '1 ton',
+        startPrice: 12345.00,
+        currentBid: 12345.00,
+        status: 'Completed — Award PO',
+        winner: null,
+        startTime: '2025-10-09 12:58',
+        endTime: '2025-10-16 11:58',
+        remainingSeconds: 0,
+        bids: []
+      },
+      {
+        id: 18,
+        product: 'Aluminum Plates',
+        quantity: '1 ton',
+        startPrice: 12345.00,
+        currentBid: 12345.00,
+        status: 'Completed — Award PO',
+        winner: null,
+        startTime: '2025-10-09 12:58',
+        endTime: '2025-10-16 11:58',
+        remainingSeconds: 0,
+        bids: []
+      }
+    ];
+
+    // STATE VARIABLES
+    let filteredAuctions = [...auctionsData];
+    let sortField = 'id';
+    let sortAsc = false;
+    let currentPage = 1;
+    let pageSize = 10;
+    let activeDrawerId = null;
+
+    // CURRENCY FORMATTER
+    const formatINR = (amount) => {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 2
+      }).format(amount);
+    };
+
+    // SECONDS TO HH:MM:SS FORMATTER
+    const formatTime = (secs) => {
+      if (secs <= 0) return "00:00:00";
+      const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+      const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+      const s = (secs % 60).toString().padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    };
+
+    // INIT FUNCTION ON LOAD
+    window.onload = function() {
+      populateProductFilterOptions();
+      updateDashboard();
+
+      // Live Ticking Interval (Updates live auction timers every second)
+      setInterval(() => {
+        let needsRender = false;
+        auctionsData.forEach(item => {
+          if (item.status === 'Live Bidding' && item.remainingSeconds > 0) {
+            item.remainingSeconds--;
+            needsRender = true;
+          }
+        });
+        if (needsRender) {
+          renderTable();
+          if (activeDrawerId) renderDrawerContent();
+        }
+      }, 1000);
+
+      // Mobile sidebar toggle setup
+      document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('-translate-x-full');
+      });
+    };
+
+    // POPULATE PRODUCT DROPDOWN
+    function populateProductFilterOptions() {
+      const select = document.getElementById('productFilter');
+      const products = Array.from(new Set(auctionsData.map(a => a.product))).sort();
+      
+      // Preserve "All Products" option
+      select.innerHTML = '<option value="ALL">All Products</option>';
+      products.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        select.appendChild(opt);
+      });
+    }
+
+    // MAIN REFRESH LOGIC
+    function updateDashboard() {
+      applyFilters();
+      updateKPIs();
+    }
+
+    // UPDATE EXECUTIVE SUMMARY KPIS
+    function updateKPIs() {
+      const totalAuctions = auctionsData.length;
+      const liveAuctions = auctionsData.filter(a => a.status === 'Live Bidding').length;
+      const awardPending = auctionsData.filter(a => a.status === 'Completed — Award PO').length;
+
+      let totalSavingsSum = 0;
+      let totalStartPriceSum = 0;
+
+      auctionsData.forEach(a => {
+        if (a.startPrice > a.currentBid) {
+          totalSavingsSum += (a.startPrice - a.currentBid);
+        }
+        totalStartPriceSum += a.startPrice;
+      });
+
+      const avgSavingsPct = totalStartPriceSum > 0 ? (totalSavingsSum / totalStartPriceSum) * 100 : 0;
+
+      document.getElementById('kpiTotalAuctions').textContent = totalAuctions;
+      document.getElementById('kpiLiveAuctions').textContent = liveAuctions;
+      document.getElementById('kpiAwardPending').textContent = awardPending;
+      document.getElementById('kpiRealizedSavings').textContent = formatINR(totalSavingsSum);
+      document.getElementById('kpiAvgSavingsPct').textContent = `-${avgSavingsPct.toFixed(1)}%`;
+    }
+
+    // FILTER LOGIC
+    function applyFilters() {
+      const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+      const statusVal = document.getElementById('statusFilter').value;
+      const productVal = document.getElementById('productFilter').value;
+
+      filteredAuctions = auctionsData.filter(item => {
+        const matchesSearch = 
+          item.id.toString().includes(searchVal) ||
+          item.product.toLowerCase().includes(searchVal) ||
+          (item.winner && item.winner.toLowerCase().includes(searchVal));
+
+        const matchesStatus = statusVal === 'ALL' || item.status === statusVal;
+        const matchesProduct = productVal === 'ALL' || item.product === productVal;
+
+        return matchesSearch && matchesStatus && matchesProduct;
+      });
+
+      // Sort data
+      filteredAuctions.sort((a, b) => {
+        let valA = a[sortField];
+        let valB = b[sortField];
+
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+
+        if (valA < valB) return sortAsc ? -1 : 1;
+        if (valA > valB) return sortAsc ? 1 : -1;
+        return 0;
+      });
+
+      currentPage = 1; // Reset to page 1 on filter change
+      document.getElementById('filteredCountBadge').textContent = `${filteredAuctions.length} Auctions`;
+      renderTable();
+    }
+
+    function handleSearch() {
+      applyFilters();
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('statusFilter').value = 'ALL';
+      document.getElementById('productFilter').value = 'ALL';
+      applyFilters();
+      showToast('Filters reset to default view');
+    }
+
+    // SORTING LOGIC
+    function sortTable(field) {
+      if (sortField === field) {
+        sortAsc = !sortAsc;
+      } else {
+        sortField = field;
+        sortAsc = true;
+      }
+
+      // Update Header Icons
+      ['id', 'product', 'startPrice', 'currentBid'].forEach(f => {
+        const icon = document.getElementById(`sortIcon_${f}`);
+        if (icon) {
+          if (f === sortField) {
+            icon.textContent = sortAsc ? '↑' : '↓';
+            icon.classList.add('text-amber-500', 'font-bold');
+          } else {
+            icon.textContent = '↕';
+            icon.classList.remove('text-amber-500', 'font-bold');
+          }
+        }
+      });
+
+      applyFilters();
+    }
+
+    // RENDER REVERSE AUCTION TABLE
+    function renderTable() {
+      const tbody = document.getElementById('auctionTableBody');
+      tbody.innerHTML = '';
+
+      if (filteredAuctions.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-8 text-center text-slate-400 bg-white">
+              No matching reverse auctions found.
+            </td>
+          </tr>`;
+        renderPagination(0);
+        return;
+      }
+
+      const startIdx = (currentPage - 1) * pageSize;
+      const endIdx = startIdx + parseInt(pageSize);
+      const pageData = filteredAuctions.slice(startIdx, endIdx);
+
+      pageData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/80 transition-colors group cursor-pointer";
+        tr.onclick = (e) => {
+          // Prevent drawer opening if action buttons were clicked
+          if (!e.target.closest('button')) {
+            openDrawer(item.id);
+          }
+        };
+
+        // Savings calculations
+        const hasSavings = item.startPrice > item.currentBid;
+        const savingsPct = hasSavings ? (((item.startPrice - item.currentBid) / item.startPrice) * 100).toFixed(1) : 0;
+
+        // Status Badge Styling
+        let statusBadgeClass = '';
+        if (item.status === 'Live Bidding') {
+          statusBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        } else if (item.status === 'Completed — Award PO') {
+          statusBadgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+        } else {
+          statusBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
+        }
+
+        tr.innerHTML = `
+          <td class="py-4 px-4 font-mono-tabular font-bold text-slate-900 text-xs">
+            #${item.id}
+          </td>
+          <td class="py-4 px-4">
+            <div class="font-bold text-slate-900">${escapeHtml(item.product)}</div>
+            <div class="text-xs text-slate-400 font-medium mt-0.5">${escapeHtml(item.quantity)}</div>
+          </td>
+          <td class="py-4 px-4 text-right font-mono-tabular text-slate-600">
+            ${formatINR(item.startPrice)}
+          </td>
+          <td class="py-4 px-4 text-right">
+            <div class="font-mono-tabular font-bold text-slate-900">${formatINR(item.currentBid)}</div>
+            ${hasSavings ? `
+              <span class="inline-block mt-0.5 px-1.5 py-0.2 bg-emerald-100 text-emerald-700 text-[10px] font-mono-tabular font-bold rounded">
+                -${savingsPct}%
+              </span>
+            ` : '<span class="text-[10px] text-slate-400 font-mono-tabular">0% savings</span>'}
+          </td>
+          <td class="py-4 px-4">
+            ${item.status === 'Live Bidding' ? `
+              <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-emerald"></span>
+                <span class="font-mono-tabular font-bold text-emerald-700 text-xs bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  ${formatTime(item.remainingSeconds)}
+                </span>
+              </div>
+            ` : `
+              <div class="text-xs text-slate-500 font-mono-tabular">Start: ${item.startTime}</div>
+              <div class="text-xs text-slate-400 font-mono-tabular">End: ${item.endTime}</div>
+            `}
+          </td>
+          <td class="py-4 px-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusBadgeClass}">
+              ${item.status === 'Live Bidding' ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>' : ''}
+              ${item.status}
+            </span>
+            ${item.winner ? `
+              <div class="text-xs font-semibold text-slate-700 mt-1 flex items-center">
+                <svg class="w-3 h-3 text-amber-500 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                ${escapeHtml(item.winner)}
+              </div>
+            ` : ''}
+          </td>
+          <td class="py-4 px-4 text-center">
+            <div class="flex items-center justify-center space-x-1">
+              <!-- View / Bid Room Icon -->
+              <button onclick="openDrawer(${item.id})" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-colors" title="Open Bid Room Drawer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </button>
+
+              <!-- Award PO Button for Completed -->
+              ${item.status === 'Completed — Award PO' ? `
+                <button onclick="awardPOPrompt(${item.id})" class="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors" title="Award Purchase Order">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </button>
+              ` : ''}
+
+              <!-- Delete Button for Completed rows -->
+              ${item.status === 'Completed — Award PO' ? `
+                <button onclick="deleteAuction(${item.id})" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete Auction">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      renderPagination(filteredAuctions.length);
+    }
+
+    // PAGINATION LOGIC
+    function renderPagination(totalItems) {
+      const totalPages = Math.ceil(totalItems / pageSize) || 1;
+      const startEntry = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+      const endEntry = Math.min(currentPage * pageSize, totalItems);
+
+      document.getElementById('paginationInfo').textContent = `Showing ${startEntry} to ${endEntry} of ${totalItems} entries`;
+
+      const btnContainer = document.getElementById('paginationButtons');
+      btnContainer.innerHTML = '';
+
+      // Prev Button
+      const prevBtn = document.createElement('button');
+      prevBtn.className = `px-2.5 py-1 rounded border text-xs font-semibold ${currentPage === 1 ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-600 hover:bg-slate-100'}`;
+      prevBtn.textContent = 'Prev';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTable(); } };
+      btnContainer.appendChild(prevBtn);
+
+      // Page Numbers
+      for (let i = 1; i <= totalPages; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `px-2.5 py-1 rounded text-xs font-mono-tabular font-bold ${i === currentPage ? 'bg-navy-900 text-amber-400' : 'text-slate-600 hover:bg-slate-100'}`;
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => { currentPage = i; renderTable(); };
+        btnContainer.appendChild(pageBtn);
+      }
+
+      // Next Button
+      const nextBtn = document.createElement('button');
+      nextBtn.className = `px-2.5 py-1 rounded border text-xs font-semibold ${currentPage === totalPages || totalPages === 0 ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-600 hover:bg-slate-100'}`;
+      nextBtn.textContent = 'Next';
+      nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+      nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTable(); } };
+      btnContainer.appendChild(nextBtn);
+    }
+
+    function changePageSize(size) {
+      pageSize = parseInt(size);
+      currentPage = 1;
+      renderTable();
+    }
+
+    // SLIDE-OVER DRAWER CONTROL
+    function openDrawer(id) {
+      activeDrawerId = id;
+      renderDrawerContent();
+
+      const drawer = document.getElementById('bidRoomDrawer');
+      const backdrop = document.getElementById('drawerBackdrop');
+
+      backdrop.classList.remove('hidden');
+      setTimeout(() => backdrop.classList.remove('opacity-0'), 10);
+
+      drawer.classList.remove('translate-x-full');
+    }
+
+    function closeDrawer() {
+      const drawer = document.getElementById('bidRoomDrawer');
+      const backdrop = document.getElementById('drawerBackdrop');
+
+      drawer.classList.add('translate-x-full');
+      backdrop.classList.add('opacity-0');
+      setTimeout(() => {
+        backdrop.classList.add('hidden');
+        activeDrawerId = null;
+      }, 300);
+    }
+
+    function renderDrawerContent() {
+      const item = auctionsData.find(a => a.id === activeDrawerId);
+      if (!item) return;
+
+      document.getElementById('drawerAuctionId').textContent = `#${item.id}`;
+      document.getElementById('drawerProductName').textContent = item.product;
+      document.getElementById('drawerQuantity').textContent = `Quantity: ${item.quantity}`;
+      
+      const badge = document.getElementById('drawerStatusBadge');
+      badge.textContent = item.status;
+      if (item.status === 'Live Bidding') {
+        badge.className = 'px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+      } else if (item.status === 'Completed — Award PO') {
+        badge.className = 'px-2 py-0.5 rounded text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      } else {
+        badge.className = 'px-2 py-0.5 rounded text-xs font-semibold bg-slate-700 text-slate-300';
+      }
+
+      // Live Timer box
+      const timerBox = document.getElementById('drawerTimerBox');
+      if (item.status === 'Live Bidding') {
+        timerBox.classList.remove('hidden');
+        document.getElementById('drawerCountdown').textContent = formatTime(item.remainingSeconds);
+      } else {
+        timerBox.classList.add('hidden');
+      }
+
+      // Mini cards
+      document.getElementById('drawerStartPrice').textContent = formatINR(item.startPrice);
+      document.getElementById('drawerCurrentBid').textContent = formatINR(item.currentBid);
+      const savings = Math.max(0, item.startPrice - item.currentBid);
+      const savingsPct = item.startPrice > 0 ? ((savings / item.startPrice) * 100).toFixed(1) : 0;
+      document.getElementById('drawerSavings').textContent = `${formatINR(savings)} (${savingsPct}%)`;
+
+      // Drawer Action Buttons
+      const actionsContainer = document.getElementById('drawerActionButtons');
+      actionsContainer.innerHTML = '';
+
+      if (item.status === 'Live Bidding') {
+        const simBtn = document.createElement('button');
+        simBtn.className = 'w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow transition-colors flex items-center justify-center space-x-1.5';
+        simBtn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+          <span>Simulate Lower Bid (-2.5%)</span>
+        `;
+        simBtn.onclick = () => simulateLowerBid(item.id);
+        actionsContainer.appendChild(simBtn);
+      } else if (item.status === 'Completed — Award PO') {
+        const awardBtn = document.createElement('button');
+        awardBtn.className = 'w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-navy-950 font-bold text-xs rounded-lg shadow transition-colors flex items-center justify-center space-x-1.5';
+        awardBtn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span>Award Purchase Order</span>
+        `;
+        awardBtn.onclick = () => awardPOPrompt(item.id);
+        actionsContainer.appendChild(awardBtn);
+      } else {
+        actionsContainer.innerHTML = `<span class="text-xs text-slate-500 italic">This reverse auction is finalized and delivered. Winner: <strong>${escapeHtml(item.winner || 'Vaibhav Suthar')}</strong></span>`;
+      }
+
+      // Render Bid Audit Timeline
+      const timeline = document.getElementById('drawerBidTimeline');
+      timeline.innerHTML = '';
+      document.getElementById('bidCountBadge').textContent = `${item.bids.length} bids logged`;
+
+      if (item.bids.length === 0) {
+        timeline.innerHTML = `<div class="p-4 text-xs text-center text-slate-400">No supplier bids recorded yet.</div>`;
+      } else {
+        item.bids.forEach((bid, idx) => {
+          const div = document.createElement('div');
+          div.className = "px-4 py-3 flex items-center justify-between text-xs hover:bg-slate-50 transition-colors";
+          div.innerHTML = `
+            <div>
+              <p class="font-bold text-slate-800">${escapeHtml(bid.supplier)}</p>
+              <p class="text-[10px] text-slate-400 font-mono-tabular mt-0.5">${bid.time}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-mono-tabular font-bold text-slate-900">${formatINR(bid.amount)}</p>
+              ${idx === 0 ? `<span class="text-[9px] font-bold text-emerald-600 uppercase bg-emerald-50 px-1 rounded">Current Lowest</span>` : ''}
+            </div>
+          `;
+          timeline.appendChild(div);
+        });
+      }
+    }
+
+    // SIMULATE LOWER BID FUNCTION (INTERACTIVE ACTION)
+    function simulateLowerBid(id) {
+      const item = auctionsData.find(a => a.id === id);
+      if (!item || item.status !== 'Live Bidding') return;
+
+      const randomSuppliers = ['Rajesh Metals', 'National Logistics Ltd', 'Shree Tech Materials', 'Apex Industrial Solutions', 'Suthar Global Trading'];
+      const supplierName = randomSuppliers[Math.floor(Math.random() * randomSuppliers.length)];
+      
+      // Reduce by 2.5%
+      const newBid = Math.round((item.currentBid * 0.975) * 100) / 100;
+      const timeNow = 'Just Now';
+
+      item.currentBid = newBid;
+      item.bids.unshift({
+        supplier: supplierName,
+        amount: newBid,
+        time: timeNow
+      });
+
+      updateDashboard();
+      if (activeDrawerId === id) renderDrawerContent();
+      showToast(`New competitive bid ₹${newBid.toLocaleString('en-IN')} placed by ${supplierName}!`);
+    }
+
+    // AWARD PURCHASE ORDER PROMPT
+    function awardPOPrompt(id) {
+      const item = auctionsData.find(a => a.id === id);
+      if (!item) return;
+
+      const defaultWinner = item.bids.length > 0 ? item.bids[0].supplier : 'Vaibhav Suthar';
+      const winner = prompt(`Award Purchase Order for Auction #${id} (${item.product})\n\nEnter winning supplier name:`, defaultWinner);
+
+      if (winner && winner.trim() !== '') {
+        item.status = 'Delivered';
+        item.winner = winner.trim();
+        updateDashboard();
+        if (activeDrawerId === id) renderDrawerContent();
+        showToast(`PO awarded successfully to ${winner.trim()} for Auction #${id}!`);
+      }
+    }
+
+    // DELETE AUCTION
+    function deleteAuction(id) {
+      if (confirm(`Are you sure you want to delete Completed Auction #${id}?`)) {
+        auctionsData = auctionsData.filter(a => a.id !== id);
+        populateProductFilterOptions();
+        updateDashboard();
+        if (activeDrawerId === id) closeDrawer();
+        showToast(`Auction #${id} has been removed.`);
+      }
+    }
+
+    // CREATE MODAL CONTROLS
+    function openCreateModal() {
+      document.getElementById('createModal').classList.remove('hidden');
+    }
+
+    function closeCreateModal() {
+      document.getElementById('createModal').classList.add('hidden');
+      document.getElementById('createAuctionForm').reset();
+    }
+
+    function handleCreateAuction(e) {
+      e.preventDefault();
+
+      const product = document.getElementById('newProduct').value.trim();
+      const quantity = document.getElementById('newQuantity').value.trim();
+      const startPrice = parseFloat(document.getElementById('newStartPrice').value);
+      const durationHours = parseInt(document.getElementById('newDuration').value);
+      const targetSuppliers = document.getElementById('newSuppliers').value.trim();
+
+      const newId = Math.max(...auctionsData.map(a => a.id), 0) + 1;
+
+      const newAuction = {
+        id: newId,
+        product: product,
+        quantity: quantity,
+        startPrice: startPrice,
+        currentBid: startPrice,
+        status: 'Live Bidding',
+        winner: null,
+        startTime: 'Live Now',
+        endTime: 'Countdown',
+        remainingSeconds: durationHours * 3600,
+        bids: targetSuppliers ? [{ supplier: targetSuppliers.split(',')[0], amount: startPrice, time: 'Opening Ceiling Bid' }] : []
+      };
+
+      auctionsData.unshift(newAuction);
+      populateProductFilterOptions();
+      updateDashboard();
+      closeCreateModal();
+      showToast(`Live Reverse Auction #${newId} for ${product} successfully launched!`);
+    }
+
+    // EXPORT TO CSV
+    function exportCSV() {
+      let csv = 'Auction ID,Product,Quantity,Start Price (INR),Current Best Bid (INR),Status,Winner,Start Time,End Time\n';
+      filteredAuctions.forEach(a => {
+        csv += `"${a.id}","${a.product}","${a.quantity}",${a.startPrice},${a.currentBid},"${a.status}","${a.winner || ''}","${a.startTime}","${a.endTime}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('hidden', '');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `Supplexio_Auctions_Report_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast('Exported Reverse Auctions report to CSV');
+    }
+
+    // TOGGLE AI ASSISTANT POPOVER
+    function toggleAiWidget() {
+      const popover = document.getElementById('aiPopover');
+      popover.classList.toggle('hidden');
+    }
+
+    // TOAST NOTIFICATION SYSTEM
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'bg-navy-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-amber-500/50 text-xs font-semibold flex items-center space-x-2 pointer-events-auto transform translate-y-2 opacity-0 transition-all duration-300';
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+        <span>${escapeHtml(message)}</span>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // HELPER UTILITY FOR HTML ESCAPING
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>"']/g, function(m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[m];
+      });
+    }
+  </script>
+</body>
+</html>

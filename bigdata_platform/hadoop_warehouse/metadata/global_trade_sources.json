@@ -2,46 +2,46 @@
   "projected_to_year": 2026,
   "year_files": {
     "2017": {
-      "path": "C:\\Users\\vaibh\\Documents\\Year_2017\\Year_2017.csv",
+      "path": "D:\\World-trade-intelligence\\BACI_Data\\Year_2017\\Year_2017.csv",
       "exists": true,
-      "mtime": 1776410492.9759738,
-      "size": 40865996
+      "mtime": 1793544040.0500648,
+      "size": 474076440
     },
     "2018": {
-      "path": "C:\\Users\\vaibh\\Documents\\Year_2018\\Year_2018.csv",
+      "path": "D:\\World-trade-intelligence\\BACI_Data\\Year_2018\\Year_2018.csv",
       "exists": true,
-      "mtime": 1776410586.0703883,
-      "size": 38712430
+      "mtime": 1793544052.3547466,
+      "size": 514074855
     },
     "2019": {
-      "path": "C:\\Users\\vaibh\\Documents\\Year_2019\\Year_2019.csv",
+      "path": "D:\\World-trade-intelligence\\BACI_Data\\Year_2019\\Year_2019.csv",
       "exists": true,
-      "mtime": 1776410623.418511,
-      "size": 38626622
+      "mtime": 1793544064.1484575,
+      "size": 529837359
     },
     "2020": {
-      "path": "C:\\Users\\vaibh\\Documents\\Year_2020\\Year_2020.csv",
+      "path": "D:\\World-trade-intelligence\\BACI_Data\\Year_2020\\Year_2020.csv",
       "exists": true,
-      "mtime": 1776410656.167464,
-      "size": 38651403
+      "mtime": 1793544075.6191013,
+      "size": 517078839
     },
     "2021": {
-      "path": "C:\\Users\\vaibh\\Documents\\Year_2021\\Year_2021.csv",
+      "path": "D:\\World-trade-intelligence\\BACI_Data\\Year_2021\\Year_2021.csv",
       "exists": true,
-      "mtime": 1776410685.6263702,
-      "size": 38671156
+      "mtime": 1793544087.7601364,
+      "size": 532196162
     }
   },
   "product_codes": {
-    "path": "C:\\Users\\vaibh\\Documents\\product_codes.csv",
+    "path": "D:\\World-trade-intelligence\\BACI_Data\\product_codes.csv",
     "exists": true,
-    "mtime": 1684529084.0,
+    "mtime": 1793544087.7756903,
     "size": 616690
   },
   "country_codes": {
-    "path": "C:\\Users\\vaibh\\Documents\\country_codes.csv",
+    "path": "D:\\World-trade-intelligence\\BACI_Data\\country_codes.csv",
     "exists": true,
-    "mtime": 1684529084.0,
+    "mtime": 1793544087.7627344,
     "size": 10431
   }
 }

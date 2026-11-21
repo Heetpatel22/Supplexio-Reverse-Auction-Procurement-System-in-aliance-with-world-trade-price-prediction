@@ -1,9 +1,52 @@
-.venv
-.venv-1
+# Virtual Environments
+.venv/
+.venv*/
+venv/
+ENV/
+env/
+**/venv/
+**/.venv/
+
+# Python cache & compiled files
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Scratch and ephemeral test scripts/profiles
+scratch/
+scratch_*.py
+chrome_user_data*/
+**/chrome_user_data*/
+
+# Java / GlassFish / WebApp Build outputs
+build/
+**/build/
+target/
+**/target/
+*.class
+*.war
+*.ear
+
+# Large BACI raw data files (>100MB exceeds GitHub push limits)
+BACI_Data/Year_*
+BACI_Data/**/Year_*.csv
+BACI_Data/**/*.csv.gz
+
+# IDE and OS files
 .vscode/
-mlruns/
-ml_artifacts/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Logs and environment
 *.log
 .env
+mlruns/
+ml_artifacts/

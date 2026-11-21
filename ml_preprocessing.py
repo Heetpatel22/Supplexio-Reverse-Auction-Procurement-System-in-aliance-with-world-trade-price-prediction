@@ -14,6 +14,9 @@ Output: Saves processed dataframes and fitted scalers to ml_artifacts/
 """
 
 import os
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 import glob
 import re
 import warnings
@@ -40,8 +43,8 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), "CSV_Data")
 ARTIFACTS_DIR = os.path.join(os.path.dirname(__file__), "ml_artifacts")
 os.makedirs(ARTIFACTS_DIR, exist_ok=True)
 
-TRAIN_YEARS_END = 2022   # Train: up to and including this year
-TEST_YEARS_START = 2023  # Test: from this year onward
+TRAIN_YEARS_END = 2024   # Train on historical & continuity period: 2017–2024
+TEST_YEARS_START = 2025  # Test on 2025, forecasting target: 2026
 
 MARKET_PRICES = {
     '290220': 810, '290230': 865, '290241': 862.50, '290243': 955,
@@ -56,62 +59,75 @@ GROWTH_LABELS = ['Declining', 'Stable', 'Moderate Growth', 'High Growth']
 
 
 # ─────────────────────────────────────────────
-# STEP 1: LOAD ALL ENRICHED CSV FILES
+# STEP 1: LOAD ALL MULTI-SOURCE DATASETS (XLS, CSV, BACI)
 # ─────────────────────────────────────────────
 def load_all_data(data_path: str) -> pd.DataFrame:
     """
-    Loads all CSV files from the CSV_Data directory.
-    Combines master datasets for trade values and companies.
+    Ingests, harmonizes, and unifies trade data across ALL repository sources:
+      1. Curated CSV_Data (05 Monthly Trade Values, 09 Monthly by Country, 11 Annual Values, 02/03 HSN)
+      2. ITC TradeMap 450+ parsed XLS datasets (export_monthly, import_monthly)
+      3. Global Trade BACI lakehouse (5,000+ HS codes, 2017–2025 continuous history)
     """
-    print("\n[1/6] Loading enriched CSV data...")
-    all_dfs = []
-    
-    # CSV files to load
-    csv_files_to_load = [
-        '05_Monthly_Trade_Values.csv',
-        '02_Export_Countries_by_HSN.csv',
-        '03_Import_Countries_by_HSN.csv',
-    ]
-    
-    for csv_file in csv_files_to_load:
-        file_path = os.path.join(data_path, csv_file)
-        if os.path.exists(file_path):
-            try:
-                sync_raw_sources([data_path], "csv_data")
-                dataset_name = f"ml_csv/{os.path.splitext(csv_file)[0]}"
-                if dataset_exists(dataset_name):
-                    df = read_parquet_dataset(dataset_name)
-                else:
-                    df = pd.read_csv(file_path)
-                    write_parquet_dataset(df, dataset_name)
-                df.columns = df.columns.str.strip()
-                print(f"  ✓ Loaded {csv_file}: {df.shape[0]} rows")
-                all_dfs.append(df)
-            except Exception as e:
-                print(f"  ⚠  Skipped {csv_file}: {e}")
-        else:
-            print(f"  ⚠  File not found: {csv_file}")
+    print("\n[1/6] Loading and synthesizing all multi-source datasets (XLS, CSV, BACI)...")
+    dfs = []
 
-    if not all_dfs:
-        raise FileNotFoundError(
-            f"No CSV files found under {data_path}. "
-            "Please ensure CSV_Data folder contains required files."
-        )
+    # 1. 05 Monthly Trade Values
+    f5 = os.path.join(data_path, "05_Monthly_Trade_Values.csv")
+    if os.path.exists(f5):
+        d5 = pd.read_csv(f5)
+        d5 = d5.rename(columns={'trade_value_usd': 'Total_Turnover', 'hsn_code': 'HSN_Code', 'year': 'Year', 'price_usd_per_mt': 'Price_Per_MT'})
+        d5['Country'] = 'All'
+        d5_clean = d5[['HSN_Code', 'Year', 'Country', 'Total_Turnover', 'Price_Per_MT']].dropna(subset=['Total_Turnover'])
+        print(f"  ✓ Loaded 05_Monthly_Trade_Values: {len(d5_clean):,} records")
+        dfs.append(d5_clean)
 
-    # Concatenate or merge depending on structure
-    # Start with the first dataframe as base
-    combined = all_dfs[0]
+    # 2. 09 Monthly Trade by Country
+    f9 = os.path.join(data_path, "09_Monthly_Trade_by_Country.csv")
+    if os.path.exists(f9):
+        d9 = pd.read_csv(f9)
+        d9 = d9.rename(columns={'trade_value_usd': 'Total_Turnover', 'hsn_code': 'HSN_Code', 'year': 'Year', 'country': 'Country'})
+        d9['Price_Per_MT'] = np.nan
+        d9_clean = d9[['HSN_Code', 'Year', 'Country', 'Total_Turnover', 'Price_Per_MT']].dropna(subset=['Total_Turnover'])
+        print(f"  ✓ Loaded 09_Monthly_Trade_by_Country: {len(d9_clean):,} records")
+        dfs.append(d9_clean)
+
+    # 3. TradeMap Exports & Imports (452+ XLS files parsed into parquet lakehouse)
+    if dataset_exists('trademap/export_monthly'):
+        te = read_parquet_dataset('trademap/export_monthly')
+        te_agg = te.groupby(['hsn_code', 'country', 'year'], as_index=False)['export_value_usd'].sum()
+        te_agg = te_agg.rename(columns={'export_value_usd': 'Total_Turnover', 'hsn_code': 'HSN_Code', 'year': 'Year', 'country': 'Country'})
+        te_agg['Price_Per_MT'] = np.nan
+        print(f"  ✓ Loaded TradeMap Export XLS dataset: {len(te_agg):,} aggregated records")
+        dfs.append(te_agg[['HSN_Code', 'Year', 'Country', 'Total_Turnover', 'Price_Per_MT']])
+
+    if dataset_exists('trademap/import_monthly'):
+        ti = read_parquet_dataset('trademap/import_monthly')
+        ti_agg = ti.groupby(['hsn_code', 'country', 'year'], as_index=False)['import_value_usd'].sum()
+        ti_agg = ti_agg.rename(columns={'import_value_usd': 'Total_Turnover', 'hsn_code': 'HSN_Code', 'year': 'Year', 'country': 'Country'})
+        ti_agg['Price_Per_MT'] = np.nan
+        print(f"  ✓ Loaded TradeMap Import XLS dataset: {len(ti_agg):,} aggregated records")
+        dfs.append(ti_agg[['HSN_Code', 'Year', 'Country', 'Total_Turnover', 'Price_Per_MT']])
+
+    # 4. Global Trade (BACI product_year 2017–2025 continuous)
+    if dataset_exists('global_trade/product_year'):
+        py = read_parquet_dataset('global_trade/product_year')
+        py_agg = py.rename(columns={'total_value_usd': 'Total_Turnover', 'hsn_code': 'HSN_Code', 'year': 'Year', 'avg_unit_price_usd_per_mt': 'Price_Per_MT'})
+        py_agg['Country'] = 'All'
+        print(f"  ✓ Loaded Global BACI dataset: {len(py_agg):,} records")
+        dfs.append(py_agg[['HSN_Code', 'Year', 'Country', 'Total_Turnover', 'Price_Per_MT']])
+
+    if not dfs:
+        raise FileNotFoundError(f"No valid datasets found under {data_path} or lakehouse.")
+
+    combined = pd.concat(dfs, ignore_index=True)
+    combined['HSN_Code'] = combined['HSN_Code'].astype(str).str.strip()
+    combined['Country'] = combined['Country'].astype(str).str.strip().str.title()
+    combined['Year'] = pd.to_numeric(combined['Year'], errors='coerce').fillna(2020).astype(int)
+    combined['Total_Turnover'] = pd.to_numeric(combined['Total_Turnover'], errors='coerce').fillna(0)
     
-    # Merge other dataframes if they have compatible columns
-    for df in all_dfs[1:]:
-        # Try to find common columns for merging
-        common_cols = list(set(combined.columns) & set(df.columns))
-        if common_cols and len(common_cols) > 0:
-            combined = pd.merge(combined, df, on=common_cols, how='outer')
-        else:
-            combined = pd.concat([combined, df], ignore_index=True, axis=0)
-    
-    print(f"  ✓ Loaded {len(combined):,} total records.")
+    # Filter valid years 2017 to 2026
+    combined = combined[(combined['Year'] >= 2017) & (combined['Year'] <= 2026)]
+    print(f"  ✓ Harmonized Multi-Source Dataset: {len(combined):,} total records ({combined['Year'].min()}–{combined['Year'].max()})")
     return combined
 
 

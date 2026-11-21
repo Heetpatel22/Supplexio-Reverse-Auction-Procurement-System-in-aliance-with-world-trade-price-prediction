@@ -1,0 +1,276 @@
+/* Product Management Styles */
+:root, [data-theme="light"] {
+    --primary-color: #1E3A8A; /* Navy Blue */
+    --secondary-color: #2DD4BF; /* Teal */
+    --accent-color: #F59E0B; /* Gold */
+    --neutral-color: #E5E7EB; /* Soft Gray */
+    --text-color: #1F2937; /* Charcoal */
+    --card-bg: #ffffff;
+    --border-color: #e0e7ef;
+    --table-header-bg: #f4f7fb;
+    --table-header-text: #22336b;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    --transition-speed: 0.3s;
+    --gray-300: #ced4da;
+    --supplexio-blue: #1E3A8A;
+    --supplexio-red: #dc3545;
+}
+
+[data-theme="dark"] {
+    --primary-color: #2563eb;
+    --secondary-color: #2DD4BF;
+    --accent-color: #F59E0B;
+    --neutral-color: #1a2540;
+    --text-color: #e2e8f5;
+    --card-bg: #1a2540;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --table-header-bg: #131e35;
+    --table-header-text: #e2e8f5;
+    --success-color: #28a745;
+    --warning-color: #d4a017;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --card-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    --hover-shadow: 0 14px 34px rgba(0, 0, 0, 0.36);
+    --gray-300: rgba(255, 255, 255, 0.16);
+    --supplexio-blue: #2563eb;
+    --supplexio-red: #dc3545;
+}
+
+/* Page Header Styles */
+.page-header-card {
+    background-color: var(--neutral-color);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--card-shadow);
+    border-left: 5px solid var(--primary-color);
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+}
+
+/* Filter Card Styles */
+.filter-card {
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    border: none;
+    margin-bottom: 1.5rem;
+    transition: all var(--transition-speed) ease;
+}
+
+.filter-card:hover {
+    box-shadow: var(--hover-shadow);
+}
+
+/* Product Table Styles */
+.product-table-card {
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    border: none;
+    overflow: hidden;
+    transition: all var(--transition-speed) ease;
+}
+
+.product-table-card:hover {
+    box-shadow: var(--hover-shadow);
+}
+
+.product-table-card .card-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+}
+
+#productsTable {
+    margin-bottom: 0;
+}
+
+#productsTable thead th {
+    font-weight: 600;
+    color: var(--text-color);
+    border-top: none;
+    border-bottom: 2px solid var(--accent-color);
+    padding: 0.75rem 1rem;
+}
+
+#productsTable tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.product-row {
+    transition: all var(--transition-speed) ease;
+}
+
+.product-row:hover {
+    background-color: rgba(30, 58, 138, 0.03);
+}
+
+[data-theme="dark"] .product-row:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.product-row.highlight {
+    background-color: rgba(30, 58, 138, 0.05);
+}
+
+.product-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    background-color: var(--accent-color);
+}
+
+.product-description {
+    max-width: 320px;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    color: var(--text-color);
+    opacity: 0.9;
+}
+
+/* Action Buttons */
+.action-buttons {
+    white-space: nowrap;
+}
+
+.action-buttons .btn {
+    padding: 0.375rem 0.5rem;
+    transition: all var(--transition-speed) ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Empty State */
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+}
+
+/* DataTables Customization */
+.dataTables_filter {
+    display: none; /* We're using our custom search box */
+}
+
+.dataTables_info {
+    color: #6c757d;
+    font-size: 0.875rem;
+    padding-top: 0.5rem;
+}
+
+.dataTables_paginate .paginate_button {
+    padding: 0.25rem 0.5rem;
+    margin: 0 0.125rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.dataTables_paginate .paginate_button.current {
+    background-color: var(--supplexio-blue);
+    border-color: var(--supplexio-blue);
+    color: white;
+}
+
+.dataTables_paginate .paginate_button:hover:not(.current) {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #212529;
+}
+
+[data-theme="dark"] .dataTables_info {
+    color: #9ca8ba !important;
+}
+
+[data-theme="dark"] .dataTables_paginate .paginate_button {
+    background-color: #1a2540;
+    border-color: rgba(255,255,255,0.1);
+    color: #e2e8f5;
+}
+
+[data-theme="dark"] .dataTables_paginate .paginate_button:hover:not(.current) {
+    background-color: #131e35;
+    border-color: rgba(255,255,255,0.1);
+    color: #e2e8f5;
+}
+
+[data-theme="dark"] #productsTable tbody td {
+    border-top-color: rgba(255,255,255,0.05);
+}
+
+/* Product Form Styles */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.25);
+}
+
+.required-field::after {
+    content: "*";
+    color: var(--supplexio-red);
+    margin-left: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .page-header-card {
+        padding: 1.25rem;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .product-description {
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 768px) {
+    .action-buttons .btn {
+        padding: 0.25rem 0.375rem;
+    }
+    
+    .product-description {
+        max-width: 100px;
+    }
+    
+    #productsTable tbody td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .page-header-card {
+        padding: 1rem;
+    }
+    
+    .page-title {
+        font-size: 1.25rem;
+    }
+    
+    .product-description {
+        max-width: 80px;
+    }
+}

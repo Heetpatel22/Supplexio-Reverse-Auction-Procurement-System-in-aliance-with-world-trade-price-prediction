@@ -108,68 +108,14 @@ def _find_spark_home() -> Path | None:
 
 def configure_bigdata_env() -> dict[str, str]:
     _ensure_dirs()
-
-    java_home = _find_java_home()
-    spark_home = _find_spark_home()
-
-    if java_home:
-        os.environ["JAVA_HOME"] = str(java_home)
-    if spark_home:
-        os.environ["SPARK_HOME"] = str(spark_home)
-        os.environ["PYSPARK_PYTHON"] = os.environ.get("PYSPARK_PYTHON", os.environ.get("PYTHON", os.sys.executable))
-        os.environ["PYSPARK_DRIVER_PYTHON"] = os.environ.get("PYSPARK_DRIVER_PYTHON", os.sys.executable)
-    os.environ["HADOOP_HOME"] = str(HADOOP_HOME)
-    os.environ["SPARK_LOCAL_HOSTNAME"] = os.environ.get("SPARK_LOCAL_HOSTNAME", "127.0.0.1")
-
-    path_parts = os.environ.get("PATH", "").split(os.pathsep)
-    prepend = []
-    if java_home:
-        prepend.append(str(java_home / "bin"))
-    if spark_home:
-        prepend.append(str(spark_home / "bin"))
-    prepend.append(str(HADOOP_HOME / "bin"))
-    for item in reversed(prepend):
-        if item and item not in path_parts:
-            path_parts.insert(0, item)
-    os.environ["PATH"] = os.pathsep.join(path_parts)
-
     return {
-        "java_home": str(java_home) if java_home else "",
-        "spark_home": str(spark_home) if spark_home else "",
-        "hadoop_home": str(HADOOP_HOME),
         "warehouse_root": str(WAREHOUSE_ROOT),
     }
 
 
-def get_spark_session(app_name: str = "PaintTradeBigData"):
-    global _SPARK
-    if _SPARK is not None:
-        return _SPARK
-
-    configure_bigdata_env()
-
-    try:
-        from pyspark.sql import SparkSession
-    except ImportError as err:
-        raise RuntimeError("PySpark is not installed in the Python environment") from err
-
-    _SPARK = (
-        SparkSession.builder
-        .appName(app_name)
-        .master("local[*]")
-        .config("spark.sql.warehouse.dir", str(WAREHOUSE_ROOT).replace("\\", "/"))
-        .config("spark.driver.host", "127.0.0.1")
-        .config("spark.driver.bindAddress", "127.0.0.1")
-        .config("spark.driver.memory", "4g")
-        .config("spark.executor.memory", "2g")
-        .config("spark.driver.maxResultSize", "1536m")
-        .config("spark.sql.execution.arrow.pyspark.enabled", "false")
-        .config("spark.sql.shuffle.partitions", "16")
-        .config("spark.ui.showConsoleProgress", "false")
-        .getOrCreate()
-    )
-    _SPARK.sparkContext.setLogLevel("ERROR")
-    return _SPARK
+def get_spark_session(app_name: str = "PaintTradeStorage"):
+    """Spark runtime is disabled; system operates via high-speed pure Pandas & Parquet storage."""
+    return None
 
 
 def _dataset_path(relative_path: str) -> Path:

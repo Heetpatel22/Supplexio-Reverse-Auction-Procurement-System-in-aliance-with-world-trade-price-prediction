@@ -1,7 +1,6 @@
 # Core data & ML
 pandas>=1.3.0
 numpy>=1.21.0
-pyspark>=4.0.0
 scikit-learn>=1.0.0
 xgboost>=1.5.0
 imbalanced-learn>=0.10.0

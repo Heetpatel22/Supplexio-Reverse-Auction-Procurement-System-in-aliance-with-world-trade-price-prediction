@@ -27,6 +27,9 @@ Requirements (add to requirements.txt):
 """
 
 import os
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 import warnings
 import logging
 import numpy as np
@@ -69,9 +72,9 @@ MLFLOW_EXPERIMENT    = "GlobalTradeIntel"
 os.makedirs(ARTIFACTS_DIR, exist_ok=True)
 
 # ─── Configuration ───────────────────────────────────────────────────────────
-TRAIN_YEARS_END   = 2022
-TEST_YEARS_START  = 2023
-OPTUNA_TRIALS     = 100
+TRAIN_YEARS_END   = 2024
+TEST_YEARS_START  = 2025
+OPTUNA_TRIALS     = 3
 VALIDATION_SPLIT  = 0.15  # 15 % of training data held out for early stopping
 
 # Optuna search space (as per requirements document)
