@@ -269,15 +269,20 @@
                             </div>
 
                             <!-- AI Market Oracle & Predictive Pricing Widget (World Trade Intelligence Integration) -->
-                            <div id="aiOracleCard" class="card mt-2 mb-4 shadow-sm" style="display:none; border: 1.5px solid #0284c7; background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%); border-radius: 12px;">
-                                <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center" style="background:#0284c7; color:#fff; border-radius:10px 10px 0 0;">
-                                    <span class="font-weight-bold"><i class="fas fa-brain mr-1"></i> AI Market Oracle (1D-ResNet &amp; BACI Lakehouse Engine)</span>
+                            <div id="aiOracleCard" class="card mt-2 mb-4 shadow-sm" style="display:none; border: 1.5px solid #0284c7; background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%); border-radius: 12px; overflow:hidden;">
+                                <div id="aiOracleCardHeader" class="card-header py-2 px-3 d-flex justify-content-between align-items-center" style="background:#0284c7; color:#fff; border-radius:10px 10px 0 0;">
+                                    <span class="font-weight-bold" id="aiOracleHeaderTitle"><i class="fas fa-brain mr-1"></i> 1D-ResNet Timing Oracle &amp; Strategic Advisory</span>
                                     <span id="aiOracleBadge" class="badge badge-warning">Predictive Pricing</span>
                                 </div>
                                 <div class="card-body p-3">
+                                    <!-- Strategic Headline -->
+                                    <div class="mb-2">
+                                        <h6 id="aiOracleHeadlineText" class="font-weight-bold text-dark mb-1" style="font-size:0.95rem;"></h6>
+                                        <p id="aiRecommendationText" class="small text-muted mb-2 font-italic" style="line-height:1.4;"></p>
+                                    </div>
                                     <div class="row align-items-center">
                                         <div class="col-md-7">
-                                            <div class="d-flex justify-content-between align-items-center p-2 mb-3" style="background:rgba(255,255,255,0.7); border:1px solid #e2e8f0; border-radius:10px;">
+                                            <div class="d-flex justify-content-between align-items-center p-2 mb-2" style="background:rgba(255,255,255,0.7); border:1px solid #e2e8f0; border-radius:10px;">
                                                 <div style="flex:1; text-align:left; padding-right:8px; border-right:1px solid #cbd5e1;">
                                                     <small class="text-muted d-block font-weight-bold" style="font-size:0.75rem;">Benchmark Spot</small>
                                                     <div class="font-weight-bold text-dark" style="font-size:1.05rem; white-space:nowrap;" id="aiBenchmarkPrice">--</div>
@@ -294,7 +299,6 @@
                                                     <small class="text-success font-weight-bold d-block mt-1" style="font-size:0.75rem; white-space:nowrap;" id="aiTotalCeiling">Lot: --</small>
                                                 </div>
                                             </div>
-                                            <p id="aiRecommendationText" class="small text-muted mb-2 font-italic" style="line-height:1.4;"></p>
                                             <div class="d-flex align-items-center flex-wrap mt-2">
                                                 <button type="button" class="btn btn-sm btn-primary font-weight-bold shadow-sm mr-2 mb-1" id="btnApplyTotalCeiling">
                                                     <i class="fas fa-boxes mr-1"></i> Apply Total Lot Ceiling (<span id="btnTotalCeilingSpan">--</span>)
@@ -306,10 +310,12 @@
                                                     <i class="fas fa-piggy-bank mr-1"></i> Est. Savings: --
                                                 </span>
                                             </div>
+                                            <!-- Strategic Quick Buttons Container -->
+                                            <div id="aiTimingQuickButtons" class="mt-2 pt-2" style="border-top:1px dashed #cbd5e1;"></div>
                                         </div>
                                         <div class="col-md-5">
-                                            <small class="text-muted font-weight-bold d-block mb-1 text-center">Price Trajectory Sparkline (₹)</small>
-                                            <div style="height: 110px;">
+                                            <small class="text-muted font-weight-bold d-block mb-1 text-center">Multi-Horizon Price Trajectory (1D-ResNet)</small>
+                                            <div style="height: 120px;">
                                                 <canvas id="aiOracleSparkline"></canvas>
                                             </div>
                                         </div>
@@ -532,9 +538,65 @@
                 .then(function(data) {
                     if (data.status === 'success') {
                         oracleData = data;
+                        var timing = data.timing_oracle || {};
                         var unit = data.unit || 'pcs';
+                        var qty = parseFloat(data.quantity) || 1;
                         $('#quantityUnitLabel').text(unit);
-                        $('#aiOracleBadge').text('Qty: ' + Number(data.quantity).toLocaleString() + ' ' + unit);
+                        
+                        // Timing Oracle Header styling & badges
+                        var headerEl = $('#aiOracleCardHeader');
+                        var badgeEl = $('#aiOracleBadge');
+                        var headlineEl = $('#aiOracleHeadlineText');
+                        var quickBtnsEl = $('#aiTimingQuickButtons');
+
+                        if (timing.verdict === 'DELAY_AND_SPOT') {
+                            headerEl.css('background', 'linear-gradient(135deg, #059669 0%, #0d9488 100%)');
+                            badgeEl.attr('class', 'badge badge-success font-weight-bold').text(timing.badge_text || 'DELAY ADVISORY: SPOT BUFFER RECOMMENDED');
+                            headlineEl.html('<i class="fas fa-arrow-circle-down text-success mr-1"></i> ' + (timing.headline || '1D-ResNet predicts price decline.'));
+                            quickBtnsEl.html(
+                                '<button type="button" class="btn btn-sm btn-success font-weight-bold mr-2 mb-1 shadow-sm" id="btnFormSpotBuffer">' +
+                                '<i class="fas fa-stopwatch mr-1"></i> Run ' + (timing.suggested_buffer_days || 15) + '-Day Buffer Spot Auction (' + timing.spot_quantity + ' ' + unit + ')' +
+                                '</button>' +
+                                '<span class="small text-muted font-weight-bold">Target Bottom Window: ' + (timing.optimal_window || '20–25 days') + '</span>'
+                            );
+                            $('#btnFormSpotBuffer').on('click', function() {
+                                $('#quantity').val(timing.spot_quantity);
+                                var now = new Date();
+                                var sDateInput = document.getElementById('startDateInput');
+                                var eDateInput = document.getElementById('endDateInput');
+                                if (sDateInput && eDateInput && sDateInput.value) {
+                                    var start = new Date(sDateInput.value);
+                                    var end = new Date(start.getTime() + (timing.suggested_buffer_days || 15) * 24 * 60 * 60 * 1000);
+                                    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+                                    eDateInput.value = end.getFullYear() + '-' + pad(end.getMonth() + 1) + '-' + pad(end.getDate());
+                                }
+                                checkAndRunOracle();
+                            });
+                        } else if (timing.verdict === 'BUY_NOW_LOCK_CONTRACT') {
+                            headerEl.css('background', 'linear-gradient(135deg, #e11d48 0%, #d97706 100%)');
+                            badgeEl.attr('class', 'badge badge-danger font-weight-bold').text(timing.badge_text || 'SURGE HEDGE ADVISORY: BUY NOW');
+                            headlineEl.html('<i class="fas fa-arrow-circle-up text-danger mr-1"></i> ' + (timing.headline || '1D-ResNet forecasts price surge.'));
+                            quickBtnsEl.html(
+                                '<button type="button" class="btn btn-sm btn-danger font-weight-bold mr-2 mb-1 shadow-sm" id="btnFormSurgeHedge">' +
+                                '<i class="fas fa-shield-alt mr-1"></i> Lock 6-Month Contract Horizon (Hedge Against Escalation)' +
+                                '</button>'
+                            );
+                            $('#btnFormSurgeHedge').on('click', function() {
+                                var sDateInput = document.getElementById('startDateInput');
+                                var eDateInput = document.getElementById('endDateInput');
+                                if (sDateInput && eDateInput && sDateInput.value) {
+                                    var start = new Date(sDateInput.value);
+                                    var end = new Date(start.getTime() + 180 * 24 * 60 * 60 * 1000);
+                                    var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+                                    eDateInput.value = end.getFullYear() + '-' + pad(end.getMonth() + 1) + '-' + pad(end.getDate());
+                                }
+                            });
+                        } else {
+                            headerEl.css('background', 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)');
+                            badgeEl.attr('class', 'badge badge-info font-weight-bold').text(timing.badge_text || 'OPTIMAL TIMING: STABLE CORRIDOR');
+                            headlineEl.html('<i class="fas fa-check-circle text-primary mr-1"></i> ' + (timing.headline || 'Price stability confirmed.'));
+                            quickBtnsEl.empty();
+                        }
 
                         // Benchmark Unit & Total Lot
                         $('#aiBenchmarkPrice').html('₹' + Number(data.benchmark_price_inr).toLocaleString() + ' <small class="text-muted" style="font-size:0.75rem;">/' + unit + '</small>');
@@ -542,7 +604,7 @@
 
                         // Trend & Risk
                         var trendColor = data.trend === 'SURGE' ? 'text-danger' : (data.trend === 'DECLINE' ? 'text-success' : 'text-primary');
-                        $('#aiTrendVal').attr('class', 'font-weight-bold mb-0 ' + trendColor).html(data.trend + ' (' + data.trend_pct + ')');
+                        $('#aiTrendVal').attr('class', 'font-weight-bold mb-0 ' + trendColor).html(data.trend + ' (' + (timing.predicted_price_change_pct || data.trend_pct) + ')');
                         $('#aiRiskLevel').html('Risk: <span class="badge badge-light border">' + (data.risk_level || 'MODERATE') + '</span>');
 
                         // Suggested Opening Ceiling Unit & Total Lot
@@ -552,9 +614,11 @@
                         // Button text & Savings
                         $('#btnTotalCeilingSpan').text('₹' + Number(data.total_ceiling_inr).toLocaleString());
                         $('#btnUnitCeilingSpan').text('₹' + Number(data.suggested_ceiling_inr).toLocaleString() + '/' + unit);
-                        $('#aiSavingsBadge').html('<i class="fas fa-piggy-bank mr-1"></i>Est. Savings: ~₹' + Number(data.estimated_savings_inr).toLocaleString());
+                        var savLabel = timing.savings_label || 'Est. Savings';
+                        var savAmt = timing.savings_amount !== undefined ? timing.savings_amount : data.estimated_savings_inr;
+                        $('#aiSavingsBadge').html('<i class="fas fa-piggy-bank mr-1"></i>' + savLabel + ': ~₹' + Number(savAmt).toLocaleString());
 
-                        $('#aiRecommendationText').text(data.ai_recommendation);
+                        $('#aiRecommendationText').text(timing.strategic_advisory || data.ai_recommendation);
 
                         // Automatically apply according to current mode (default: Total Lot)
                         applyPriceMode(pricingMode);

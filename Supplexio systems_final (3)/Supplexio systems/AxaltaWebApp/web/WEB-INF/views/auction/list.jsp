@@ -16,6 +16,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <!-- Chart.js for 1D-ResNet Timing Trajectory Sparklines -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -206,11 +208,11 @@
           <span>Export Data</span>
         </button>
 
-        <!-- Create New Auction Button: Navigates to dedicated creation page as earlier -->
-        <a href="${pageContext.request.contextPath}/auction?action=new" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-navy-950 font-bold rounded-lg shadow-md hover:shadow-amber-500/20 text-sm transition-all duration-150 flex items-center space-x-2 no-underline">
+        <!-- Create New Auction Button: Opens High-Tech Timing Oracle Modal -->
+        <button type="button" onclick="openCreateAuctionModal()" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-navy-950 font-bold rounded-lg shadow-md hover:shadow-amber-500/20 text-sm transition-all duration-150 flex items-center space-x-2">
           <svg class="w-4 h-4 text-navy-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
           <span>+ Create New Auction</span>
-        </a>
+        </button>
       </div>
     </header>
 
@@ -468,19 +470,53 @@
         </div>
       </div>
 
-      <!-- Chronological Supplier Bid History -->
+      <!-- Chronological Supplier Bid History & LDP Engine -->
       <div>
-        <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center justify-between">
-          <span>Supplier Bid Audit History</span>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+            <span>Supplier Bid Audit History</span>
+          </h3>
           <span id="bidCountBadge" class="text-xs font-normal text-slate-500 font-mono-tabular">0 bids logged</span>
-        </h3>
+        </div>
+
+        <!-- 🌐 TRUE LANDED COST (LDP) NORMALIZER TOGGLE BAR -->
+        <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-navy-950 border border-slate-800 rounded-xl p-3 mb-3 text-white shadow-md space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-400">🌐 Landed Duty-Paid (LDP)</span>
+              <span class="text-[9px] bg-amber-500/20 text-amber-300 font-mono px-1.5 py-0.5 rounded border border-amber-500/30">BACI Normalizer</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-[10px] text-slate-400 font-medium">Raw Bid</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="drawerLdpToggle" onchange="toggleLdpNormalizer(this.checked)" class="sr-only peer">
+                <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
+              </label>
+              <span class="text-[10px] text-emerald-400 font-bold">LDP True Cost</span>
+            </div>
+          </div>
+
+          <!-- Quick Simulate Live Overseas vs Domestic Bid Re-ranking Demo Button -->
+          <div class="flex items-center justify-between pt-1 border-t border-slate-800/80 text-[10px]">
+            <span class="text-slate-400">Formula: Bid + Tariff + Freight + CBAM Buffer</span>
+            <button type="button" onclick="simulateOverseasVsDomesticBids()" class="text-amber-400 hover:text-amber-300 font-bold underline transition">
+              ⚡ Demo Global Re-Ranking
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Re-Ranking Narrative Alert Banner -->
+        <div id="drawerLdpNarrativeAlert" class="hidden mb-3 p-3 bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/40 rounded-xl text-xs text-emerald-200 leading-relaxed shadow-sm">
+          <!-- Populated dynamically -->
+        </div>
         
         <div class="border border-slate-200 rounded-xl divide-y divide-slate-100 bg-white overflow-hidden shadow-xs">
           <div class="bg-slate-50 px-4 py-2 text-[11px] font-semibold text-slate-400 uppercase flex justify-between">
-            <span>Supplier</span>
-            <span>Bid Amount & Delta</span>
+            <span>Supplier &amp; Origin</span>
+            <span id="drawerBidAmountHeader">Bid Amount &amp; Overhead</span>
           </div>
-          <div id="drawerBidTimeline" class="max-h-64 overflow-y-auto divide-y divide-slate-100">
+          <div id="drawerBidTimeline" class="max-h-72 overflow-y-auto divide-y divide-slate-100">
             <!-- Timeline items rendered via JS -->
           </div>
         </div>
@@ -522,7 +558,247 @@
   <!-- HIDDEN FORMS FOR POST ACTIONS -->
   
   <!-- IN-APP CONFIRMATION & AUDIT MODAL -->
-  <div id="appConfirmModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+  <!-- ========================================================================= -->
+  <!-- 🌟 CREATE REVERSE AUCTION & 1D-RESNET TIMING ORACLE MODAL                   -->
+  <!-- ========================================================================= -->
+  <div id="createAuctionModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="relative bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-navy-950 via-slate-900 to-navy-900 text-white flex items-center justify-between border-b border-slate-800 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
+              <span>Create New Reverse Auction</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] bg-sky-500/20 text-sky-300 border border-sky-400/30 font-mono">Timing Oracle</span>
+            </h3>
+            <p class="text-[11px] text-slate-400 font-sans">1D-ResNet &amp; Bi-LSTM market price forecasting &amp; strategic procurement advisory</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <a href="${pageContext.request.contextPath}/auction?action=new" class="text-xs text-slate-400 hover:text-amber-400 font-medium px-2 py-1 rounded transition hover:bg-slate-800" title="Open Full Form">
+            Full Page &nearr;
+          </a>
+          <button type="button" onclick="closeCreateAuctionModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <form id="createAuctionForm" action="${pageContext.request.contextPath}/auction" method="POST" onsubmit="return validateCreateModalForm()" class="p-6 space-y-5 overflow-y-auto flex-1 font-sans">
+        <input type="hidden" name="action" value="create">
+
+        <!-- Product Selection Row -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <span>Select Commodity / Product</span>
+              <span class="text-rose-500">*</span>
+            </label>
+            <span class="text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+              5,384 BACI Commodities Available
+            </span>
+          </div>
+
+          <!-- Quick Global BACI Search input -->
+          <div class="relative">
+            <input type="text" id="modalBaciSearchInput" placeholder="Quick search 5,384 international commodities (e.g. 'Titanium', 'Steel Rods', 'Flush Doors', '721420')..." 
+                   class="w-full text-xs px-3.5 py-2 pl-9 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-800 placeholder-slate-400 outline-none transition" autocomplete="off">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <div id="modalBaciSearchResults" class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 max-h-48 overflow-y-auto hidden divide-y divide-slate-100"></div>
+          </div>
+
+          <!-- Catalog Select -->
+          <select id="modalProductId" name="productId" required onchange="onModalProductChange()"
+                  class="w-full text-xs font-medium px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-slate-800 outline-none transition">
+            <option value="">— Choose from Active Enterprise Catalog —</option>
+            <c:forEach var="p" items="${products}">
+              <option value="${p.id}" data-name="${p.name}" data-price="${p.unitPrice}" data-unit="${p.unit != null ? p.unit : 'units'}" data-hsn="${p.hsnCode != null ? p.hsnCode : 'General'}" data-category="${p.category}">
+                ${p.name} (HSN: ${p.hsnCode != null ? p.hsnCode : 'General'}) — ₹<fmt:formatNumber value="${p.unitPrice}" type="number" maxFractionDigits="2"/> / ${p.unit != null ? p.unit : 'unit'}
+                <c:if test="${p.needsAuction}"> ⚠ Low Stock</c:if>
+              </option>
+            </c:forEach>
+          </select>
+        </div>
+
+        <!-- Volume & Ceiling Price Inputs -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Required Quantity -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between">
+              <span>Required Volume / Quantity <span class="text-rose-500">*</span></span>
+              <span id="modalQuantityUnitBadge" class="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">units</span>
+            </label>
+            <div class="relative">
+              <input type="number" id="modalQuantity" name="quantity" min="1" step="any" required placeholder="e.g. 100" oninput="onModalQuantityInput()"
+                     class="w-full text-sm font-semibold font-mono px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-slate-800 outline-none transition">
+            </div>
+            <p class="text-[10px] text-slate-400">Enter volume to trigger AI Timing Oracle &amp; Pricing</p>
+          </div>
+
+          <!-- Starting Ceiling Price -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                Starting Ceiling Price (₹) <span class="text-rose-500">*</span>
+              </label>
+              <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-100 text-[10px]">
+                <button type="button" id="modalModeTotalBtn" onclick="setModalPriceMode('TOTAL')" class="px-2 py-0.5 rounded-md font-bold bg-white text-slate-800 shadow-xs">Total Lot</button>
+                <button type="button" id="modalModeUnitBtn" onclick="setModalPriceMode('UNIT')" class="px-2 py-0.5 rounded-md font-medium text-slate-600 hover:text-slate-900">Per Unit</button>
+              </div>
+            </div>
+            <div class="relative">
+              <span class="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">₹</span>
+              <input type="number" id="modalStartingPrice" name="startingPrice" min="1" step="0.01" required placeholder="Auto-calculated ceiling"
+                     class="w-full text-sm font-bold font-mono pl-8 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-slate-900 outline-none transition">
+            </div>
+            <div class="flex items-center justify-between text-[10px] text-slate-500">
+              <span id="modalCeilingHint">Total procurement lot ceiling</span>
+              <span id="modalCeilingBreakdown" class="font-mono text-sky-600 font-semibold"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔮 THE TIMING ORACLE CARD (WORLD TRADE INTELLIGENCE INTEGRATION) -->
+        <div id="modalTimingOracleCard" class="hidden rounded-2xl border transition-all duration-300 overflow-hidden shadow-sm">
+          <!-- Banner Header -->
+          <div id="modalOracleHeader" class="px-4 py-3 flex items-center justify-between text-xs font-bold text-white transition-colors">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
+              <span id="modalOracleTitle">1D-ResNet Timing Oracle Advisory</span>
+            </div>
+            <span id="modalOracleBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase font-bold"></span>
+          </div>
+
+          <!-- Body Content -->
+          <div class="p-4 bg-white space-y-3.5">
+            <!-- Strategic Headline & Recommendation -->
+            <div class="space-y-1">
+              <h4 id="modalOracleHeadline" class="text-sm font-extrabold text-slate-900 flex items-center gap-1.5"></h4>
+              <p id="modalOracleAdvisory" class="text-xs text-slate-600 leading-relaxed font-sans"></p>
+            </div>
+
+            <!-- Key Metrics Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 font-sans">
+              <div>
+                <span class="text-[10px] text-slate-500 font-semibold uppercase block">Spot Benchmark</span>
+                <span id="modalOracleSpotPrice" class="text-xs font-mono font-bold text-slate-800">--</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-500 font-semibold uppercase block">30d Projection</span>
+                <span id="modalOraclePredPrice" class="text-xs font-mono font-bold">--</span>
+              </div>
+              <div>
+                <span id="modalOracleSavingsLabel" class="text-[10px] text-slate-500 font-semibold uppercase block">Projected Delta</span>
+                <span id="modalOracleSavingsVal" class="text-xs font-mono font-bold text-emerald-600">--</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-500 font-semibold uppercase block">Execution Window</span>
+                <span id="modalOracleWindow" class="text-[11px] font-semibold text-slate-800">--</span>
+              </div>
+            </div>
+
+            <!-- Trajectory Sparkline Chart -->
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-bold text-slate-700 flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                  Multi-Horizon Price Trajectory (1D-ResNet Multi-Step)
+                </span>
+                <span id="modalOracleConfidence" class="text-[10px] font-mono text-slate-500">Confidence: 91.4%</span>
+              </div>
+              <div class="h-28 w-full bg-slate-50 rounded-xl p-2 border border-slate-200/60 relative">
+                <canvas id="modalTimingSparklineChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Strategic Action Quick Buttons -->
+            <div id="modalOracleActionButtons" class="pt-1 flex flex-wrap items-center gap-2">
+              <!-- Dynamically populated buttons -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔗 VAE COMBINATORIAL SMART BASKET CARD -->
+        <div id="modalSmartBasketCard" class="hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50/90 via-sky-50/70 to-white p-4 shadow-sm space-y-3 transition-all duration-300">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-2.5">
+              <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-800 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                🔗
+              </div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-950">VAE Combinatorial Smart Basket</h4>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-bold border border-indigo-200">Latent Space Co-Movements</span>
+                </div>
+                <p id="modalSmartBasketHeadline" class="text-xs font-semibold text-slate-800 mt-0.5">VAE clustering detected cross-commodity production facility synergies.</p>
+              </div>
+            </div>
+            <div>
+              <span id="modalSmartBasketDiscountBadge" class="text-xs font-bold font-mono px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-xs">Save +7.4%</span>
+            </div>
+          </div>
+
+          <p id="modalSmartBasketPrompt" class="text-xs text-slate-700 bg-white/90 p-3 rounded-xl border border-indigo-100 leading-relaxed font-sans">
+            Loading latent space synergy recommendations...
+          </p>
+
+          <div id="modalSmartBasketItems" class="space-y-1.5 pt-1">
+            <!-- Dynamically populated bundle options -->
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-indigo-100">
+            <div class="text-[11px] text-slate-500 font-mono" id="modalSmartBasketSavingsNotice">
+              Synergy Discount: <strong class="text-emerald-700 font-bold">₹0.00</strong>
+            </div>
+            <button type="button" id="modalApplySmartBasketBtn" onclick="applySmartBasketBundle()" class="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+              <span>📦 Bundle into Smart Basket Auction</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Schedule Inputs (Dates & Times) -->
+        <div class="space-y-1.5 pt-1 border-t border-slate-200">
+          <label class="text-xs font-bold text-slate-800 uppercase tracking-wider block">Auction Schedule (IST)</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <span class="text-[11px] text-slate-500 font-medium block mb-1">Start Date &amp; Time</span>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="date" id="modalStartDate" name="startDate" required class="text-xs px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800">
+                <input type="time" id="modalStartTime" name="startTime" required class="text-xs px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800">
+              </div>
+            </div>
+            <div>
+              <span class="text-[11px] text-slate-500 font-medium block mb-1">End Date &amp; Time</span>
+              <div class="grid grid-cols-2 gap-2">
+                <input type="date" id="modalEndDate" name="endDate" required class="text-xs px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800">
+                <input type="time" id="modalEndTime" name="endTime" required class="text-xs px-2.5 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-800">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="pt-3 border-t border-slate-200 flex items-center justify-between">
+          <button type="button" onclick="closeCreateAuctionModal()" class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition shadow-xs">
+            Cancel
+          </button>
+          <button type="submit" id="modalSubmitAuctionBtn" class="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl text-xs shadow-md hover:shadow-amber-500/20 transition flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span>Launch Reverse Auction</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- IN-APP CONFIRMATION & AUDIT MODAL -->
+  <div id="appConfirmModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity" onclick="closeAppConfirmModal()"></div>
 
@@ -1049,6 +1325,7 @@
     // SLIDE-OVER DRAWER CONTROL
     function openDrawer(id) {
       activeDrawerId = id;
+      currentDrawerAuction = auctionsData.find(a => a.id === id) || { id: id, bids: [] };
       renderDrawerContent();
 
       const drawer = document.getElementById('bidRoomDrawer');
@@ -1723,6 +2000,718 @@
             alertBox.innerHTML = '<svg class="w-4 h-4 flex-shrink-0 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><span>' + msg + '</span>';
             alertBox.classList.remove('hidden');
         }
+    }
+
+    // =========================================================================
+    // 🌟 1D-RESNET TIMING ORACLE & CREATE AUCTION MODAL ENGINE
+    // =========================================================================
+    let modalTimingChart = null;
+    let modalOracleData = null;
+    let modalPricingMode = 'TOTAL'; // 'TOTAL' or 'UNIT'
+    let modalCustomHsn = '';
+    let modalCustomName = '';
+    let modalCustomPrice = 0;
+    let modalCustomUnit = 'units';
+
+    function openCreateAuctionModal() {
+      const modal = document.getElementById('createAuctionModal');
+      if (!modal) return;
+
+      // Pre-fill dates (start = now, end = +7 days)
+      const now = new Date();
+      const pad = n => n < 10 ? '0' + n : '' + n;
+      const toDateStr = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+      const toTimeStr = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
+
+      const sDate = document.getElementById('modalStartDate');
+      const sTime = document.getElementById('modalStartTime');
+      const eDate = document.getElementById('modalEndDate');
+      const eTime = document.getElementById('modalEndTime');
+
+      if (sDate && !sDate.value) sDate.value = toDateStr(now);
+      if (sTime && !sTime.value) sTime.value = toTimeStr(now);
+      if (eDate && !eDate.value) {
+        const later = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        eDate.value = toDateStr(later);
+      }
+      if (eTime && !eTime.value) eTime.value = toTimeStr(now);
+
+      if (sDate) sDate.min = toDateStr(now);
+      if (eDate) eDate.min = toDateStr(now);
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      modal.style.display = 'flex';
+      document.body.classList.add('overflow-hidden');
+
+      onModalProductChange();
+    }
+
+    function closeCreateAuctionModal() {
+      const modal = document.getElementById('createAuctionModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        modal.style.display = 'none';
+        document.body.classList.remove('overflow-hidden');
+      }
+    }
+
+    function setModalPriceMode(mode) {
+      modalPricingMode = mode;
+      const totalBtn = document.getElementById('modalModeTotalBtn');
+      const unitBtn = document.getElementById('modalModeUnitBtn');
+      const priceInput = document.getElementById('modalStartingPrice');
+      const hint = document.getElementById('modalCeilingHint');
+      const breakdown = document.getElementById('modalCeilingBreakdown');
+
+      if (!priceInput) return;
+
+      const qty = parseFloat(document.getElementById('modalQuantity').value) || 1;
+      const unit = modalOracleData ? (modalOracleData.unit || 'units') : modalCustomUnit;
+
+      if (mode === 'TOTAL') {
+        if (totalBtn) { totalBtn.className = 'px-2 py-0.5 rounded-md font-bold bg-white text-slate-800 shadow-xs'; }
+        if (unitBtn) { unitBtn.className = 'px-2 py-0.5 rounded-md font-medium text-slate-600 hover:text-slate-900'; }
+        if (modalOracleData && modalOracleData.total_ceiling_inr) {
+          priceInput.value = modalOracleData.total_ceiling_inr;
+        }
+        if (hint) hint.textContent = 'Total procurement lot ceiling (' + qty + ' ' + unit + ')';
+        if (breakdown && modalOracleData) {
+          breakdown.textContent = '(₹' + Number(modalOracleData.suggested_ceiling_inr).toLocaleString() + ' / ' + unit + ')';
+        }
+      } else {
+        if (unitBtn) { unitBtn.className = 'px-2 py-0.5 rounded-md font-bold bg-white text-slate-800 shadow-xs'; }
+        if (totalBtn) { totalBtn.className = 'px-2 py-0.5 rounded-md font-medium text-slate-600 hover:text-slate-900'; }
+        if (modalOracleData && modalOracleData.suggested_ceiling_inr) {
+          priceInput.value = modalOracleData.suggested_ceiling_inr;
+        }
+        if (hint) hint.textContent = 'Per-unit reverse auction ceiling';
+        if (breakdown && modalOracleData) {
+          breakdown.textContent = '(Lot: ₹' + Number(modalOracleData.total_ceiling_inr).toLocaleString() + ')';
+        }
+      }
+
+      priceInput.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50');
+      setTimeout(() => priceInput.classList.remove('ring-2', 'ring-emerald-500', 'bg-emerald-50'), 800);
+    }
+
+    function onModalProductChange() {
+      const select = document.getElementById('modalProductId');
+      if (!select) return;
+      const opt = select.options[select.selectedIndex];
+      if (!opt || !opt.value) {
+        const card = document.getElementById('modalTimingOracleCard');
+        if (card) card.classList.add('hidden');
+        return;
+      }
+
+      const pName = opt.getAttribute('data-name') || '';
+      const pPrice = parseFloat(opt.getAttribute('data-price')) || 0;
+      const pUnit = opt.getAttribute('data-unit') || 'units';
+      const pHsn = opt.getAttribute('data-hsn') || '';
+
+      modalCustomName = pName;
+      modalCustomPrice = pPrice;
+      modalCustomUnit = pUnit;
+      modalCustomHsn = pHsn;
+
+      const unitBadge = document.getElementById('modalQuantityUnitBadge');
+      if (unitBadge) unitBadge.textContent = pUnit;
+
+      const qtyInput = document.getElementById('modalQuantity');
+      const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
+
+      if (qty > 0) {
+        fetchModalTimingOracle(opt.value, pName, pHsn, qty); fetchSmartBasketRecommendations(opt.value, pHsn, qty);
+      } else {
+        const priceInput = document.getElementById('modalStartingPrice');
+        if (priceInput && pPrice > 0 && !priceInput.value) {
+          priceInput.value = pPrice;
+        }
+        const card = document.getElementById('modalTimingOracleCard');
+        if (card) card.classList.add('hidden');
+      }
+    }
+
+    function onModalQuantityInput() {
+      const select = document.getElementById('modalProductId');
+      const pId = select ? select.value : '';
+      const qty = parseFloat(document.getElementById('modalQuantity').value) || 0;
+
+      if ((pId || modalCustomHsn) && qty > 0) {
+        fetchModalTimingOracle(pId, modalCustomName, modalCustomHsn, qty); fetchSmartBasketRecommendations(pId, modalCustomHsn, qty);
+      } else {
+        const card = document.getElementById('modalTimingOracleCard');
+        if (card) card.classList.add('hidden');
+      }
+    }
+
+    function fetchModalTimingOracle(productId, productName, hsnCode, quantity) {
+      const card = document.getElementById('modalTimingOracleCard');
+      const headline = document.getElementById('modalOracleHeadline');
+      const advisory = document.getElementById('modalOracleAdvisory');
+
+      if (card) card.classList.remove('hidden');
+      if (headline) headline.textContent = "Consulting 1D-ResNet neural inference & BACI trade lakehouse...";
+      if (advisory) advisory.textContent = 'Analyzing multi-step bilateral trade momentum for ' + (productName || 'selected commodity') + ' (' + quantity + ' units)...';
+
+      let url = 'http://localhost:5000/api/timing-oracle?';
+      if (productId) url += 'product_id=' + encodeURIComponent(productId) + '&';
+      if (productName) url += 'product_name=' + encodeURIComponent(productName) + '&';
+      if (hsnCode) url += 'hsn=' + encodeURIComponent(hsnCode) + '&';
+      url += 'quantity=' + encodeURIComponent(quantity);
+
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'success') {
+            modalOracleData = data;
+            renderTimingOracleUI(data);
+          }
+        })
+        .catch(err => {
+          console.error("Timing Oracle error:", err);
+          if (headline) headline.textContent = "1D-ResNet Trade Benchmark Available";
+          if (advisory) advisory.textContent = 'Real-time commodity baseline: ₹' + modalCustomPrice.toLocaleString() + ' / ' + modalCustomUnit + '. Competitive bidding ceiling active.';
+        });
+    }
+
+    function renderTimingOracleUI(data) {
+      const timing = data.timing_oracle || {};
+      const unit = data.unit || 'units';
+      const qty = data.quantity || 1;
+
+      const header = document.getElementById('modalOracleHeader');
+      const badge = document.getElementById('modalOracleBadge');
+      const headline = document.getElementById('modalOracleHeadline');
+      const advisory = document.getElementById('modalOracleAdvisory');
+
+      const spotPrice = document.getElementById('modalOracleSpotPrice');
+      const predPrice = document.getElementById('modalOraclePredPrice');
+      const savingsLabel = document.getElementById('modalOracleSavingsLabel');
+      const savingsVal = document.getElementById('modalOracleSavingsVal');
+      const winEl = document.getElementById('modalOracleWindow');
+      const confEl = document.getElementById('modalOracleConfidence');
+      const actionBtns = document.getElementById('modalOracleActionButtons');
+
+      if (spotPrice) spotPrice.textContent = '₹' + Number(data.benchmark_price_inr).toLocaleString() + '/' + unit;
+      if (predPrice) {
+        const pred30 = timing.price_horizons ? timing.price_horizons.pred_30d_inr : data.suggested_ceiling_inr;
+        predPrice.textContent = '₹' + Number(pred30).toLocaleString() + '/' + unit + ' (' + (timing.predicted_price_change_pct || data.trend_pct) + ')';
+        predPrice.className = 'text-xs font-mono font-bold ' + (timing.badge_color === 'rose' ? 'text-rose-600' : (timing.badge_color === 'emerald' ? 'text-emerald-600' : 'text-sky-600'));
+      }
+      if (savingsLabel && timing.savings_label) savingsLabel.textContent = timing.savings_label;
+      if (savingsVal && timing.savings_amount !== undefined) {
+        savingsVal.textContent = '~₹' + Number(timing.savings_amount).toLocaleString();
+        savingsVal.className = 'text-xs font-mono font-bold ' + (timing.badge_color === 'rose' ? 'text-amber-600' : 'text-emerald-600');
+      }
+      if (winEl && timing.optimal_window) winEl.textContent = timing.optimal_window;
+      if (confEl && timing.confidence_score) confEl.textContent = 'Confidence: ' + timing.confidence_score + '% (1D-ResNet)';
+
+      if (headline) headline.textContent = timing.headline || "1D-ResNet Market Advisory";
+      if (advisory) advisory.textContent = timing.strategic_advisory || data.ai_recommendation;
+
+      if (timing.verdict === 'DELAY_AND_SPOT') {
+        if (header) header.className = "px-4 py-3 flex items-center justify-between text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 transition-colors";
+        if (badge) {
+          badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase font-bold bg-white/20 text-emerald-100 border border-emerald-300/40";
+          badge.textContent = timing.badge_text || "DELAY ADVISORY: SPOT BUFFER RECOMMENDED";
+        }
+      } else if (timing.verdict === 'BUY_NOW_LOCK_CONTRACT') {
+        if (header) header.className = "px-4 py-3 flex items-center justify-between text-xs font-bold text-white bg-gradient-to-r from-rose-600 to-amber-700 transition-colors";
+        if (badge) {
+          badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase font-bold bg-white/20 text-rose-100 border border-rose-300/40";
+          badge.textContent = timing.badge_text || "SURGE HEDGE ADVISORY: BUY NOW";
+        }
+      } else {
+        if (header) header.className = "px-4 py-3 flex items-center justify-between text-xs font-bold text-white bg-gradient-to-r from-sky-600 to-indigo-700 transition-colors";
+        if (badge) {
+          badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase font-bold bg-white/20 text-sky-100 border border-sky-300/40";
+          badge.textContent = timing.badge_text || "OPTIMAL TIMING: STABLE CORRIDOR";
+        }
+      }
+
+      if (actionBtns) {
+        let btnHtml = '';
+        if (timing.verdict === 'DELAY_AND_SPOT') {
+          btnHtml += '<button type="button" onclick="applySpotBufferAuction(' + timing.spot_quantity + ', ' + (timing.suggested_buffer_days || 15) + ')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-xs transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Run ' + (timing.suggested_buffer_days || 15) + '-Day Buffer Spot Auction (' + timing.spot_quantity + ' ' + unit + ')</span></button>';
+          btnHtml += '<button type="button" onclick="setModalPriceMode(\'' + modalPricingMode + '\')" class="px-3 py-1.5 border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold transition">Keep Full Volume (' + qty + ' ' + unit + ')</button>';
+        } else if (timing.verdict === 'BUY_NOW_LOCK_CONTRACT') {
+          btnHtml += '<button type="button" onclick="applySurgeHedgeAuction(' + (timing.suggested_buffer_days || 180) + ')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold shadow-xs transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span>Lock Long-Term Contract Volume Immediately</span></button>';
+        } else {
+          btnHtml += '<button type="button" onclick="setModalPriceMode(\'' + modalPricingMode + '\')" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold shadow-xs transition flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span>Apply AI Recommended Ceiling (₹' + Number(data.total_ceiling_inr).toLocaleString() + ')</span></button>';
+        }
+        actionBtns.innerHTML = btnHtml;
+      }
+
+      setModalPriceMode(modalPricingMode);
+
+      renderTimingSparkline(
+        timing.sparkline_unit_prices || data.sparkline_data,
+        timing.sparkline_labels || data.sparkline_months,
+        data.trend
+      );
+    }
+
+    function renderTimingSparkline(dataPoints, labels, trend) {
+      const canvas = document.getElementById('modalTimingSparklineChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (modalTimingChart) modalTimingChart.destroy();
+
+      const isSurge = trend === 'SURGE';
+      const isDecline = trend === 'DECLINE';
+      const strokeColor = isSurge ? '#e11d48' : (isDecline ? '#059669' : '#0284c7');
+      const fillColor = isSurge ? 'rgba(225, 29, 72, 0.12)' : (isDecline ? 'rgba(5, 150, 105, 0.12)' : 'rgba(2, 132, 199, 0.12)');
+
+      modalTimingChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: dataPoints,
+            borderColor: strokeColor,
+            backgroundColor: fillColor,
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2,
+            pointRadius: 3,
+            pointBackgroundColor: strokeColor,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) { return ' Price: ₹' + Number(ctx.raw).toLocaleString(); }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#64748b' }
+            },
+            y: {
+              grid: { color: 'rgba(226, 232, 240, 0.6)' },
+              ticks: {
+                font: { size: 9, family: 'JetBrains Mono' },
+                color: '#64748b',
+                callback: function(v) { return '₹' + (v >= 1000 ? Math.round(v/1000) + 'k' : v); }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function applySpotBufferAuction(spotQty, bufferDays) {
+      const qtyInput = document.getElementById('modalQuantity');
+      if (qtyInput) {
+        qtyInput.value = spotQty;
+        qtyInput.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50');
+        setTimeout(() => qtyInput.classList.remove('ring-2', 'ring-emerald-500', 'bg-emerald-50'), 1200);
+      }
+
+      const sDateInput = document.getElementById('modalStartDate');
+      const eDateInput = document.getElementById('modalEndDate');
+      if (sDateInput && eDateInput && sDateInput.value) {
+        const start = new Date(sDateInput.value);
+        const end = new Date(start.getTime() + (bufferDays || 15) * 24 * 60 * 60 * 1000);
+        const pad = n => n < 10 ? '0' + n : '' + n;
+        eDateInput.value = end.getFullYear() + '-' + pad(end.getMonth() + 1) + '-' + pad(end.getDate());
+      }
+
+      onModalQuantityInput();
+      showToast('⚡ Adjusted to ' + spotQty + ' buffer units over ' + bufferDays + ' days as advised by 1D-ResNet.');
+    }
+
+    function applySurgeHedgeAuction(days) {
+      const sDateInput = document.getElementById('modalStartDate');
+      const eDateInput = document.getElementById('modalEndDate');
+      if (sDateInput && eDateInput && sDateInput.value) {
+        const start = new Date(sDateInput.value);
+        const end = new Date(start.getTime() + (days || 180) * 24 * 60 * 60 * 1000);
+        const pad = n => n < 10 ? '0' + n : '' + n;
+        eDateInput.value = end.getFullYear() + '-' + pad(end.getMonth() + 1) + '-' + pad(end.getDate());
+      }
+      showToast('🛡 Extended contract horizon to ' + days + ' days to lock in price hedge.');
+    }
+
+    function validateCreateModalForm() {
+      const pId = document.getElementById('modalProductId').value;
+      const qty = parseFloat(document.getElementById('modalQuantity').value) || 0;
+      const price = parseFloat(document.getElementById('modalStartingPrice').value) || 0;
+      const sDate = document.getElementById('modalStartDate').value;
+      const sTime = document.getElementById('modalStartTime').value;
+      const eDate = document.getElementById('modalEndDate').value;
+      const eTime = document.getElementById('modalEndTime').value;
+
+      if (!pId) { alert('Please select a product or commodity.'); return false; }
+      if (qty <= 0) { alert('Please enter a valid required quantity.'); return false; }
+      if (price <= 0) { alert('Please enter a valid starting ceiling price.'); return false; }
+      if (!sDate || !sTime || !eDate || !eTime) { alert('Please fill in complete schedule dates and times.'); return false; }
+
+      const startDT = new Date(sDate + 'T' + sTime);
+      const endDT = new Date(eDate + 'T' + eTime);
+      if (endDT <= startDT) {
+        alert('End date/time must be strictly after start date/time.');
+        return false;
+      }
+      return true;
+    }
+
+    // BACI Live Search in Modal
+    let baciDebounceTimer = null;
+    document.addEventListener('DOMContentLoaded', function() {
+      const baciSearchInput = document.getElementById('modalBaciSearchInput');
+      const baciResultsBox = document.getElementById('modalBaciSearchResults');
+
+      if (baciSearchInput && baciResultsBox) {
+        baciSearchInput.addEventListener('input', function() {
+          const query = this.value.trim();
+          clearTimeout(baciDebounceTimer);
+          if (query.length < 2) {
+            baciResultsBox.classList.add('hidden');
+            baciResultsBox.innerHTML = '';
+            return;
+          }
+
+          baciDebounceTimer = setTimeout(() => {
+            fetch('http://localhost:5000/api/search-products?q=' + encodeURIComponent(query))
+              .then(r => r.json())
+              .then(data => {
+                const items = data.results || [];
+                if (items.length === 0) {
+                  baciResultsBox.innerHTML = '<div class="p-3 text-xs text-slate-500 font-sans">No matching commodities found.</div>';
+                  baciResultsBox.classList.remove('hidden');
+                  return;
+                }
+
+                let html = '';
+                items.slice(0, 10).forEach(item => {
+                  const safeName = (item.name || '').replace(/'/g, "\\'");
+                  const safeCat = (item.chapter_name || item.category || '').replace(/'/g, "\\'");
+                  html += '<div onclick="selectBaciCommodity(\'' + item.hsn_code + '\', \'' + safeName + '\', ' + (item.benchmark_price_inr || 2500) + ', \'' + (item.unit || 'units') + '\', \'' + safeCat + '\')" class="p-2.5 hover:bg-sky-50 cursor-pointer transition flex items-center justify-between text-xs"><div><div class="font-bold text-slate-900">' + item.name + '</div><div class="text-[10px] text-slate-500 font-mono">HSN: ' + item.hsn_code + ' • ' + (item.chapter_name || item.category || 'Commodity') + '</div></div><div class="text-right font-mono"><div class="font-bold text-sky-700">₹' + Number(item.benchmark_price_inr || 0).toLocaleString() + '</div><div class="text-[10px] text-slate-400">/' + (item.unit || 'units') + '</div></div></div>';
+                });
+                baciResultsBox.innerHTML = html;
+                baciResultsBox.classList.remove('hidden');
+              })
+              .catch(() => {
+                baciResultsBox.classList.add('hidden');
+              });
+          }, 250);
+        });
+
+        document.addEventListener('click', function(e) {
+          if (!baciSearchInput.contains(e.target) && !baciResultsBox.contains(e.target)) {
+            baciResultsBox.classList.add('hidden');
+          }
+        });
+      }
+    });
+
+    function selectBaciCommodity(hsn, name, price, unit, category) {
+      const baciResultsBox = document.getElementById('modalBaciSearchResults');
+      const baciSearchInput = document.getElementById('modalBaciSearchInput');
+
+      if (baciResultsBox) baciResultsBox.classList.add('hidden');
+      if (baciSearchInput) baciSearchInput.value = name + ' (' + hsn + ')';
+
+      modalCustomHsn = hsn;
+      modalCustomName = name;
+      modalCustomPrice = price;
+      modalCustomUnit = unit;
+
+      const select = document.getElementById('modalProductId');
+      let found = false;
+      if (select) {
+        for (let i = 0; i < select.options.length; i++) {
+          const optHsn = select.options[i].getAttribute('data-hsn');
+          if (optHsn === hsn) {
+            select.selectedIndex = i;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          const newOpt = new Option(name + ' (HSN: ' + hsn + ') — ₹' + price.toLocaleString() + ' / ' + unit, "1", true, true);
+          newOpt.setAttribute('data-name', name);
+          newOpt.setAttribute('data-price', price);
+          newOpt.setAttribute('data-unit', unit);
+          newOpt.setAttribute('data-hsn', hsn);
+          newOpt.setAttribute('data-category', category);
+          select.add(newOpt);
+        }
+      }
+
+      const unitBadge = document.getElementById('modalQuantityUnitBadge');
+      if (unitBadge) unitBadge.textContent = unit;
+
+      const qty = parseFloat(document.getElementById('modalQuantity').value) || 0;
+      if (qty > 0) {
+        fetchModalTimingOracle(select ? select.value : '', name, hsn, qty);
+      } else {
+        const qtyInput = document.getElementById('modalQuantity');
+        if (qtyInput) {
+          qtyInput.focus();
+          qtyInput.classList.add('ring-2', 'ring-sky-500');
+          setTimeout(() => qtyInput.classList.remove('ring-2', 'ring-sky-500'), 1000);
+        }
+      }
+    }
+
+  
+    // =========================================================================
+    // 🌐 PHASE 2: TRUE LANDED COST (LDP) NORMALIZER & RE-RANKING JAVASCRIPT
+    // =========================================================================
+    let isLdpActive = false;
+    let currentDrawerAuction = null;
+    let normalizedLdpData = null;
+
+    function toggleLdpNormalizer(active) {
+      isLdpActive = active;
+      if (!currentDrawerAuction) {
+        if (auctionsData.length > 0) {
+          currentDrawerAuction = auctionsData[0];
+          activeDrawerId = currentDrawerAuction.id;
+        } else {
+          return;
+        }
+      }
+
+      const header = document.getElementById('drawerBidAmountHeader');
+      if (header) {
+        header.textContent = active ? 'True Landed Cost (LDP)' : 'Bid Amount & Overhead';
+      }
+
+      if (active) {
+        fetchAndRenderLdpTimeline(currentDrawerAuction);
+      } else {
+        const alert = document.getElementById('drawerLdpNarrativeAlert');
+        if (alert) alert.classList.add('hidden');
+        renderRawBidTimeline(currentDrawerAuction);
+      }
+    }
+
+    function fetchAndRenderLdpTimeline(auctionItem) {
+      if (!auctionItem) return;
+      const timeline = document.getElementById('drawerBidTimeline');
+      const alert = document.getElementById('drawerLdpNarrativeAlert');
+      if (!timeline) return;
+
+      const bids = Array.isArray(auctionItem.bids) ? auctionItem.bids : [];
+      if (bids.length === 0) {
+        timeline.innerHTML = '<div class="p-6 text-xs text-center text-slate-400">No supplier bids recorded yet.</div>';
+        return;
+      }
+
+      // Prepare payload for Flask API
+      const payloadBids = bids.map((b, idx) => ({
+        id: b.id || idx,
+        supplier_id: b.supplierId || idx,
+        supplier_name: b.supplier || b.supplierName || 'Supplier',
+        country_code: b.countryCode || b.country || (idx === 0 && bids.length > 1 ? 'CHN' : 'IND'),
+        amount: b.amount || 0,
+        time: b.time || 'Logged'
+      }));
+
+      fetch('http://localhost:5000/api/normalize-bids-ldp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hsn_code: auctionItem.hsnCode || '721420',
+          bids: payloadBids
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.status === 'success') {
+          normalizedLdpData = res;
+          if (alert && res.re_ranked) {
+            alert.innerHTML = '<div class="font-bold flex items-center gap-1.5 mb-1"><span class="text-amber-400">🏆 LDP Re-Ranking Triggered:</span> Domestic Supplier Takes #1!</div>' + res.comparison_narrative;
+            alert.classList.remove('hidden');
+          } else if (alert) {
+            alert.innerHTML = '<div class="font-bold flex items-center gap-1.5 mb-1"><span class="text-emerald-400">✓ Cost Parity Verified:</span> ' + res.winner_ldp.supplier_name + ' maintains lowest landed cost.</div>' + res.comparison_narrative;
+            alert.classList.remove('hidden');
+          }
+
+          timeline.innerHTML = '';
+          res.bids_by_ldp.forEach((bid, idx) => {
+            const div = document.createElement('div');
+            div.className = 'px-4 py-3 flex items-center justify-between text-xs hover:bg-slate-50 transition-colors ' + (idx === 0 ? 'bg-emerald-50/50 border-l-4 border-emerald-500' : '');
+            
+            const flag = bid.supplier_country === 'IND' ? '🇮🇳' : (bid.supplier_country === 'CHN' ? '🇨🇳' : (bid.supplier_country === 'DEU' ? '🇩🇪' : (bid.supplier_country === 'ARE' ? '🇦🇪' : '🌐')));
+            const countryBadge = bid.is_domestic 
+              ? '<span class="text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">' + flag + ' Domestic</span>'
+              : '<span class="text-[9px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200">' + flag + ' ' + bid.supplier_country + '</span>';
+
+            const rankBadge = idx === 0
+              ? '<span class="text-[9px] font-extrabold text-emerald-700 uppercase bg-emerald-100 px-1.5 py-0.5 rounded shadow-xs">🏆 1st (LDP Winner)</span>'
+              : (bid.rank_worsened ? '<span class="text-[9px] font-semibold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">Rank ' + bid.ldp_rank + ' (Raw was #' + bid.raw_rank + ')</span>' : '<span class="text-[9px] text-slate-500 font-mono">#' + bid.ldp_rank + '</span>');
+
+            div.innerHTML = 
+              '<div>' +
+                '<div class="flex items-center space-x-1.5">' +
+                  '<p class="font-bold text-slate-800">' + escapeHtml(bid.supplier_name) + '</p>' +
+                  countryBadge +
+                '</div>' +
+                '<div class="flex items-center space-x-2 text-[10px] text-slate-400 font-mono-tabular mt-0.5">' +
+                  '<span>' + bid.time + '</span>' +
+                  '<span>•</span>' +
+                  '<span>Raw: ' + formatINR(bid.raw_bid_amount) + '</span>' +
+                '</div>' +
+                (bid.is_domestic 
+                  ? '<p class="text-[10px] text-emerald-600 font-medium mt-0.5">✓ 0% Customs Duty • Local Logistics (3.5%)</p>'
+                  : '<p class="text-[10px] text-rose-600 font-medium mt-0.5">⚠️ +' + formatINR(bid.total_hidden_overhead) + ' Overhead (Tariff ' + bid.customs_tariff_pct + '%, Freight ' + bid.freight_pct + '%, Carbon ' + bid.risk_buffer_pct + '%)</p>'
+                ) +
+              '</div>' +
+              '<div class="text-right">' +
+                '<p class="font-mono-tabular font-extrabold text-sm ' + (idx === 0 ? 'text-emerald-700' : 'text-slate-900') + '">' + formatINR(bid.true_landed_cost) + '</p>' +
+                '<div class="mt-0.5">' + rankBadge + '</div>' +
+              '</div>';
+            timeline.appendChild(div);
+          });
+        }
+      })
+      .catch(err => {
+        console.error('LDP normalization error:', err);
+        renderRawBidTimeline(auctionItem);
+      });
+    }
+
+    function renderRawBidTimeline(auctionItem) {
+      const timeline = document.getElementById('drawerBidTimeline');
+      if (!timeline) return;
+      timeline.innerHTML = '';
+      const bids = Array.isArray(auctionItem.bids) ? auctionItem.bids : [];
+      document.getElementById('bidCountBadge').textContent = bids.length + ' bids logged';
+
+      if (bids.length === 0) {
+        timeline.innerHTML = '<div class="p-6 text-xs text-center text-slate-400">No supplier bids recorded yet.</div>';
+      } else {
+        bids.forEach((bid, idx) => {
+          const div = document.createElement('div');
+          div.className = 'px-4 py-3 flex items-center justify-between text-xs hover:bg-slate-50 transition-colors';
+          const flag = bid.countryCode === 'CHN' ? '🇨🇳' : (bid.countryCode === 'DEU' ? '🇩🇪' : '🇮🇳');
+          div.innerHTML = 
+            '<div>' +
+              '<p class="font-bold text-slate-800">' + escapeHtml(bid.supplier || bid.supplierName || 'Verified Supplier') + ' <span class="text-[10px] text-slate-400">' + flag + '</span></p>' +
+              '<p class="text-[10px] text-slate-400 font-mono-tabular mt-0.5">' + (bid.time || 'Logged') + '</p>' +
+            '</div>' +
+            '<div class="text-right">' +
+              '<p class="font-mono-tabular font-bold text-slate-900">' + formatINR(bid.amount) + '</p>' +
+              (idx === 0 ? '<span class="text-[9px] font-bold text-emerald-600 uppercase bg-emerald-50 px-1 rounded">Current Lowest</span>' : '') +
+            '</div>';
+          timeline.appendChild(div);
+        });
+      }
+    }
+
+    function simulateOverseasVsDomesticBids() {
+      if (!currentDrawerAuction) {
+        if (auctionsData.length > 0) {
+          currentDrawerAuction = auctionsData[0];
+          openDrawer(currentDrawerAuction.id);
+        } else {
+          return;
+        }
+      }
+      openDrawer(currentDrawerAuction.id);
+
+      const base = currentDrawerAuction.currentBid || 1000;
+      const overseasBid = Math.round(base * 0.90);
+      const domesticBid = Math.round(base * 0.98);
+
+      currentDrawerAuction.bids = [
+        { supplier: 'Shaoxing Heavy Industries', countryCode: 'CHN', amount: overseasBid, time: 'Just Now (Overseas)' },
+        { supplier: 'Tata Bharat Steels Ltd', countryCode: 'IND', amount: domesticBid, time: '1 min ago (Domestic)' }
+      ];
+
+      const toggle = document.getElementById('drawerLdpToggle');
+      if (toggle) toggle.checked = true;
+      toggleLdpNormalizer(true);
+      showToast('⚡ Injected Global Overseas Bid vs Domestic Bid. Watch LDP Normalizer re-rank #1!');
+    }
+
+    // =========================================================================
+    // 🔗 PHASE 3: VAE COMBINATORIAL SMART BASKET JAVASCRIPT
+    // =========================================================================
+    let smartBasketData = null;
+
+    function fetchSmartBasketRecommendations(productId, hsnCode, quantity) {
+      const card = document.getElementById('modalSmartBasketCard');
+      const headline = document.getElementById('modalSmartBasketHeadline');
+      const prompt = document.getElementById('modalSmartBasketPrompt');
+      const itemsContainer = document.getElementById('modalSmartBasketItems');
+      const discountBadge = document.getElementById('modalSmartBasketDiscountBadge');
+      const savingsNotice = document.getElementById('modalSmartBasketSavingsNotice');
+
+      let url = 'http://localhost:5000/api/smart-basket-recommendations?hsn=' + encodeURIComponent(hsnCode || '721420') + '&quantity=' + encodeURIComponent(quantity || 100);
+      if (productId) url += '&product_id=' + encodeURIComponent(productId);
+
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'success' && data.bundle_candidates && data.bundle_candidates.length > 0) {
+            smartBasketData = data;
+            if (card) card.classList.remove('hidden');
+            if (headline) headline.textContent = data.headline;
+            if (prompt) prompt.textContent = data.strategic_prompt;
+            if (discountBadge) discountBadge.textContent = 'Save +' + data.synergy_discount_pct + '%';
+            if (savingsNotice) savingsNotice.innerHTML = 'Est. Synergy Discount: <strong class="text-emerald-700 font-bold">' + formatINR(data.estimated_savings_inr) + '</strong>';
+
+            if (itemsContainer) {
+              itemsContainer.innerHTML = '';
+              data.bundle_candidates.forEach((c, idx) => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center justify-between p-2.5 bg-white border border-indigo-100 rounded-xl hover:border-indigo-300 transition cursor-pointer text-xs';
+                label.innerHTML = 
+                  '<div class="flex items-center space-x-2.5">' +
+                    '<input type="checkbox" checked data-idx="' + idx + '" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 border-slate-300">' +
+                    '<div>' +
+                      '<p class="font-bold text-slate-800">' + escapeHtml(c.product_name) + ' <span class="text-[10px] font-mono text-indigo-600">(HSN ' + c.hsn_code + ')</span></p>' +
+                      '<p class="text-[10px] text-slate-500">Recommended Bundle: ' + c.recommended_quantity + ' ' + (c.unit || 'units') + ' • ' + formatINR(c.base_price) + ' / ' + (c.unit || 'unit') + '</p>' +
+                    '</div>' +
+                  '</div>' +
+                  '<div class="text-right">' +
+                    '<span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">' + Math.round(c.affinity_score * 100) + '% Affinity</span>' +
+                  '</div>';
+                itemsContainer.appendChild(label);
+              });
+            }
+          } else {
+            if (card) card.classList.add('hidden');
+          }
+        })
+        .catch(err => {
+          console.error('Smart Basket error:', err);
+          if (card) card.classList.add('hidden');
+        });
+    }
+
+    function applySmartBasketBundle() {
+      if (!smartBasketData || !smartBasketData.bundle_candidates) return;
+      const input = document.getElementById('modalStartingPrice');
+      const discount = smartBasketData.synergy_discount_pct || 7.4;
+      const savings = smartBasketData.estimated_savings_inr || 380000;
+
+      if (input && input.value) {
+        const curVal = parseFloat(input.value) || 0;
+        const discounted = Math.round(curVal * (1 - (discount / 100.0)));
+        input.value = discounted;
+      }
+
+      showToast('📦 Bundled ' + smartBasketData.bundle_candidates.length + ' affinity items into Smart Basket Auction! Applied -' + discount + '% synergy discount (Saves ' + formatINR(savings) + ').');
+      const btn = document.getElementById('modalApplySmartBasketBtn');
+      if (btn) {
+        btn.innerHTML = '<span>✓ Smart Basket Bundled (-' + discount + '%)</span>';
+        btn.className = 'px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 cursor-default';
+      }
     }
 
   </script>
