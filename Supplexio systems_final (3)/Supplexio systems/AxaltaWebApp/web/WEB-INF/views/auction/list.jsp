@@ -593,34 +593,95 @@
         <input type="hidden" name="action" value="create">
 
         <!-- Product Selection Row -->
-        <div class="space-y-1.5">
+        <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
               <span>Select Commodity / Product</span>
               <span class="text-rose-500">*</span>
             </label>
-            <span class="text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-              5,384 BACI Commodities Available
+            <span id="productCountBadge" class="text-[11px] font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+              <svg class="w-3 h-3 text-sky-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+              5,492 Commodities Available (108 Enterprise + 5,384 Global BACI)
             </span>
           </div>
 
-          <!-- Quick Global BACI Search input -->
-          <div class="relative">
-            <input type="text" id="modalBaciSearchInput" placeholder="Quick search 5,384 international commodities (e.g. 'Titanium', 'Steel Rods', 'Flush Doors', '721420')..." 
-                   class="w-full text-xs px-3.5 py-2 pl-9 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-800 placeholder-slate-400 outline-none transition" autocomplete="off">
-            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <div id="modalBaciSearchResults" class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-30 max-h-48 overflow-y-auto hidden divide-y divide-slate-100"></div>
+          <!-- Live Universal Search & Selection Combobox -->
+          <div class="relative" id="productComboboxWrapper">
+            <div class="relative flex items-center">
+              <input type="text" id="modalBaciSearchInput" 
+                     placeholder="Search or click to browse 5,492 commodities (e.g. 'Steel Rods', 'Titanium', 'Paint', '721420')..." 
+                     class="w-full text-xs font-medium px-3.5 py-2.5 pl-9 pr-20 bg-white border border-slate-300 rounded-xl focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 text-slate-800 placeholder-slate-400 outline-none transition cursor-pointer shadow-xs" 
+                     autocomplete="off"
+                     onclick="openProductDropdown()"
+                     onfocus="openProductDropdown()">
+              <svg class="w-4 h-4 text-sky-500 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              
+              <div class="absolute right-2.5 flex items-center space-x-1.5">
+                <button type="button" id="clearProductBtn" onclick="clearSelectedProduct(event)" class="hidden text-slate-400 hover:text-rose-500 p-1 rounded-full transition" title="Clear selection">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <button type="button" onclick="toggleProductDropdown(event)" class="text-slate-400 hover:text-slate-600 p-1 rounded-md transition" title="Toggle catalog list">
+                  <svg id="comboboxChevron" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Active Selected Product Banner (Shows when an item is chosen) -->
+            <div id="selectedProductCard" class="hidden mt-2 p-2.5 bg-gradient-to-r from-sky-50 via-slate-50 to-amber-50 border border-sky-200 rounded-xl flex items-center justify-between shadow-xs">
+              <div class="flex items-center space-x-2.5">
+                <span id="selectedProductTypeBadge" class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-sky-600 text-white uppercase tracking-wider">Enterprise</span>
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span id="selectedProductName" class="text-xs font-bold text-slate-900">Steel Rods</span>
+                    <span id="selectedProductHsn" class="text-[10px] font-mono px-1.5 py-0.2 bg-slate-200 text-slate-700 rounded font-semibold">HSN: 721420</span>
+                  </div>
+                  <div class="text-[11px] text-slate-500 font-medium flex items-center space-x-2 mt-0.5">
+                    <span id="selectedProductCategory">Steel &amp; Metals</span>
+                    <span>•</span>
+                    <span class="text-emerald-700 font-bold font-mono" id="selectedProductPrice">₹58,000 / ton</span>
+                  </div>
+                </div>
+              </div>
+              <button type="button" onclick="openProductDropdown(true)" class="text-xs font-bold text-sky-600 hover:text-sky-800 bg-white border border-sky-200 hover:border-sky-300 px-2.5 py-1 rounded-lg transition shadow-xs flex items-center space-x-1">
+                <span>Change</span>
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+            </div>
+
+            <!-- Rich Dropdown Menu -->
+            <div id="modalBaciSearchResults" class="absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-2xl z-40 max-h-80 flex flex-col hidden overflow-hidden">
+              <!-- Category Filter Chips -->
+              <div class="p-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
+                <button type="button" onclick="filterCatalogCategory('all')" id="catBtn_all" class="cat-pill active px-2.5 py-1 rounded-lg font-bold bg-slate-900 text-white whitespace-nowrap shadow-xs">✨ All (5,492)</button>
+                <button type="button" onclick="filterCatalogCategory('Enterprise')" id="catBtn_Enterprise" class="cat-pill px-2.5 py-1 rounded-lg font-semibold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">🏭 Enterprise (108)</button>
+                <button type="button" onclick="filterCatalogCategory('Global BACI')" id="catBtn_Global" class="cat-pill px-2.5 py-1 rounded-lg font-semibold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">🌐 Global BACI (5,384)</button>
+                <button type="button" onclick="filterCatalogCategory('Steel')" id="catBtn_Steel" class="cat-pill px-2.5 py-1 rounded-lg font-semibold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">🏗️ Steel</button>
+                <button type="button" onclick="filterCatalogCategory('Paint')" id="catBtn_Paint" class="cat-pill px-2.5 py-1 rounded-lg font-semibold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">🧪 Chemicals &amp; Paint</button>
+                <button type="button" onclick="filterCatalogCategory('Electrical')" id="catBtn_Electrical" class="cat-pill px-2.5 py-1 rounded-lg font-semibold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">⚡ Electrical</button>
+              </div>
+
+              <!-- Product Results List -->
+              <div id="catalogListContainer" class="flex-1 overflow-y-auto divide-y divide-slate-100 max-h-64 p-1">
+                <!-- Dynamically populated -->
+              </div>
+
+              <!-- Footer with Search Count & Global BACI hint -->
+              <div class="px-3.5 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500">
+                <span id="catalogStatusCount">Showing products</span>
+                <span class="text-sky-600 font-semibold flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  Instant Bilateral BACI Lakehouse Search
+                </span>
+              </div>
+            </div>
           </div>
 
-          <!-- Catalog Select -->
-          <select id="modalProductId" name="productId" required onchange="onModalProductChange()"
-                  class="w-full text-xs font-medium px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-slate-800 outline-none transition">
-            <option value="">— Choose from Active Enterprise Catalog —</option>
+          <!-- Hidden Synced Native Select (so standard form submit with productId works 100%) -->
+          <select id="modalProductId" name="productId" required onchange="onModalProductChange()" class="hidden">
+            <option value="">— Select Product —</option>
             <c:forEach var="p" items="${products}">
               <option value="${p.id}" data-name="${p.name}" data-price="${p.unitPrice}" data-unit="${p.unit != null ? p.unit : 'units'}" data-hsn="${p.hsnCode != null ? p.hsnCode : 'General'}" data-category="${p.category}">
-                ${p.name} (HSN: ${p.hsnCode != null ? p.hsnCode : 'General'}) — ₹<fmt:formatNumber value="${p.unitPrice}" type="number" maxFractionDigits="2"/> / ${p.unit != null ? p.unit : 'unit'}
-                <c:if test="${p.needsAuction}"> ⚠ Low Stock</c:if>
+                ${p.name} (HSN: ${p.hsnCode != null ? p.hsnCode : 'General'})
               </option>
             </c:forEach>
           </select>
@@ -2044,6 +2105,9 @@
       modal.style.display = 'flex';
       document.body.classList.add('overflow-hidden');
 
+      if (typeof initCatalogData === 'function') {
+        initCatalogData();
+      }
       onModalProductChange();
     }
 
@@ -2106,15 +2170,37 @@
         return;
       }
 
-      const pName = opt.getAttribute('data-name') || '';
-      const pPrice = parseFloat(opt.getAttribute('data-price')) || 0;
-      const pUnit = opt.getAttribute('data-unit') || 'units';
-      const pHsn = opt.getAttribute('data-hsn') || '';
+      const pName = modalCustomName || opt.getAttribute('data-name') || '';
+      const pPrice = modalCustomPrice || parseFloat(opt.getAttribute('data-price')) || 0;
+      const pUnit = modalCustomUnit || opt.getAttribute('data-unit') || 'units';
+      const pHsn = (modalCustomHsn && modalCustomHsn !== 'General') ? modalCustomHsn : (opt.getAttribute('data-hsn') || '721420');
 
       modalCustomName = pName;
       modalCustomPrice = pPrice;
       modalCustomUnit = pUnit;
       modalCustomHsn = pHsn;
+
+      // Update selected product card banner
+      const scard = document.getElementById('selectedProductCard');
+      const stype = document.getElementById('selectedProductTypeBadge');
+      const sname = document.getElementById('selectedProductName');
+      const shsn = document.getElementById('selectedProductHsn');
+      const scat = document.getElementById('selectedProductCategory');
+      const sprice = document.getElementById('selectedProductPrice');
+      const searchInp = document.getElementById('modalBaciSearchInput');
+      const clearBtn = document.getElementById('clearProductBtn');
+
+      if (scard) scard.classList.remove('hidden');
+      if (stype) {
+        stype.textContent = (selectedCommodityObj && selectedCommodityObj.catalog_type === 'Global BACI') ? 'Global BACI' : 'Enterprise';
+        stype.className = stype.textContent === 'Enterprise' ? 'px-2 py-0.5 text-[10px] font-bold rounded-md bg-sky-600 text-white uppercase tracking-wider' : 'px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-600 text-white uppercase tracking-wider';
+      }
+      if (sname) sname.textContent = pName;
+      if (shsn) shsn.textContent = 'HSN: ' + (pHsn || 'General');
+      if (scat) scat.textContent = opt.getAttribute('data-category') || 'Enterprise';
+      if (sprice) sprice.textContent = '₹' + Number(pPrice).toLocaleString() + ' / ' + pUnit;
+      if (searchInp && !searchInp.value) searchInp.value = pName + ' (HSN: ' + (pHsn || 'General') + ')';
+      if (clearBtn) clearBtn.classList.remove('hidden');
 
       const unitBadge = document.getElementById('modalQuantityUnitBadge');
       if (unitBadge) unitBadge.textContent = pUnit;
@@ -2365,105 +2451,356 @@
       return true;
     }
 
-    // BACI Live Search in Modal
+    // =========================================================================
+    // 🌐 COMPREHENSIVE PRODUCT & BACI COMMODITY COMBOSPEC (5,492 PRODUCTS)
+    // =========================================================================
+    let catalogCache = [];
+    let enterpriseCache = [];
+    let globalCache = [];
+    let activeCategoryFilter = 'all';
     let baciDebounceTimer = null;
-    document.addEventListener('DOMContentLoaded', function() {
-      const baciSearchInput = document.getElementById('modalBaciSearchInput');
-      const baciResultsBox = document.getElementById('modalBaciSearchResults');
+    let selectedCommodityObj = null;
 
-      if (baciSearchInput && baciResultsBox) {
-        baciSearchInput.addEventListener('input', function() {
-          const query = this.value.trim();
-          clearTimeout(baciDebounceTimer);
-          if (query.length < 2) {
-            baciResultsBox.classList.add('hidden');
-            baciResultsBox.innerHTML = '';
-            return;
+    function initCatalogData() {
+      // 1. First, parse all enterprise options already rendered from JSP
+      const select = document.getElementById('modalProductId');
+      enterpriseCache = [];
+      if (select) {
+        for (let i = 0; i < select.options.length; i++) {
+          const opt = select.options[i];
+          if (!opt.value) continue;
+          const name = opt.getAttribute('data-name') || opt.textContent.split('(HSN:')[0].trim();
+          const hsn = opt.getAttribute('data-hsn') || 'General';
+          const price = parseFloat(opt.getAttribute('data-price')) || 0;
+          const unit = opt.getAttribute('data-unit') || 'units';
+          const cat = opt.getAttribute('data-category') || 'Enterprise';
+          const isLow = opt.textContent.includes('Low Stock');
+          enterpriseCache.push({
+            id: opt.value,
+            name: name,
+            hsn_code: hsn,
+            base_price: price,
+            unit: unit,
+            category: cat,
+            catalog_type: 'Enterprise',
+            is_low_stock: isLow
+          });
+        }
+      }
+
+      // 2. Fetch full global BACI catalog in background from Flask
+      fetch('http://localhost:5000/api/all-catalog-products')
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.global_trade_products) {
+            globalCache = data.global_trade_products;
+            if (data.enterprise_products && data.enterprise_products.length > 0) {
+              enterpriseCache = data.enterprise_products;
+            }
           }
-
-          baciDebounceTimer = setTimeout(() => {
-            fetch('http://localhost:5000/api/search-products?q=' + encodeURIComponent(query))
-              .then(r => r.json())
-              .then(data => {
-                const items = data.results || [];
-                if (items.length === 0) {
-                  baciResultsBox.innerHTML = '<div class="p-3 text-xs text-slate-500 font-sans">No matching commodities found.</div>';
-                  baciResultsBox.classList.remove('hidden');
-                  return;
-                }
-
-                let html = '';
-                items.slice(0, 10).forEach(item => {
-                  const safeName = (item.name || '').replace(/'/g, "\\'");
-                  const safeCat = (item.chapter_name || item.category || '').replace(/'/g, "\\'");
-                  html += '<div onclick="selectBaciCommodity(\'' + item.hsn_code + '\', \'' + safeName + '\', ' + (item.benchmark_price_inr || 2500) + ', \'' + (item.unit || 'units') + '\', \'' + safeCat + '\')" class="p-2.5 hover:bg-sky-50 cursor-pointer transition flex items-center justify-between text-xs"><div><div class="font-bold text-slate-900">' + item.name + '</div><div class="text-[10px] text-slate-500 font-mono">HSN: ' + item.hsn_code + ' • ' + (item.chapter_name || item.category || 'Commodity') + '</div></div><div class="text-right font-mono"><div class="font-bold text-sky-700">₹' + Number(item.benchmark_price_inr || 0).toLocaleString() + '</div><div class="text-[10px] text-slate-400">/' + (item.unit || 'units') + '</div></div></div>';
-                });
-                baciResultsBox.innerHTML = html;
-                baciResultsBox.classList.remove('hidden');
-              })
-              .catch(() => {
-                baciResultsBox.classList.add('hidden');
-              });
-          }, 250);
+          catalogCache = [...enterpriseCache, ...globalCache];
+          const badge = document.getElementById('productCountBadge');
+          if (badge) {
+            badge.innerHTML = '<svg class="w-3 h-3 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 5,492 Commodities Available (' + enterpriseCache.length + ' Enterprise + 5,384 BACI)';
+          }
+        })
+        .catch(() => {
+          catalogCache = [...enterpriseCache];
         });
+    }
 
-        document.addEventListener('click', function(e) {
-          if (!baciSearchInput.contains(e.target) && !baciResultsBox.contains(e.target)) {
-            baciResultsBox.classList.add('hidden');
-          }
+    function toggleProductDropdown(e) {
+      if (e) e.stopPropagation();
+      const resultsBox = document.getElementById('modalBaciSearchResults');
+      if (resultsBox && !resultsBox.classList.contains('hidden')) {
+        closeProductDropdown();
+      } else {
+        openProductDropdown(true);
+      }
+    }
+
+    function openProductDropdown(forceResetSearch) {
+      const resultsBox = document.getElementById('modalBaciSearchResults');
+      const searchInput = document.getElementById('modalBaciSearchInput');
+      const chevron = document.getElementById('comboboxChevron');
+      if (!resultsBox) return;
+
+      if (forceResetSearch && searchInput) {
+        searchInput.value = '';
+        const clearBtn = document.getElementById('clearProductBtn');
+        if (clearBtn) clearBtn.classList.add('hidden');
+      }
+
+      resultsBox.classList.remove('hidden');
+      if (chevron) chevron.classList.add('rotate-180');
+      
+      const query = searchInput ? searchInput.value.trim() : '';
+      renderCatalogDropdown(query, activeCategoryFilter);
+      if (searchInput) searchInput.focus();
+    }
+
+    function closeProductDropdown() {
+      const resultsBox = document.getElementById('modalBaciSearchResults');
+      const chevron = document.getElementById('comboboxChevron');
+      if (resultsBox) resultsBox.classList.add('hidden');
+      if (chevron) chevron.classList.remove('rotate-180');
+    }
+
+    function filterCatalogCategory(cat) {
+      activeCategoryFilter = cat;
+      const pills = document.querySelectorAll('.cat-pill');
+      pills.forEach(p => {
+        p.className = 'cat-pill px-2.5 py-1 rounded-lg font-semibold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 whitespace-nowrap transition';
+      });
+      const activeBtn = document.getElementById('catBtn_' + (cat === 'all' ? 'all' : cat === 'Global BACI' ? 'Global' : cat));
+      if (activeBtn) {
+        activeBtn.className = 'cat-pill active px-2.5 py-1 rounded-lg font-bold bg-slate-900 text-white whitespace-nowrap shadow-xs';
+      }
+      const searchInput = document.getElementById('modalBaciSearchInput');
+      const query = searchInput ? searchInput.value.trim() : '';
+      renderCatalogDropdown(query, activeCategoryFilter);
+    }
+
+    function renderCatalogDropdown(query, catFilter) {
+      const listContainer = document.getElementById('catalogListContainer');
+      const statusCount = document.getElementById('catalogStatusCount');
+      if (!listContainer) return;
+
+      let items = [];
+      const qLower = (query || '').toLowerCase();
+
+      // Combined search across enterprise & global
+      const pool = (catalogCache && catalogCache.length > 0) ? catalogCache : enterpriseCache;
+
+      items = pool.filter(item => {
+        // Category filter
+        if (catFilter && catFilter !== 'all') {
+          if (catFilter === 'Enterprise' && item.catalog_type !== 'Enterprise') return false;
+          if (catFilter === 'Global BACI' && item.catalog_type !== 'Global BACI') return false;
+          if (catFilter === 'Steel' && !((item.category || '').toLowerCase().includes('steel') || (item.name || '').toLowerCase().includes('steel') || (item.hsn_code || '').startsWith('72') || (item.hsn_code || '').startsWith('73'))) return false;
+          if (catFilter === 'Paint' && !((item.category || '').toLowerCase().includes('paint') || (item.category || '').toLowerCase().includes('chemical') || (item.name || '').toLowerCase().includes('paint') || (item.hsn_code || '').startsWith('32') || (item.hsn_code || '').startsWith('28') || (item.hsn_code || '').startsWith('39'))) return false;
+          if (catFilter === 'Electrical' && !((item.category || '').toLowerCase().includes('electr') || (item.category || '').toLowerCase().includes('machin') || (item.hsn_code || '').startsWith('84') || (item.hsn_code || '').startsWith('85'))) return false;
+        }
+
+        // Query match
+        if (!qLower) return true;
+        const nameMatch = (item.name || '').toLowerCase().includes(qLower);
+        const hsnMatch = (item.hsn_code || '').toLowerCase().includes(qLower);
+        const catMatch = (item.category || '').toLowerCase().includes(qLower);
+        return nameMatch || hsnMatch || catMatch;
+      });
+
+      if (statusCount) {
+        statusCount.textContent = 'Found ' + items.length + ' matching commodities';
+      }
+
+      if (items.length === 0) {
+        listContainer.innerHTML = '<div class="p-4 text-center text-xs text-slate-500 font-sans"><div class="font-bold text-slate-700">No commodities match &ldquo;' + (query || '') + '&rdquo;</div><div class="text-[11px] text-slate-400 mt-1">Try searching by HSN code (e.g. 721420, 810820) or broader keyword.</div></div>';
+        return;
+      }
+
+      // Group into Enterprise vs Global BACI
+      const entItems = items.filter(it => it.catalog_type === 'Enterprise').slice(0, 50);
+      const baciItems = items.filter(it => it.catalog_type !== 'Enterprise').slice(0, 75);
+
+      let html = '';
+
+      if (entItems.length > 0) {
+        html += '<div class="px-3 py-1.5 bg-slate-100 text-[10px] font-bold text-slate-600 uppercase tracking-wider flex items-center justify-between sticky top-0 z-10"><span>🏭 Enterprise Catalog (' + entItems.length + ' listed)</span><span class="text-sky-700 font-semibold font-mono">Immediate Stock Available</span></div>';
+        entItems.forEach(item => {
+          const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          const safeCat = (item.category || '').replace(/'/g, "\\'");
+          const isSelected = selectedCommodityObj && (selectedCommodityObj.id === item.id || selectedCommodityObj.hsn_code === item.hsn_code);
+          html += '<div onclick="selectCommodity(' + item.id + ', \'' + item.hsn_code + '\', \'' + safeName + '\', ' + (item.base_price || 0) + ', \'' + (item.unit || 'units') + '\', \'' + safeCat + '\', \'Enterprise\')" class="p-2.5 hover:bg-sky-50 cursor-pointer transition flex items-center justify-between text-xs group ' + (isSelected ? 'bg-sky-50/80 font-bold border-l-4 border-sky-600' : '') + '"><div><div class="font-bold text-slate-900 group-hover:text-sky-700 flex items-center gap-1.5"><span>' + item.name + '</span>' + (item.is_low_stock ? '<span class="text-[9px] font-bold px-1.5 py-0.2 bg-rose-100 text-rose-700 rounded-full">⚠ Low Stock</span>' : '') + '</div><div class="text-[10px] text-slate-500 font-mono mt-0.5"><span class="bg-slate-100 px-1 py-0.2 rounded font-semibold text-slate-700">HSN: ' + item.hsn_code + '</span> • ' + (item.category || 'Enterprise') + '</div></div><div class="text-right font-mono"><div class="font-bold text-slate-900 group-hover:text-sky-700">₹' + Number(item.base_price || 0).toLocaleString() + '</div><div class="text-[10px] text-slate-400">/' + (item.unit || 'unit') + '</div></div></div>';
         });
       }
-    });
 
-    function selectBaciCommodity(hsn, name, price, unit, category) {
-      const baciResultsBox = document.getElementById('modalBaciSearchResults');
-      const baciSearchInput = document.getElementById('modalBaciSearchInput');
+      if (baciItems.length > 0) {
+        html += '<div class="px-3 py-1.5 bg-sky-50 text-[10px] font-bold text-sky-800 uppercase tracking-wider flex items-center justify-between sticky top-0 z-10 border-t border-sky-100"><span>🌐 Global BACI Trade Lakehouse (' + baciItems.length + ' listed)</span><span class="text-sky-600 font-mono">5,384 Sourcing Items</span></div>';
+        baciItems.forEach(item => {
+          const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          const safeCat = (item.category || '').replace(/'/g, "\\'");
+          const isSelected = selectedCommodityObj && selectedCommodityObj.hsn_code === item.hsn_code;
+          html += '<div onclick="selectCommodity(' + (item.id || 0) + ', \'' + item.hsn_code + '\', \'' + safeName + '\', ' + (item.base_price || 2500) + ', \'' + (item.unit || 'units') + '\', \'' + safeCat + '\', \'Global BACI\')" class="p-2.5 hover:bg-amber-50/70 cursor-pointer transition flex items-center justify-between text-xs group ' + (isSelected ? 'bg-amber-50 font-bold border-l-4 border-amber-500' : '') + '"><div><div class="font-bold text-slate-900 group-hover:text-amber-800 flex items-center gap-1.5"><span>' + item.name + '</span><span class="text-[9px] font-bold px-1.5 py-0.2 bg-sky-100 text-sky-700 rounded-full font-mono">BACI</span></div><div class="text-[10px] text-slate-500 font-mono mt-0.5"><span class="bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-semibold">HSN: ' + item.hsn_code + '</span> • ' + (item.category || 'Commodity') + '</div></div><div class="text-right font-mono"><div class="font-bold text-amber-700 group-hover:text-amber-900">₹' + Number(item.base_price || 0).toLocaleString() + '</div><div class="text-[10px] text-slate-400">/' + (item.unit || 'units') + '</div></div></div>';
+        });
+      }
 
-      if (baciResultsBox) baciResultsBox.classList.add('hidden');
-      if (baciSearchInput) baciSearchInput.value = name + ' (' + hsn + ')';
+      listContainer.innerHTML = html;
+    }
+
+    function selectCommodity(id, hsn, name, price, unit, category, catalogType) {
+      selectedCommodityObj = { id, hsn_code: hsn, name, base_price: price, unit, category, catalog_type: catalogType };
+      
+      closeProductDropdown();
+
+      const searchInput = document.getElementById('modalBaciSearchInput');
+      const clearBtn = document.getElementById('clearProductBtn');
+      if (searchInput) searchInput.value = name + ' (HSN: ' + hsn + ')';
+      if (clearBtn) clearBtn.classList.remove('hidden');
+
+      // Update the Selected Product Display Banner
+      const card = document.getElementById('selectedProductCard');
+      const typeBadge = document.getElementById('selectedProductTypeBadge');
+      const nameEl = document.getElementById('selectedProductName');
+      const hsnEl = document.getElementById('selectedProductHsn');
+      const catEl = document.getElementById('selectedProductCategory');
+      const priceEl = document.getElementById('selectedProductPrice');
+
+      if (card) card.classList.remove('hidden');
+      if (typeBadge) {
+        typeBadge.textContent = catalogType;
+        typeBadge.className = catalogType === 'Enterprise' ? 'px-2 py-0.5 text-[10px] font-bold rounded-md bg-sky-600 text-white uppercase tracking-wider' : 'px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-600 text-white uppercase tracking-wider';
+      }
+      if (nameEl) nameEl.textContent = name;
+      if (hsnEl) hsnEl.textContent = 'HSN: ' + hsn;
+      if (catEl) catEl.textContent = category || 'Commodity';
+      if (priceEl) priceEl.textContent = '₹' + Number(price).toLocaleString() + ' / ' + unit;
 
       modalCustomHsn = hsn;
       modalCustomName = name;
       modalCustomPrice = price;
       modalCustomUnit = unit;
 
-      const select = document.getElementById('modalProductId');
-      let found = false;
-      if (select) {
-        for (let i = 0; i < select.options.length; i++) {
-          const optHsn = select.options[i].getAttribute('data-hsn');
-          if (optHsn === hsn) {
-            select.selectedIndex = i;
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          const newOpt = new Option(name + ' (HSN: ' + hsn + ') — ₹' + price.toLocaleString() + ' / ' + unit, "1", true, true);
-          newOpt.setAttribute('data-name', name);
-          newOpt.setAttribute('data-price', price);
-          newOpt.setAttribute('data-unit', unit);
-          newOpt.setAttribute('data-hsn', hsn);
-          newOpt.setAttribute('data-category', category);
-          select.add(newOpt);
-        }
-      }
-
       const unitBadge = document.getElementById('modalQuantityUnitBadge');
       if (unitBadge) unitBadge.textContent = unit;
 
-      const qty = parseFloat(document.getElementById('modalQuantity').value) || 0;
-      if (qty > 0) {
-        fetchModalTimingOracle(select ? select.value : '', name, hsn, qty);
+      // Handle product ID assignment and MySQL sync for Global BACI
+      const select = document.getElementById('modalProductId');
+      if (catalogType === 'Enterprise' && id > 0) {
+        if (select) select.value = id;
+        onModalProductChange();
       } else {
-        const qtyInput = document.getElementById('modalQuantity');
-        if (qtyInput) {
-          qtyInput.focus();
-          qtyInput.classList.add('ring-2', 'ring-sky-500');
-          setTimeout(() => qtyInput.classList.remove('ring-2', 'ring-sky-500'), 1000);
+        // Global BACI item - ensure it exists in products table so foreign key reverse_auctions_ibfk_1 is met
+        fetch('http://localhost:5000/api/ensure-product', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            name: name,
+            hsn_code: hsn,
+            category: category,
+            base_price: price,
+            unit: unit
+          })
+        })
+        .then(r => r.json())
+        .then(res => {
+          if (res.status === 'success' && res.product_id) {
+            const actualId = res.product_id;
+            selectedCommodityObj.id = actualId;
+            if (select) {
+              let opt = select.querySelector('option[value=\"' + actualId + '\"]');
+              if (!opt) {
+                opt = new Option(name + ' (HSN: ' + hsn + ')', actualId, true, true);
+                opt.setAttribute('data-name', name);
+                opt.setAttribute('data-price', price);
+                opt.setAttribute('data-unit', unit);
+                opt.setAttribute('data-hsn', hsn);
+                opt.setAttribute('data-category', category);
+                select.add(opt);
+              }
+              select.value = actualId;
+            }
+            onModalProductChange();
+          }
+        })
+        .catch(err => {
+          console.warn('Ensure product warning:', err);
+          onModalProductChange();
+        });
+      }
+
+      // If quantity is already filled, recalculate ceiling and trigger AI
+      const qtyInput = document.getElementById('modalQuantity');
+      const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
+      if (qty > 0) {
+        const ceilingInput = document.getElementById('modalStartingPrice');
+        if (ceilingInput && price > 0) {
+          ceilingInput.value = Math.round(qty * price);
         }
+        fetchModalTimingOracle(select ? select.value : '', name, hsn, qty);
+        fetchSmartBasketRecommendations(select ? select.value : '', hsn, qty);
+      } else if (qtyInput) {
+        qtyInput.focus();
+        qtyInput.classList.add('ring-2', 'ring-sky-500');
+        setTimeout(() => qtyInput.classList.remove('ring-2', 'ring-sky-500'), 1000);
       }
     }
+
+    function clearSelectedProduct(e) {
+      if (e) e.stopPropagation();
+      selectedCommodityObj = null;
+      modalCustomHsn = '';
+      modalCustomName = '';
+      modalCustomPrice = 0;
+      modalCustomUnit = 'units';
+
+      const searchInput = document.getElementById('modalBaciSearchInput');
+      const clearBtn = document.getElementById('clearProductBtn');
+      const card = document.getElementById('selectedProductCard');
+      const select = document.getElementById('modalProductId');
+
+      if (searchInput) searchInput.value = '';
+      if (clearBtn) clearBtn.classList.add('hidden');
+      if (card) card.classList.add('hidden');
+      if (select) select.value = '';
+
+      const oracleCard = document.getElementById('modalTimingOracleCard');
+      if (oracleCard) oracleCard.classList.add('hidden');
+      const basketCard = document.getElementById('modalSmartBasketCard');
+      if (basketCard) basketCard.classList.add('hidden');
+
+      openProductDropdown(true);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initCatalogData();
+
+      const baciSearchInput = document.getElementById('modalBaciSearchInput');
+      if (baciSearchInput) {
+        baciSearchInput.addEventListener('input', function() {
+          const query = this.value.trim();
+          const clearBtn = document.getElementById('clearProductBtn');
+          if (clearBtn) {
+            if (query.length > 0) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+          }
+
+          // Render local match immediately
+          renderCatalogDropdown(query, activeCategoryFilter);
+
+          // Debounce fetch for all 5,384 BACI products from Flask
+          clearTimeout(baciDebounceTimer);
+          if (query.length >= 1) {
+            baciDebounceTimer = setTimeout(() => {
+              fetch('http://localhost:5000/api/search-products?q=' + encodeURIComponent(query))
+                .then(r => r.json())
+                .then(data => {
+                  const items = data.products || data.results || [];
+                  if (items && items.length > 0) {
+                    const existingHsns = new Set(catalogCache.map(c => c.hsn_code));
+                    items.forEach(it => {
+                      if (!existingHsns.has(it.hsn_code)) {
+                        catalogCache.push(it);
+                        existingHsns.add(it.hsn_code);
+                      }
+                    });
+                    renderCatalogDropdown(query, activeCategoryFilter);
+                  }
+                })
+                .catch(() => {});
+            }, 200);
+          }
+        });
+      }
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('productComboboxWrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+          closeProductDropdown();
+        }
+      });
+    });
 
   
     // =========================================================================

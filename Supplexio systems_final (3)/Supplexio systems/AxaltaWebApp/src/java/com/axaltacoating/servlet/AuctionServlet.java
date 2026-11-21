@@ -1059,6 +1059,7 @@ if ("DELIVERED".equalsIgnoreCase(poStatus)) {
                 product.setUnitPrice(rs.getDouble("base_price"));
                 product.setUnit(rs.getString("unit"));
                 product.setCreatedAt(rs.getTimestamp("created_at"));
+                try { product.setHsnCode(rs.getString("hsn_code")); } catch (Exception ignored) {}
                 products.add(product);
             }
             
@@ -1107,6 +1108,7 @@ if ("DELIVERED".equalsIgnoreCase(poStatus)) {
                 product.setUnitPrice(rs.getDouble("base_price"));
                 product.setUnit(rs.getString("unit"));
                 product.setCreatedAt(rs.getTimestamp("created_at"));
+                try { product.setHsnCode(rs.getString("hsn_code")); } catch (Exception ignored) {}
                 
                 // Add inventory information if available
                 if (rs.getObject("quantity") != null) {

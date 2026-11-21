@@ -1035,35 +1035,68 @@ def timing_oracle_endpoint():
 def search_products():
     """
     Supplexio Product Search Engine:
-    Searches across ALL 5,384 international BACI commodities + 105 local Axalta products.
+    Searches across ALL 5,384 international BACI commodities + 107 local enterprise products.
+    If q is empty, returns high-volume featured sourcing commodities.
     """
     q = request.args.get("q", "").strip()
-    if not q or len(q) < 2:
-        return jsonify({"status": "success", "count": 0, "products": []})
-
+    category = request.args.get("category", "").strip()
     results = []
     try:
         import mysql.connector
         conn = mysql.connector.connect(host="localhost", user="root", password="root", database="axalta")
         cursor = conn.cursor(dictionary=True)
 
-        # 1. Search in products table first
-        cursor.execute("""
-            SELECT id, name, hsn_code, category, base_price, unit, 'Enterprise Catalog' as catalog_type
-            FROM products
-            WHERE name LIKE %s OR hsn_code LIKE %s
-            LIMIT 15
-        """, (f"%{q}%", f"{q}%"))
-        results.extend(cursor.fetchall())
+        if not q or len(q) < 1:
+            # Return top featured / popular commodities across all categories
+            cat_filter = ""
+            params = []
+            if category and category != "all":
+                cat_filter = "WHERE category = %s "
+                params.append(category)
 
-        # 2. Search in global_trade_products
-        cursor.execute("""
-            SELECT id + 10000 as id, name, hsn_code, chapter_name as category, benchmark_price_inr as base_price, unit, 'Global 5,384 BACI Catalog' as catalog_type
-            FROM global_trade_products
-            WHERE (name LIKE %s OR hsn_code LIKE %s OR description LIKE %s)
-            LIMIT 20
-        """, (f"%{q}%", f"{q}%", f"%{q}%"))
-        results.extend(cursor.fetchall())
+            cursor.execute(f"""
+                SELECT id, name, COALESCE(hsn_code, '721420') as hsn_code, category, base_price, unit, 'Enterprise' as catalog_type
+                FROM products
+                {cat_filter}
+                ORDER BY CASE WHEN category IN ('Steel', 'Paint', 'Construction', 'Machinery') THEN 0 ELSE 1 END, name
+                LIMIT 100
+            """, tuple(params))
+            results.extend(cursor.fetchall())
+
+            global_cat_filter = ""
+            global_params = []
+            if category and category != "all":
+                global_cat_filter = "WHERE chapter_name = %s "
+                global_params.append(category)
+
+            cursor.execute(f"""
+                SELECT id + 10000 as id, name, hsn_code, chapter_name as category, benchmark_price_inr as base_price, unit, 'Global BACI' as catalog_type
+                FROM global_trade_products
+                {global_cat_filter}
+                ORDER BY benchmark_price_inr DESC
+                LIMIT 100
+            """, tuple(global_params))
+            results.extend(cursor.fetchall())
+        else:
+            # 1. Search in enterprise products
+            cursor.execute("""
+                SELECT id, name, COALESCE(hsn_code, 'General') as hsn_code, category, base_price, unit, 'Enterprise' as catalog_type
+                FROM products
+                WHERE (name LIKE %s OR hsn_code LIKE %s OR category LIKE %s)
+                ORDER BY name
+                LIMIT 50
+            """, (f"%{q}%", f"{q}%", f"%{q}%"))
+            results.extend(cursor.fetchall())
+
+            # 2. Search in 5,384 global_trade_products
+            cursor.execute("""
+                SELECT id + 10000 as id, name, hsn_code, chapter_name as category, benchmark_price_inr as base_price, unit, 'Global BACI' as catalog_type
+                FROM global_trade_products
+                WHERE (name LIKE %s OR hsn_code LIKE %s OR chapter_name LIKE %s OR description LIKE %s)
+                ORDER BY CASE WHEN name LIKE %s THEN 0 ELSE 1 END, benchmark_price_inr DESC
+                LIMIT 75
+            """, (f"%{q}%", f"{q}%", f"%{q}%", f"%{q}%", f"{q}%"))
+            results.extend(cursor.fetchall())
 
         conn.close()
     except Exception as e:
@@ -1073,8 +1106,93 @@ def search_products():
         "status": "success",
         "query": q,
         "count": len(results),
-        "products": results
+        "products": results,
+        "results": results
     })
+
+
+@app.route("/api/ensure-product", methods=["POST"])
+def ensure_product_endpoint():
+    """
+    Ensures that a selected Global BACI commodity exists in the local products table
+    so foreign key reverse_auctions.product_id constraint is always satisfied.
+    """
+    data = request.get_json(silent=True) or request.form.to_dict()
+    hsn = str(data.get("hsn_code") or "721420").strip()
+    name = str(data.get("name") or "Global Commodity").strip()
+    category = str(data.get("category") or "Global Trade").strip()
+    try:
+        price = float(data.get("base_price") or 1000.0)
+    except (ValueError, TypeError):
+        price = 1000.0
+    unit = str(data.get("unit") or "units").strip()
+
+    try:
+        import mysql.connector
+        conn = mysql.connector.connect(host="localhost", user="root", password="root", database="axalta")
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, name, base_price, unit, hsn_code FROM products WHERE hsn_code = %s OR name = %s LIMIT 1", (hsn, name))
+        p = cursor.fetchone()
+        if p:
+            prod_id = p["id"]
+        else:
+            cursor.execute("""
+                INSERT INTO products (name, description, category, base_price, unit, hsn_code, stock_quantity)
+                VALUES (%s, %s, %s, %s, %s, %s, 100)
+            """, (name, f"Global BACI Trade Commodity (HSN {hsn})", category, price, unit, hsn))
+            conn.commit()
+            prod_id = cursor.lastrowid
+        conn.close()
+        return jsonify({
+            "status": "success",
+            "product_id": prod_id,
+            "name": name,
+            "hsn_code": hsn,
+            "base_price": price,
+            "unit": unit
+        })
+    except Exception as e:
+        logger.error("Error ensuring product: %s", e)
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/all-catalog-products", methods=["GET"])
+def all_catalog_products_endpoint():
+    """
+    Returns ALL 107 enterprise products + featured global BACI commodities for the modal dropdown.
+    """
+    try:
+        import mysql.connector
+        conn = mysql.connector.connect(host="localhost", user="root", password="root", database="axalta")
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT id, name, COALESCE(hsn_code, '721420') as hsn_code, category, base_price, unit, stock_quantity,
+                   'Enterprise' as catalog_type
+            FROM products
+            ORDER BY category, name
+        """)
+        enterprise = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT id + 10000 as id, name, hsn_code, chapter_name as category,
+                   benchmark_price_inr as base_price, unit, 'Global BACI' as catalog_type
+            FROM global_trade_products
+            ORDER BY chapter, name
+            LIMIT 300
+        """)
+        global_comms = cursor.fetchall()
+        conn.close()
+
+        return jsonify({
+            "status": "success",
+            "total_enterprise": len(enterprise),
+            "total_global": 5384,
+            "enterprise_products": enterprise,
+            "global_trade_products": global_comms
+        })
+    except Exception as e:
+        logger.error("Error fetching all catalog products: %s", e)
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 # ─────────────────────────────────────────────
