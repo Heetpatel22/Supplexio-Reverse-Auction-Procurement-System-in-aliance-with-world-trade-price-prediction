@@ -320,7 +320,7 @@
                     <button type="button" onclick="cycleSurgeAlert(-1)" title="Previous Alert" class="w-6 h-6 rounded-md bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold transition">‹</button>
                     <span class="text-[11px] font-mono font-bold text-slate-600 px-1" id="aiSurgePageLabel">1 / 1</span>
                     <button type="button" onclick="cycleSurgeAlert(1)" title="Next Alert" class="w-6 h-6 rounded-md bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold transition">›</button>
-                    <button type="button" onclick="toggleAllSurgeAlerts()" id="aiSurgeExpandBtn" class="ml-1 px-2 py-0.5 rounded-md bg-white border border-rose-200 hover:bg-rose-100 text-rose-700 text-[11px] font-bold transition">View All</button>
+                    <button type="button" onclick="toggleAllSurgeAlerts()" id="aiSurgeExpandBtn" class="ml-1 px-2 py-0.5 rounded-md bg-white border border-rose-200 hover:bg-rose-100 text-rose-700 text-[11px] font-bold transition">Hide Top 10 +/-</button>
                   </div>
                 </div>
                 
@@ -353,8 +353,8 @@
 
           </div>
 
-          <!-- Expandable Multi-Alert List (Shows ALL Surge Alerts) -->
-          <div id="aiSurgeAllList" class="hidden mt-4 pt-4 border-t border-rose-200/70 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5 max-h-64 overflow-y-auto pr-1"></div>
+          <!-- Top 10 Growing (+) Left & Top 10 Biggest Drops (-) Right -->
+          <div id="aiSurgeAllList" class="mt-4 pt-4 border-t border-rose-200/70 grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
         </div>
 
         <!-- Controls Bar: Search, Filters, Sorting & View Toggle -->
@@ -914,6 +914,8 @@
 
     let activeSurgeItemId = null;
     let surgeProposalsList = [];
+    let topSurgesList = [];
+    let topDropsList = [];
     let currentSurgeIdx = 0;
 
     function renderSelectedSurgeAlert(idx) {
@@ -952,33 +954,59 @@
     function renderAllSurgeGrid() {
       const grid = document.getElementById('aiSurgeAllList');
       if (!grid) return;
-      if (!surgeProposalsList || surgeProposalsList.length === 0) {
-        grid.innerHTML = '<div class="text-xs text-slate-500 p-2">No active surge alerts.</div>';
-        return;
-      }
-      grid.innerHTML = surgeProposalsList.map((p, i) => {
-        const isSelected = (i === currentSurgeIdx);
+
+      const surges = (topSurgesList && topSurgesList.length > 0) ? topSurgesList : (surgeProposalsList || []).slice(0, 10);
+      const drops = (topDropsList && topDropsList.length > 0) ? topDropsList : [];
+
+      const renderColCard = (p, rank, isDropCol) => {
         const pctStr = p.predicted_price_surge || '+0.0%';
         const isNeg = String(pctStr).startsWith('-');
         const badgeCls = isNeg ? 'text-emerald-700 bg-emerald-100' : 'text-rose-700 bg-rose-100';
-        const reasonTip = p.market_driver ? '<div class="text-[10px] text-slate-500 truncate mt-0.5" title="' + escapeHtml(p.market_driver) + '">' + escapeHtml(p.market_driver) + '</div>' : '';
-        return '<div onclick="renderSelectedSurgeAlert(' + i + '); renderAllSurgeGrid();" class="p-3 rounded-xl border cursor-pointer transition flex items-center justify-between gap-2 ' + (isSelected ? 'bg-white border-rose-400 ring-2 ring-rose-500/20 shadow-sm' : 'bg-white/80 border-slate-200 hover:border-rose-300') + '">' +
-          '<div class="min-w-0">' +
+        const borderHover = isDropCol ? 'hover:border-emerald-300' : 'hover:border-rose-300';
+        const btnCls = isDropCol ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700';
+        const invId = p.resolvedId || p.inventory_id;
+        return '<div onclick="openCreateAuctionModal(' + invId + ')" class="p-2.5 rounded-xl border border-slate-200 bg-white/90 ' + borderHover + ' cursor-pointer transition flex items-center justify-between gap-2 shadow-sm">' +
+          '<div class="min-w-0 flex-1">' +
             '<div class="flex items-center gap-1.5">' +
+              '<span class="text-[10px] font-mono font-bold text-slate-400">#' + rank + '</span>' +
               '<span class="text-xs font-bold text-slate-900 truncate">' + escapeHtml(p.item_name) + '</span>' +
               '<span class="px-1.5 py-0.5 text-[10px] font-extrabold rounded ' + badgeCls + '">' + escapeHtml(pctStr) + '</span>' +
+              (p.is_low ? '<span class="px-1 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-700 rounded uppercase">Low</span>' : '') +
             '</div>' +
-            '<div class="text-[11px] font-mono text-slate-500 mt-0.5">HSN ' + escapeHtml(p.hsn_code || 'General') + ' • Stock ' + p.current_stock + '/' + p.min_threshold + '</div>' +
-            reasonTip +
+            '<div class="text-[10px] font-mono text-slate-500 mt-0.5">HSN ' + escapeHtml(p.hsn_code || 'General') + ' • Stock ' + p.current_stock + '/' + p.min_threshold + '</div>' +
+            (p.market_driver ? '<div class="text-[10px] text-slate-500 truncate mt-0.5" title="' + escapeHtml(p.market_driver) + '">' + escapeHtml(p.market_driver) + '</div>' : '') +
           '</div>' +
-          '<button type="button" onclick="event.stopPropagation(); openCreateAuctionModal(' + (p.resolvedId || p.inventory_id) + ')" class="px-2.5 py-1.5 text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shrink-0">Auction</button>' +
+          '<button type="button" onclick="event.stopPropagation(); openCreateAuctionModal(' + invId + ')" class="px-2.5 py-1 text-[11px] font-bold text-white ' + btnCls + ' rounded-lg shrink-0">Auction</button>' +
         '</div>';
-      }).join('');
+      };
+
+      const leftHtml =
+        '<div class="bg-white/70 rounded-xl p-3 border border-rose-200/80">' +
+          '<div class="flex items-center justify-between mb-2.5">' +
+            '<span class="text-xs font-extrabold text-rose-700 uppercase tracking-wider">📈 Top 10 Growing / Surge (+)</span>' +
+            '<span class="text-[10px] font-mono font-semibold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full">Lock In / Buy Now</span>' +
+          '</div>' +
+          '<div class="space-y-2 max-h-72 overflow-y-auto pr-1">' +
+            (surges.length ? surges.map((p, i) => renderColCard(p, i + 1, false)).join('') : '<div class="text-xs text-slate-500 p-2">Loading live surges...</div>') +
+          '</div>' +
+        '</div>';
+
+      const rightHtml =
+        '<div class="bg-white/70 rounded-xl p-3 border border-emerald-200/80">' +
+          '<div class="flex items-center justify-between mb-2.5">' +
+            '<span class="text-xs font-extrabold text-emerald-700 uppercase tracking-wider">📉 Top 10 Biggest Drops (-)</span>' +
+            '<span class="text-[10px] font-mono font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Spot / Delay Savings</span>' +
+          '</div>' +
+          '<div class="space-y-2 max-h-72 overflow-y-auto pr-1">' +
+            (drops.length ? drops.map((p, i) => renderColCard(p, i + 1, true)).join('') : '<div class="text-xs text-slate-500 p-2">Loading live drops...</div>') +
+          '</div>' +
+        '</div>';
+
+      grid.innerHTML = leftHtml + rightHtml;
     }
 
     function cycleSurgeAlert(delta) {
       renderSelectedSurgeAlert(currentSurgeIdx + delta);
-      renderAllSurgeGrid();
     }
 
     function toggleAllSurgeAlerts() {
@@ -987,7 +1015,7 @@
       if (!grid) return;
       const willShow = grid.classList.contains('hidden');
       grid.classList.toggle('hidden');
-      if (btn) btn.textContent = willShow ? 'Hide All' : 'View All';
+      if (btn) btn.textContent = willShow ? 'Hide Top 10 +/-' : 'Show Top 10 +/-';
       if (willShow) renderAllSurgeGrid();
     }
 
@@ -1004,6 +1032,7 @@
             hsn_code: top.hsn || (matchedCatalog && matchedCatalog.hsnCode) || 'General',
             current_stock: top.qty,
             min_threshold: top.min,
+            is_low: true,
             predicted_price_surge: '+' + (top.surge || 7.4) + '%',
             ai_suggested_ceiling: unitPrice
           };
@@ -1011,22 +1040,38 @@
         renderSelectedSurgeAlert(0);
       }
 
-      // Enhance with live 1D-ResNet Flask surge check for ALL flagged items
+      // Enhance with live 1D-ResNet + World Market forecasts for ALL 107 inventory items
       fetch('http://localhost:5000/api/inventory-surge-check')
         .then(r => r.json())
         .then(data => {
-          if (data && data.status === 'success' && data.proposals && data.proposals.length > 0) {
-            surgeProposalsList = data.proposals.map(p => {
+          if (data && data.status === 'success') {
+            const resolveEntry = (p) => {
               const invMatch = (inventoryData || []).find(i => i.id == p.inventory_id || i.name === p.item_name);
-              const resolvedId = invMatch ? invMatch.id : p.inventory_id;
-              if (invMatch) {
-                const pctNum = parseFloat(String(p.predicted_price_surge || '7.4').replace(/[^0-9.]/g, '')) || 7.4;
-                invMatch.surge = pctNum;
-                invMatch.priceCeiling = p.ai_suggested_ceiling;
-              }
-              return Object.assign({}, p, { resolvedId: resolvedId });
-            });
-            renderSelectedSurgeAlert(0);
+              return Object.assign({}, p, { resolvedId: invMatch ? invMatch.id : p.inventory_id });
+            };
+
+            if (data.all_forecasts && data.all_forecasts.length > 0) {
+              data.all_forecasts.forEach(p => {
+                const invMatch = (inventoryData || []).find(i => i.id == p.inventory_id || i.name === p.item_name);
+                if (invMatch) {
+                  invMatch.liveForecastPct = p.predicted_price_surge;
+                  invMatch.liveTrend = p.trend;
+                  invMatch.liveMarketDriver = p.market_driver;
+                  invMatch.priceCeiling = p.ai_suggested_ceiling;
+                  if (p.trend === 'SURGE' || p.is_low) {
+                    invMatch.surge = p.pct_num;
+                  }
+                }
+              });
+            }
+
+            if (data.top_surges) topSurgesList = data.top_surges.map(resolveEntry);
+            if (data.top_drops) topDropsList = data.top_drops.map(resolveEntry);
+
+            if (data.proposals && data.proposals.length > 0) {
+              surgeProposalsList = data.proposals.map(resolveEntry);
+              renderSelectedSurgeAlert(0);
+            }
             renderAllSurgeGrid();
             renderApp();
           }
@@ -1246,9 +1291,10 @@
         tr.innerHTML = 
           '<td class="py-3.5 px-4 font-mono text-slate-500 font-semibold text-center">' + item.id + '</td>' +
           '<td class="py-3.5 px-4">' +
-            '<div class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">' +
+            '<div class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors flex flex-wrap items-center gap-1.5">' +
               '<span>' + item.name + '</span>' +
-              (item.surge ? '<span class="px-1.5 py-0.5 text-[10px] font-black bg-rose-100 text-rose-700 rounded uppercase">AI Alert</span>' : '') +
+              (item.liveForecastPct ? '<span title="' + escapeHtml(item.liveMarketDriver || '1D-ResNet Live Market Forecast') + '" class="px-1.5 py-0.5 text-[10px] font-extrabold rounded font-mono ' + (String(item.liveForecastPct).startsWith('-') ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700') + '">' + escapeHtml(item.liveForecastPct) + ' Live</span>' : '') +
+              (item.surge && !item.liveForecastPct ? '<span class="px-1.5 py-0.5 text-[10px] font-black bg-rose-100 text-rose-700 rounded uppercase">AI Alert</span>' : '') +
             '</div>' +
             '<div class="text-xs text-slate-400 font-mono">HSN Code: ' + (item.hsn || 'N/A') + '</div>' +
           '</td>' +

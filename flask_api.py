@@ -1235,16 +1235,16 @@ def inventory_surge_check():
                    MAX(p.id) as product_id, MAX(p.hsn_code) as hsn_code, MAX(p.category) as category,
                    MAX(p.base_price) as base_price, MAX(g.trend_pct) as g_trend_pct
             FROM inventory i
-            LEFT JOIN products p ON (p.inventory_id = i.id OR p.name COLLATE utf8mb4_unicode_ci = i.item_name COLLATE utf8mb4_unicode_ci)
+            LEFT JOIN products p ON p.name COLLATE utf8mb4_unicode_ci = i.item_name COLLATE utf8mb4_unicode_ci
             LEFT JOIN global_trade_products g ON g.hsn_code COLLATE utf8mb4_unicode_ci = p.hsn_code COLLATE utf8mb4_unicode_ci
             GROUP BY i.id, i.item_name, i.quantity, i.min_threshold, i.max_threshold, i.kanban_status
-            ORDER BY CASE WHEN i.quantity <= i.min_threshold THEN 0 ELSE 1 END,
-                     (i.min_threshold - i.quantity) DESC
+            ORDER BY i.id ASC
         """
         cursor.execute(query)
         all_items = cursor.fetchall()
         conn.close()
 
+        all_forecasts = []
         for item in all_items:
             hsn = item.get("hsn_code") or "320611"
             name = item.get("item_name") or "Raw Material"
@@ -1265,30 +1265,30 @@ def inventory_surge_check():
             if fetched_at:
                 live_updated_at = fetched_at
 
-            # Include item if it is Low Stock OR live 1D-ResNet detects an active market SURGE
-            if not is_low and trend != "SURGE":
-                continue
-
             sign = "+" if live_pct >= 0 else ""
             ceiling_price = round(base_price * (1.0 + max(live_pct, 1.5) / 100.0), 2)
             reserve_floor = round(base_price * (0.93 if live_pct >= 0 else max(0.80, 1.0 + live_pct / 100.0)), 2)
 
-            if is_low and trend == "SURGE":
+            if is_low and live_pct > 0:
                 urgency = "CRITICAL - LOW STOCK + LIVE SURGE"
             elif is_low:
                 urgency = "LOW STOCK - REALTIME RESTOCK"
-            else:
+            elif live_pct > 0:
                 urgency = "LIVE MARKET SURGE HEDGE"
+            else:
+                urgency = "LIVE MARKET DROP OPPORTUNITY"
 
             stock_note = f"Low stock ({qty}/{min_thr})" if is_low else f"Stock {qty}/{min_thr}"
-            proposals.append({
+            entry = {
                 "inventory_id": item.get("inv_id"),
                 "product_id": item.get("product_id") or item.get("inv_id"),
                 "item_name": name,
                 "current_stock": qty,
                 "min_threshold": min_thr,
+                "is_low": is_low,
                 "hsn_code": hsn,
                 "trend": trend,
+                "pct_num": float(live_pct),
                 "recommended_quantity": qty_needed,
                 "predicted_price_surge": f"{sign}{live_pct}%",
                 "ai_suggested_ceiling": ceiling_price,
@@ -1297,23 +1297,36 @@ def inventory_surge_check():
                 "market_driver": market_driver,
                 "recommended_duration_hours": 48,
                 "action_reason": f"{stock_note} • {market_driver}"
-            })
+            }
+            all_forecasts.append(entry)
+            if is_low or trend == "SURGE":
+                proposals.append(entry)
 
-        # Sort: CRITICAL (low + surge) first, then low stock, then highest live surge %
+        # Top 10 Growing (+) and Top 10 Biggest Drops (-) across ALL inventory products
+        top_surges = sorted(all_forecasts, key=lambda x: (-x["pct_num"], 0 if x["is_low"] else 1))[:10]
+        top_drops = sorted(all_forecasts, key=lambda x: (x["pct_num"], 0 if x["is_low"] else 1))[:10]
+
         proposals.sort(key=lambda x: (
             0 if "CRITICAL" in x["urgency"] else (1 if "LOW STOCK" in x["urgency"] else 2),
-            -abs(float(str(x["predicted_price_surge"]).replace("%", "").replace("+", "") or 0))
+            -abs(x["pct_num"])
         ))
         proposals = proposals[:30]
     except Exception as e:
         logger.error("Error checking inventory surge: %s", e)
+        all_forecasts = []
+        top_surges = []
+        top_drops = []
 
     return jsonify({
         "status": "success",
         "timestamp": pd.Timestamp.now().isoformat(),
         "live_updated_at": live_updated_at,
         "total_proposals": len(proposals),
-        "proposals": proposals
+        "total_evaluated": len(all_forecasts),
+        "proposals": proposals,
+        "top_surges": top_surges,
+        "top_drops": top_drops,
+        "all_forecasts": all_forecasts
     })
 
 

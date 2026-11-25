@@ -127,8 +127,8 @@ def compute_live_forecast(hsn_code: str, name: str, category: str, base_price_in
         mkt_label = primary["label"]
         mkt_sym = primary["symbol"]
 
-        # Blend real-time market momentum (55%), recent 7d acceleration (20%), USD/INR FX impact (15%), and BACI structural trend (10%)
-        raw_momentum = (0.55 * mkt_30d) + (0.20 * mkt_7d) + (0.15 * fx_pct) + (0.10 * baci_pct)
+        # Blend live 7d market momentum (40%), BACI structural trade trend (35%), 30d market trend (15%), and USD/INR FX (10%)
+        raw_momentum = (0.40 * mkt_7d) + (0.35 * baci_pct) + (0.15 * mkt_30d) + (0.10 * fx_pct)
 
         # Run 1D-ResNet neural inference on the live 5-day price trajectory (cached per ticker/price-tier for 5 mins)
         resnet_adj = 0.0
