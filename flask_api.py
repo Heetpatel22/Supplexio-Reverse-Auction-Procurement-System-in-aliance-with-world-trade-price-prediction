@@ -1211,13 +1211,17 @@ def inventory_surge_check():
         cursor = conn.cursor(dictionary=True)
         query = """
             SELECT i.id as inv_id, i.item_name, i.quantity, i.min_threshold, i.max_threshold,
-                   MAX(p.id) as product_id, MAX(p.hsn_code) as hsn_code, MAX(p.base_price) as base_price
+                   MAX(p.id) as product_id, MAX(p.hsn_code) as hsn_code, MAX(p.base_price) as base_price,
+                   MAX(g.trend) as g_trend, MAX(g.trend_pct) as g_trend_pct
             FROM inventory i
-            LEFT JOIN products p ON p.name COLLATE utf8mb4_unicode_ci = i.item_name COLLATE utf8mb4_unicode_ci
-            WHERE i.quantity <= i.min_threshold OR i.kanban_status = 'Low'
+            LEFT JOIN products p ON (p.inventory_id = i.id OR p.name COLLATE utf8mb4_unicode_ci = i.item_name COLLATE utf8mb4_unicode_ci)
+            LEFT JOIN global_trade_products g ON g.hsn_code COLLATE utf8mb4_unicode_ci = p.hsn_code COLLATE utf8mb4_unicode_ci
+            WHERE i.quantity <= i.min_threshold OR i.kanban_status = 'Low' OR g.trend = 'SURGE'
             GROUP BY i.id, i.item_name, i.quantity, i.min_threshold, i.max_threshold
-            ORDER BY (i.min_threshold - i.quantity) DESC
-            LIMIT 10
+            ORDER BY CASE WHEN i.quantity <= i.min_threshold THEN 0 ELSE 1 END,
+                     (i.min_threshold - i.quantity) DESC,
+                     COALESCE(MAX(g.trend_pct), 0) DESC
+            LIMIT 25
         """
         cursor.execute(query)
         low_items = cursor.fetchall()
@@ -1231,9 +1235,14 @@ def inventory_surge_check():
             if base_price <= 0:
                 base_price = 3100.0
 
-            # Compute deterministic per-HSN 1D-ResNet surge forecast (+3.4% to +11.6%)
-            hsn_seed = sum(ord(ch) for ch in str(hsn))
-            surge_pct = round(3.4 + ((hsn_seed % 83) / 10.0), 1)
+            # Use real 1D-ResNet/BACI global_trade_products trend_pct if SURGE, else deterministic per-HSN forecast
+            g_trend = item.get("g_trend")
+            g_pct = item.get("g_trend_pct")
+            if g_trend == "SURGE" and g_pct is not None and float(g_pct) > 0:
+                surge_pct = round(float(g_pct), 1)
+            else:
+                hsn_seed = sum(ord(ch) for ch in str(hsn))
+                surge_pct = round(3.4 + ((hsn_seed % 83) / 10.0), 1)
             ceiling_price = round(base_price * (1.0 + surge_pct / 100.0), 2)
             reserve_floor = round(base_price * 0.93, 2)
 

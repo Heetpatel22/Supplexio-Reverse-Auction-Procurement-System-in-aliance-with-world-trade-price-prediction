@@ -114,10 +114,11 @@ public class InventoryServlet extends HttpServlet {
     private List<Map<String, Object>> getAllInventoryForClient() {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT i.id, i.item_name, i.quantity, i.min_threshold, i.max_threshold, i.kanban_status, i.needs_auction, i.auction_started, "
-                   + "p.hsn_code, p.category, p.base_price, p.unit "
+                   + "MAX(p.hsn_code) AS hsn_code, MAX(p.category) AS category, MAX(p.base_price) AS base_price, MAX(p.unit) AS unit "
                    + "FROM inventory i "
-                   + "LEFT JOIN products p ON p.inventory_id = i.id "
-                   + "GROUP BY i.id ORDER BY i.id ASC";
+                   + "LEFT JOIN products p ON (p.inventory_id = i.id OR p.name COLLATE utf8mb4_unicode_ci = i.item_name COLLATE utf8mb4_unicode_ci) "
+                   + "GROUP BY i.id, i.item_name, i.quantity, i.min_threshold, i.max_threshold, i.kanban_status, i.needs_auction, i.auction_started "
+                   + "ORDER BY i.id ASC";
         Connection conn = null;
         Statement stmt = null;
         ResultSet rs = null;
