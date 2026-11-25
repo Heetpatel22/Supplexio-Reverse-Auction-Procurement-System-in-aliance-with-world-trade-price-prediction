@@ -1178,7 +1178,6 @@ def all_catalog_products_endpoint():
                    benchmark_price_inr as base_price, unit, 'Global BACI' as catalog_type
             FROM global_trade_products
             ORDER BY chapter, name
-            LIMIT 300
         """)
         global_comms = cursor.fetchall()
         conn.close()
@@ -1186,7 +1185,7 @@ def all_catalog_products_endpoint():
         return jsonify({
             "status": "success",
             "total_enterprise": len(enterprise),
-            "total_global": 5384,
+            "total_global": len(global_comms),
             "enterprise_products": enterprise,
             "global_trade_products": global_comms
         })

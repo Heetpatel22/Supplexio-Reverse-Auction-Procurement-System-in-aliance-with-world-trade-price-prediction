@@ -2111,6 +2111,29 @@
       const pPrice = parseFloat(opt.getAttribute('data-price')) || 0;
       const pUnit = opt.getAttribute('data-unit') || 'units';
       const pHsn = opt.getAttribute('data-hsn') || '';
+      const pCategory = opt.getAttribute('data-category') || 'Global Trade';
+
+      if (opt.getAttribute('data-global') === 'true' || parseInt(opt.value, 10) > 10000) {
+        fetch('http://localhost:5000/api/ensure-product', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            name: pName,
+            hsn_code: pHsn,
+            category: pCategory,
+            base_price: pPrice || 1000,
+            unit: pUnit || 'units'
+          })
+        })
+        .then(r => r.json())
+        .then(res => {
+          if (res.status === 'success' && res.product_id) {
+            opt.value = res.product_id;
+            opt.removeAttribute('data-global');
+          }
+        })
+        .catch(() => {});
+      }
 
       modalCustomName = pName;
       modalCustomPrice = pPrice;
@@ -2467,34 +2490,64 @@
 
     // BACI Live Search in Modal
     let baciDebounceTimer = null;
+    window.allCatalogProductsList = [];
+
+    function renderBaciSearchResultsList(items, query) {
+      const baciResultsBox = document.getElementById('modalBaciSearchResults');
+      if (!baciResultsBox) return;
+      if (!items || items.length === 0) {
+        baciResultsBox.innerHTML = '<div class="p-3 text-xs text-slate-500 font-sans">No matching commodities found for "' + escapeHtml(query) + '".</div>';
+        baciResultsBox.classList.remove('hidden');
+        return;
+      }
+      let html = '<div class="px-3 py-1.5 bg-slate-100 text-[10px] font-bold text-slate-600 uppercase tracking-wider flex items-center justify-between"><span>🌐 ' + (query ? 'Matching Commodities (' + items.length + ' found)' : 'All Global BACI & Enterprise Commodities') + '</span><span class="text-sky-600 font-mono">' + (window.allCatalogProductsList.length || 5384).toLocaleString() + ' Items</span></div>';
+      items.slice(0, 25).forEach(item => {
+        const safeName = (item.name || '').replace(/'/g, "\\'");
+        const safeCat = (item.chapter_name || item.category || 'Commodity').replace(/'/g, "\\'");
+        const priceVal = item.benchmark_price_inr || item.base_price || 2500;
+        const unitVal = item.unit || 'units';
+        html += '<div onclick="selectBaciCommodity(\'' + item.hsn_code + '\', \'' + safeName + '\', ' + priceVal + ', \'' + unitVal + '\', \'' + safeCat + '\')" class="p-2.5 hover:bg-sky-50 cursor-pointer transition flex items-center justify-between text-xs"><div><div class="font-bold text-slate-900">' + escapeHtml(item.name) + '</div><div class="text-[10px] text-slate-500 font-mono">HSN: ' + escapeHtml(item.hsn_code) + ' • ' + escapeHtml(item.chapter_name || item.category || 'Commodity') + '</div></div><div class="text-right font-mono"><div class="font-bold text-sky-700">₹' + Number(priceVal).toLocaleString() + '</div><div class="text-[10px] text-slate-400">/' + escapeHtml(unitVal) + '</div></div></div>';
+      });
+      baciResultsBox.innerHTML = html;
+      baciResultsBox.classList.remove('hidden');
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       const baciSearchInput = document.getElementById('modalBaciSearchInput');
       const baciResultsBox = document.getElementById('modalBaciSearchResults');
 
-      // Pre-populate Global BACI commodities into select dropdown
+      // Pre-populate ALL 5,384+ Global BACI commodities into select dropdown & local search cache
       fetch('http://localhost:5000/api/all-catalog-products')
         .then(r => r.json())
         .then(data => {
           const select = document.getElementById('modalProductId');
+          if (data) {
+            const ent = data.enterprise_products || [];
+            const glb = data.global_trade_products || [];
+            window.allCatalogProductsList = ent.concat(glb);
+          }
           if (select && data && data.global_trade_products) {
             let optgroup = document.getElementById('optgroupGlobalBaci');
             if (!optgroup) {
               optgroup = document.createElement('optgroup');
               optgroup.id = 'optgroupGlobalBaci';
-              optgroup.label = '🌐 Global BACI Commodities (World Trade Intelligence)';
+              optgroup.label = '🌐 Global BACI Commodities (' + data.global_trade_products.length.toLocaleString() + ' Items)';
               select.appendChild(optgroup);
             }
+            const frag = document.createDocumentFragment();
             data.global_trade_products.forEach(p => {
               const opt = document.createElement('option');
               opt.value = p.id;
+              opt.setAttribute('data-global', 'true');
               opt.setAttribute('data-name', p.name);
               opt.setAttribute('data-price', p.base_price || 2500);
               opt.setAttribute('data-unit', p.unit || 'units');
               opt.setAttribute('data-hsn', p.hsn_code);
               opt.setAttribute('data-category', p.category || 'Global Trade');
               opt.textContent = p.name + ' (HSN: ' + p.hsn_code + ') — ₹' + Number(p.base_price || 0).toLocaleString() + ' / ' + (p.unit || 'unit');
-              optgroup.appendChild(opt);
+              frag.appendChild(opt);
             });
+            optgroup.appendChild(frag);
           }
         })
         .catch(() => {});
@@ -2503,20 +2556,14 @@
         // Show featured commodities when focused if input is empty
         baciSearchInput.addEventListener('focus', function() {
           if (!this.value.trim()) {
+            if (window.allCatalogProductsList.length > 0) {
+              renderBaciSearchResultsList(window.allCatalogProductsList.slice(0, 25), '');
+              return;
+            }
             fetch('http://localhost:5000/api/search-products?q=')
               .then(r => r.json())
               .then(data => {
-                const items = data.results || data.products || [];
-                if (items.length > 0) {
-                  let html = '<div class="px-3 py-1.5 bg-slate-100 text-[10px] font-bold text-slate-600 uppercase tracking-wider flex items-center justify-between"><span>🌐 High-Volume BACI Commodities</span><span class="text-sky-600 font-mono">5,384 Items</span></div>';
-                  items.slice(0, 15).forEach(item => {
-                    const safeName = (item.name || '').replace(/'/g, "\\'");
-                    const safeCat = (item.chapter_name || item.category || '').replace(/'/g, "\\'");
-                    html += '<div onclick="selectBaciCommodity(\'' + item.hsn_code + '\', \'' + safeName + '\', ' + (item.benchmark_price_inr || item.base_price || 2500) + ', \'' + (item.unit || 'units') + '\', \'' + safeCat + '\')" class="p-2.5 hover:bg-sky-50 cursor-pointer transition flex items-center justify-between text-xs"><div><div class="font-bold text-slate-900">' + item.name + '</div><div class="text-[10px] text-slate-500 font-mono">HSN: ' + item.hsn_code + ' • ' + (item.chapter_name || item.category || 'Commodity') + '</div></div><div class="text-right font-mono"><div class="font-bold text-sky-700">₹' + Number(item.benchmark_price_inr || item.base_price || 0).toLocaleString() + '</div><div class="text-[10px] text-slate-400">/' + (item.unit || 'units') + '</div></div></div>';
-                  });
-                  baciResultsBox.innerHTML = html;
-                  baciResultsBox.classList.remove('hidden');
-                }
+                renderBaciSearchResultsList(data.results || data.products || [], '');
               })
               .catch(() => {});
           }
@@ -2531,25 +2578,22 @@
             return;
           }
 
+          if (window.allCatalogProductsList.length > 0) {
+            const qLower = query.toLowerCase();
+            const matched = window.allCatalogProductsList.filter(item =>
+              (item.name && item.name.toLowerCase().includes(qLower)) ||
+              (item.hsn_code && String(item.hsn_code).toLowerCase().includes(qLower)) ||
+              (item.category && item.category.toLowerCase().includes(qLower))
+            );
+            renderBaciSearchResultsList(matched, query);
+            return;
+          }
+
           baciDebounceTimer = setTimeout(() => {
             fetch('http://localhost:5000/api/search-products?q=' + encodeURIComponent(query))
               .then(r => r.json())
               .then(data => {
-                const items = data.results || data.products || [];
-                if (items.length === 0) {
-                  baciResultsBox.innerHTML = '<div class="p-3 text-xs text-slate-500 font-sans">No matching commodities found.</div>';
-                  baciResultsBox.classList.remove('hidden');
-                  return;
-                }
-
-                let html = '';
-                items.slice(0, 15).forEach(item => {
-                  const safeName = (item.name || '').replace(/'/g, "\\'");
-                  const safeCat = (item.chapter_name || item.category || '').replace(/'/g, "\\'");
-                  html += '<div onclick="selectBaciCommodity(\'' + item.hsn_code + '\', \'' + safeName + '\', ' + (item.benchmark_price_inr || item.base_price || 2500) + ', \'' + (item.unit || 'units') + '\', \'' + safeCat + '\')" class="p-2.5 hover:bg-sky-50 cursor-pointer transition flex items-center justify-between text-xs"><div><div class="font-bold text-slate-900">' + item.name + '</div><div class="text-[10px] text-slate-500 font-mono">HSN: ' + item.hsn_code + ' • ' + (item.chapter_name || item.category || 'Commodity') + '</div></div><div class="text-right font-mono"><div class="font-bold text-sky-700">₹' + Number(item.benchmark_price_inr || item.base_price || 0).toLocaleString() + '</div><div class="text-[10px] text-slate-400">/' + (item.unit || 'units') + '</div></div></div>';
-                });
-                baciResultsBox.innerHTML = html;
-                baciResultsBox.classList.remove('hidden');
+                renderBaciSearchResultsList(data.results || data.products || [], query);
               })
               .catch(() => {
                 baciResultsBox.classList.add('hidden');
