@@ -932,14 +932,21 @@
 
       activeSurgeItemId = p.resolvedId || p.inventory_id;
       const totalAlerts = surgeProposalsList.length;
+      const pctStr = p.predicted_price_surge || '+0.0%';
+      const isNeg = String(pctStr).startsWith('-');
       if (countEl) countEl.textContent = totalAlerts + ' Actionable Alert' + (totalAlerts === 1 ? '' : 's');
       if (pageLabelEl) pageLabelEl.textContent = (currentSurgeIdx + 1) + ' / ' + totalAlerts;
       if (nameEl) nameEl.textContent = p.item_name;
       if (detailsEl) detailsEl.textContent = 'HSN Code: ' + (p.hsn_code || 'General') + ' | Stock: ' + p.current_stock + ' / Min: ' + p.min_threshold;
-      if (pctEl) pctEl.textContent = (p.predicted_price_surge || '+7.4%') + ' SURGE FORECASTED';
+      if (pctEl) {
+        pctEl.textContent = pctStr + (isNeg ? ' MARKET DROP' : ' LIVE FORECAST');
+        pctEl.className = isNeg
+          ? 'inline-flex items-center text-xs font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded'
+          : 'inline-flex items-center text-xs font-extrabold text-rose-600 bg-rose-100 px-2 py-0.5 rounded';
+      }
       if (priceEl) priceEl.innerHTML = '₹' + Number(p.ai_suggested_ceiling || 0).toLocaleString() + ' <span class="text-xs text-slate-500 font-normal">/ unit</span>';
-      if (descEl) descEl.textContent = 'Detected raw material inventory below safe threshold paired with forecasted global import price surge (' + (p.predicted_price_surge || '+7.4%') + ') within 30 days. Reverse auction pre-drafted to lock in supplier contracts prior to price hike.';
-      if (greetEl) greetEl.textContent = 'Hello! I monitored your live inventory SKUs (' + totalAlerts + ' alerts). ' + p.item_name + ' (HSN ' + (p.hsn_code || 'General') + ') is below threshold (' + p.current_stock + '/' + p.min_threshold + ') with an active price surge (' + (p.predicted_price_surge || '+7.4%') + '). Would you like me to trigger an auction?';
+      if (descEl) descEl.textContent = p.action_reason || p.market_driver || ('Real-time 1D-ResNet + World Market forecast (' + pctStr + ') for HSN ' + (p.hsn_code || 'General') + '.');
+      if (greetEl) greetEl.textContent = 'Hello! I monitored your live inventory SKUs (' + totalAlerts + ' alerts). ' + p.item_name + ' (HSN ' + (p.hsn_code || 'General') + ') — ' + (p.market_driver || pctStr) + '. Would you like me to trigger an auction?';
     }
 
     function renderAllSurgeGrid() {
@@ -951,13 +958,18 @@
       }
       grid.innerHTML = surgeProposalsList.map((p, i) => {
         const isSelected = (i === currentSurgeIdx);
+        const pctStr = p.predicted_price_surge || '+0.0%';
+        const isNeg = String(pctStr).startsWith('-');
+        const badgeCls = isNeg ? 'text-emerald-700 bg-emerald-100' : 'text-rose-700 bg-rose-100';
+        const reasonTip = p.market_driver ? '<div class="text-[10px] text-slate-500 truncate mt-0.5" title="' + escapeHtml(p.market_driver) + '">' + escapeHtml(p.market_driver) + '</div>' : '';
         return '<div onclick="renderSelectedSurgeAlert(' + i + '); renderAllSurgeGrid();" class="p-3 rounded-xl border cursor-pointer transition flex items-center justify-between gap-2 ' + (isSelected ? 'bg-white border-rose-400 ring-2 ring-rose-500/20 shadow-sm' : 'bg-white/80 border-slate-200 hover:border-rose-300') + '">' +
           '<div class="min-w-0">' +
             '<div class="flex items-center gap-1.5">' +
               '<span class="text-xs font-bold text-slate-900 truncate">' + escapeHtml(p.item_name) + '</span>' +
-              '<span class="px-1.5 py-0.5 text-[10px] font-extrabold text-rose-700 bg-rose-100 rounded">' + escapeHtml(p.predicted_price_surge || '+7.4%') + '</span>' +
+              '<span class="px-1.5 py-0.5 text-[10px] font-extrabold rounded ' + badgeCls + '">' + escapeHtml(pctStr) + '</span>' +
             '</div>' +
             '<div class="text-[11px] font-mono text-slate-500 mt-0.5">HSN ' + escapeHtml(p.hsn_code || 'General') + ' • Stock ' + p.current_stock + '/' + p.min_threshold + '</div>' +
+            reasonTip +
           '</div>' +
           '<button type="button" onclick="event.stopPropagation(); openCreateAuctionModal(' + (p.resolvedId || p.inventory_id) + ')" class="px-2.5 py-1.5 text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shrink-0">Auction</button>' +
         '</div>';

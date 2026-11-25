@@ -735,8 +735,7 @@ def procurement_oracle():
             base_price_inr = float(item_info.get("benchmark_price_inr") or 2500.0)
             base_price_usd = float(item_info.get("benchmark_price_usd") or (base_price_inr / 83.5))
 
-        trend = str(data.get("trend") or item_info.get("trend") or "STABLE").upper()
-        trend_pct = float(data.get("trend_pct") if data.get("trend_pct") is not None else (item_info.get("trend_pct") or 1.2))
+        baci_trend_pct = float(data.get("trend_pct") if data.get("trend_pct") is not None else (item_info.get("trend_pct") or 1.2))
         top_suppliers_str = item_info.get("top_suppliers") or "India, Germany, United States, Japan"
     else:
         hsn = hsn_code if hsn_code else "320611"
@@ -745,9 +744,21 @@ def procurement_oracle():
         chapter_name = "Chemicals & Coatings"
         base_price_inr = float(data.get("base_price") or 263025.0)
         base_price_usd = round(base_price_inr / 83.5, 2)
-        trend = str(data.get("trend") or "SURGE").upper()
-        trend_pct = float(data.get("trend_pct") if data.get("trend_pct") is not None else 6.4)
+        baci_trend_pct = float(data.get("trend_pct") if data.get("trend_pct") is not None else 6.4)
         top_suppliers_str = "India, Germany, United States, Japan"
+
+    models = load_models()
+    # Real-time world market + 1D-ResNet inference (overrides static BACI trend when live feed is available)
+    if data.get("trend") and data.get("trend_pct") is not None:
+        trend = str(data.get("trend")).upper()
+        trend_pct = float(data.get("trend_pct"))
+        market_driver = "Manual/Override forecast applied."
+        live_updated_at = pd.Timestamp.now().strftime("%d %b %Y, %H:%M IST")
+    else:
+        from live_market_intel import compute_live_forecast
+        trend, trend_pct, market_driver, live_updated_at = compute_live_forecast(
+            hsn, name, chapter_name, base_price_inr, baci_trend_pct, models=models
+        )
 
     # Ceiling & Floor
     if trend == "SURGE":
@@ -780,7 +791,6 @@ def procurement_oracle():
     ]
 
     # Deep Learning Timing Oracle Analysis (1D-ResNet & Multi-Horizon Advisory)
-    models = load_models()
     timing_analysis = compute_timing_oracle(
         hsn=hsn,
         name=name,
@@ -792,6 +802,12 @@ def procurement_oracle():
         quantity=quantity,
         models=models
     )
+    timing_analysis["market_driver"] = market_driver
+    timing_analysis["live_updated_at"] = live_updated_at
+    if market_driver:
+        timing_analysis["strategic_advisory"] = (
+            timing_analysis.get("strategic_advisory", "") + f" Market Driver: {market_driver}"
+        ).strip()
 
     # Use multi-horizon sparkline from Timing Oracle
     sparkline = timing_analysis.get("sparkline_unit_prices", sparkline)
@@ -1200,89 +1216,102 @@ def all_catalog_products_endpoint():
 @app.route("/api/inventory-surge-check", methods=["GET"])
 def inventory_surge_check():
     """
-    Supplexio Merged Autonomous Sourcing Trigger:
-    Scans MySQL axalta inventory for items at/below threshold, cross-references
-    1D-ResNet price surge forecasts, and returns drafted reverse auctions.
+    Supplexio Live Autonomous Sourcing Trigger:
+    Scans MySQL axalta inventory, fetches live global commodity futures & USD/INR FX,
+    runs 1D-ResNet neural inference per SKU, and returns dynamic surge/restock alerts
+    with explicit real-time market drivers.
     """
     proposals = []
+    live_updated_at = pd.Timestamp.now().strftime("%d %b %Y, %H:%M IST")
     try:
         import mysql.connector
+        from live_market_intel import compute_live_forecast
+
+        models = load_models()
         conn = mysql.connector.connect(host="localhost", user="root", password="root", database="axalta")
         cursor = conn.cursor(dictionary=True)
         query = """
-            SELECT i.id as inv_id, i.item_name, i.quantity, i.min_threshold, i.max_threshold,
-                   MAX(p.id) as product_id, MAX(p.hsn_code) as hsn_code, MAX(p.base_price) as base_price,
-                   MAX(g.trend) as g_trend, MAX(g.trend_pct) as g_trend_pct
+            SELECT i.id as inv_id, i.item_name, i.quantity, i.min_threshold, i.max_threshold, i.kanban_status,
+                   MAX(p.id) as product_id, MAX(p.hsn_code) as hsn_code, MAX(p.category) as category,
+                   MAX(p.base_price) as base_price, MAX(g.trend_pct) as g_trend_pct
             FROM inventory i
             LEFT JOIN products p ON (p.inventory_id = i.id OR p.name COLLATE utf8mb4_unicode_ci = i.item_name COLLATE utf8mb4_unicode_ci)
             LEFT JOIN global_trade_products g ON g.hsn_code COLLATE utf8mb4_unicode_ci = p.hsn_code COLLATE utf8mb4_unicode_ci
-            WHERE i.quantity <= i.min_threshold OR i.kanban_status = 'Low' OR g.trend = 'SURGE'
-            GROUP BY i.id, i.item_name, i.quantity, i.min_threshold, i.max_threshold
+            GROUP BY i.id, i.item_name, i.quantity, i.min_threshold, i.max_threshold, i.kanban_status
             ORDER BY CASE WHEN i.quantity <= i.min_threshold THEN 0 ELSE 1 END,
-                     (i.min_threshold - i.quantity) DESC,
-                     COALESCE(MAX(g.trend_pct), 0) DESC
-            LIMIT 25
+                     (i.min_threshold - i.quantity) DESC
         """
         cursor.execute(query)
-        low_items = cursor.fetchall()
+        all_items = cursor.fetchall()
+        conn.close()
 
-        for idx, item in enumerate(low_items):
+        for item in all_items:
             hsn = item.get("hsn_code") or "320611"
             name = item.get("item_name") or "Raw Material"
-            qty_needed = max((item.get("max_threshold") or 100) - (item.get("quantity") or 0), 20)
+            cat = item.get("category") or ""
+            qty = int(item.get("quantity") or 0)
+            min_thr = int(item.get("min_threshold") or 50)
+            is_low = (qty <= min_thr) or (str(item.get("kanban_status") or "").lower() == "low")
+            qty_needed = max((item.get("max_threshold") or 100) - qty, 20)
 
             base_price = float(item.get("base_price") or 2500.0)
             if base_price <= 0:
                 base_price = 3100.0
+            baci_pct = float(item.get("g_trend_pct") or 0.0)
 
-            # Use real 1D-ResNet/BACI global_trade_products trend_pct if SURGE, else deterministic per-HSN forecast
-            g_trend = item.get("g_trend")
-            g_pct = item.get("g_trend_pct")
-            if g_trend == "SURGE" and g_pct is not None and float(g_pct) > 0:
-                surge_pct = round(float(g_pct), 1)
+            trend, live_pct, market_driver, fetched_at = compute_live_forecast(
+                hsn, name, cat, base_price, baci_pct, models=models
+            )
+            if fetched_at:
+                live_updated_at = fetched_at
+
+            # Include item if it is Low Stock OR live 1D-ResNet detects an active market SURGE
+            if not is_low and trend != "SURGE":
+                continue
+
+            sign = "+" if live_pct >= 0 else ""
+            ceiling_price = round(base_price * (1.0 + max(live_pct, 1.5) / 100.0), 2)
+            reserve_floor = round(base_price * (0.93 if live_pct >= 0 else max(0.80, 1.0 + live_pct / 100.0)), 2)
+
+            if is_low and trend == "SURGE":
+                urgency = "CRITICAL - LOW STOCK + LIVE SURGE"
+            elif is_low:
+                urgency = "LOW STOCK - REALTIME RESTOCK"
             else:
-                hsn_seed = sum(ord(ch) for ch in str(hsn))
-                surge_pct = round(3.4 + ((hsn_seed % 83) / 10.0), 1)
-            ceiling_price = round(base_price * (1.0 + surge_pct / 100.0), 2)
-            reserve_floor = round(base_price * 0.93, 2)
+                urgency = "LIVE MARKET SURGE HEDGE"
 
+            stock_note = f"Low stock ({qty}/{min_thr})" if is_low else f"Stock {qty}/{min_thr}"
             proposals.append({
                 "inventory_id": item.get("inv_id"),
                 "product_id": item.get("product_id") or item.get("inv_id"),
                 "item_name": name,
-                "current_stock": item.get("quantity"),
-                "min_threshold": item.get("min_threshold"),
+                "current_stock": qty,
+                "min_threshold": min_thr,
                 "hsn_code": hsn,
+                "trend": trend,
                 "recommended_quantity": qty_needed,
-                "predicted_price_surge": f"+{surge_pct}%",
+                "predicted_price_surge": f"{sign}{live_pct}%",
                 "ai_suggested_ceiling": ceiling_price,
                 "ai_reserve_floor": reserve_floor,
-                "urgency": "HIGH - PRICE HIKE IMMINENT",
+                "urgency": urgency,
+                "market_driver": market_driver,
                 "recommended_duration_hours": 48,
-                "action_reason": f"Inventory at critical level ({item.get('quantity')} left) and 1D-ResNet predicts global import price surge (+{surge_pct}%) within 30 days. Locking supplier contract now saves estimated ${(qty_needed * base_price * (surge_pct/100)):,.2f}."
+                "action_reason": f"{stock_note} • {market_driver}"
             })
-        conn.close()
+
+        # Sort: CRITICAL (low + surge) first, then low stock, then highest live surge %
+        proposals.sort(key=lambda x: (
+            0 if "CRITICAL" in x["urgency"] else (1 if "LOW STOCK" in x["urgency"] else 2),
+            -abs(float(str(x["predicted_price_surge"]).replace("%", "").replace("+", "") or 0))
+        ))
+        proposals = proposals[:30]
     except Exception as e:
         logger.error("Error checking inventory surge: %s", e)
-        proposals.append({
-            "inventory_id": 43,
-            "product_id": 43,
-            "item_name": "Bitumen Primer",
-            "current_stock": 40,
-            "min_threshold": 50,
-            "hsn_code": "320611",
-            "recommended_quantity": 60,
-            "predicted_price_surge": "+7.4%",
-            "ai_suggested_ceiling": 2625.0,
-            "ai_reserve_floor": 2325.0,
-            "urgency": "HIGH - PRICE HIKE IMMINENT",
-            "recommended_duration_hours": 48,
-            "action_reason": "Inventory at critical level (40 left) and 1D-ResNet predicts global import price surge (+7.4%) within 30 days."
-        })
 
     return jsonify({
         "status": "success",
         "timestamp": pd.Timestamp.now().isoformat(),
+        "live_updated_at": live_updated_at,
         "total_proposals": len(proposals),
         "proposals": proposals
     })
