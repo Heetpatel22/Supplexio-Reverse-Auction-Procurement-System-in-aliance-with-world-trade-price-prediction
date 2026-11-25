@@ -1211,10 +1211,11 @@ def inventory_surge_check():
         cursor = conn.cursor(dictionary=True)
         query = """
             SELECT i.id as inv_id, i.item_name, i.quantity, i.min_threshold, i.max_threshold,
-                   p.id as product_id, p.hsn_code, p.base_price
+                   MAX(p.id) as product_id, MAX(p.hsn_code) as hsn_code, MAX(p.base_price) as base_price
             FROM inventory i
-            LEFT JOIN products p ON (p.name COLLATE utf8mb4_unicode_ci = i.item_name COLLATE utf8mb4_unicode_ci OR p.id = i.id)
+            LEFT JOIN products p ON p.name COLLATE utf8mb4_unicode_ci = i.item_name COLLATE utf8mb4_unicode_ci
             WHERE i.quantity <= i.min_threshold OR i.kanban_status = 'Low'
+            GROUP BY i.id, i.item_name, i.quantity, i.min_threshold, i.max_threshold
             ORDER BY (i.min_threshold - i.quantity) DESC
             LIMIT 10
         """
