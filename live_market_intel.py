@@ -12,6 +12,7 @@ Fuses 5 live intelligence layers for exact price hike & drop prediction:
 import io
 import json
 import logging
+import os
 import time
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -44,6 +45,11 @@ DGFT_TTL = 1800  # 30 minutes
 
 _COMTRADE_CACHE = {}  # hsn4 -> {"ts": float, "yoy_vol_pct": float, "note": str}
 COMTRADE_TTL = 43200  # 12 hours
+
+_WB_MACRO_CACHE = {"timestamp": 0.0, "india_cpi": None}
+WB_MACRO_TTL = 43200  # 12 hours
+
+_OPTIONAL_KEY_CACHE = {"timestamp": 0.0, "fred": {}, "datagov": None}
 
 TICKER_META = {
     "HG=F": ("Copper Futures", "COMEX Copper"),
@@ -286,6 +292,73 @@ def get_un_comtrade_india_signal(hsn_code: str):
     return 0.0, None
 
 
+def get_world_bank_india_cpi():
+    """Fetch latest India CPI inflation % from World Bank Open Data API (no key required)."""
+    now = time.time()
+    if _WB_MACRO_CACHE["india_cpi"] is not None and (now - _WB_MACRO_CACHE["timestamp"] < WB_MACRO_TTL):
+        return _WB_MACRO_CACHE["india_cpi"]
+    try:
+        url = "https://api.worldbank.org/v2/country/IND/indicator/FP.CPI.TOTL.ZG?format=json&per_page=5"
+        data = json.loads(
+            urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=5).read()
+        )
+        if isinstance(data, list) and len(data) > 1:
+            for row in data[1]:
+                if row.get("value") is not None:
+                    val = round(float(row["value"]), 2)
+                    _WB_MACRO_CACHE["india_cpi"] = (val, row.get("date"))
+                    _WB_MACRO_CACHE["timestamp"] = now
+                    return _WB_MACRO_CACHE["india_cpi"]
+    except Exception as exc:
+        logger.debug("World Bank India CPI skipped: %s", exc)
+    return _WB_MACRO_CACHE["india_cpi"]
+
+
+def get_optional_fred_and_datagov(hsn_code: str):
+    """Query FRED REST API (if FRED_API_KEY env is set) and Data.gov.in (if DATA_GOV_IN_API_KEY env is set)."""
+    fred_key = os.environ.get("FRED_API_KEY", "").strip()
+    dg_key = os.environ.get("DATA_GOV_IN_API_KEY", "").strip()
+    fred_adj = 0.0
+    notes = []
+
+    if fred_key:
+        ch = str(hsn_code or "")[:2]
+        sid = "PCOPPUSDM" if ch == "74" else ("PALUMUSDM" if ch == "76" else "DCOILWTICO")
+        now = time.time()
+        cached = _OPTIONAL_KEY_CACHE["fred"].get(sid)
+        if cached and (now - cached["ts"] < 3600):
+            fred_adj, fnote = cached["adj"], cached["note"]
+            if fnote:
+                notes.append(fnote)
+        else:
+            try:
+                furl = f"https://api.stlouisfed.org/fred/series/observations?series_id={sid}&api_key={fred_key}&file_type=json&sort_order=desc&limit=5"
+                fdata = json.loads(urllib.request.urlopen(furl, timeout=4).read())
+                obs = [float(o["value"]) for o in fdata.get("observations", []) if o.get("value", ".") != "."]
+                if len(obs) >= 2 and obs[-1] > 0:
+                    fpct = ((obs[0] - obs[-1]) / obs[-1]) * 100.0
+                    fred_adj = round(max(-3.0, min(3.0, fpct * 0.25)), 2)
+                    fnote = f"FRED {sid} {fpct:+.1f}%"
+                    _OPTIONAL_KEY_CACHE["fred"][sid] = {"ts": now, "adj": fred_adj, "note": fnote}
+                    notes.append(fnote)
+            except Exception as exc:
+                logger.debug("FRED API skipped: %s", exc)
+
+    if dg_key and _OPTIONAL_KEY_CACHE["datagov"] is None:
+        try:
+            dg_url = f"https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key={dg_key}&format=json&limit=5"
+            ddata = json.loads(urllib.request.urlopen(dg_url, timeout=4).read())
+            if ddata.get("records"):
+                _OPTIONAL_KEY_CACHE["datagov"] = f"Data.gov.in live ({len(ddata['records'])} mandi/trade recs)"
+        except Exception:
+            _OPTIONAL_KEY_CACHE["datagov"] = ""
+
+    if _OPTIONAL_KEY_CACHE.get("datagov"):
+        notes.append(_OPTIONAL_KEY_CACHE["datagov"])
+
+    return fred_adj, notes
+
+
 def map_hsn_to_ticker(hsn_code: str, category: str = "") -> str:
     """Map a 6-digit HSN code (by 2-digit chapter) or category to its live global market benchmark."""
     hsn = str(hsn_code or "").strip()
@@ -363,6 +436,8 @@ def compute_live_forecast(
 
     policy_adj, policy_note = match_dgft_policy_for_hsn(hsn_code, name, category)
     comtrade_adj, comtrade_note = get_un_comtrade_india_signal(hsn_code) if include_comtrade else (0.0, None)
+    wb_cpi_info = get_world_bank_india_cpi()
+    fred_adj, opt_notes = get_optional_fred_and_datagov(hsn_code)
 
     baci_pct = float(baci_trend_pct or 0.0)
     fx_pct = float(fx["pct_30d"]) if fx else 0.0
@@ -376,8 +451,9 @@ def compute_live_forecast(
 
         wb_mom = float(wb_info["mom_pct"]) if wb_info else 0.0
         wb_weight = 0.20 if wb_info else 0.0
+        cpi_adj = round((wb_cpi_info[0] - 4.0) * 0.08, 2) if wb_cpi_info else 0.0
 
-        # Blend: Live 7d (30%), World Bank Pink Sheet MoM (20%), BACI structural (25%), Live 30d (15%), USD/INR (10%) + Policy/Comtrade
+        # Multi-source consensus: Yahoo Live 7d (30%), World Bank Pink Sheet MoM (20%), BACI (25%), Yahoo 30d (15%), USD/INR (10%) + Policy/Comtrade/CPI/FRED
         raw_momentum = (
             (0.30 * mkt_7d)
             + (wb_weight * wb_mom)
@@ -386,6 +462,8 @@ def compute_live_forecast(
             + (0.10 * fx_pct)
             + policy_adj
             + comtrade_adj
+            + cpi_adj
+            + fred_adj
         )
 
         # Run 1D-ResNet neural inference on the live 5-day trajectory (cached per ticker/price-tier)
@@ -419,14 +497,26 @@ def compute_live_forecast(
 
         predicted_pct = round(max(-18.0, min(18.0, raw_momentum + resnet_adj)), 1)
 
-        parts = [f"Live {mkt_label} ({mkt_sym}) {mkt_7d:+.1f}% (7d)"]
+        # Compare directional agreement across active sources
+        votes = [mkt_7d, baci_pct]
+        if wb_info:
+            votes.append(wb_mom)
+        if comtrade_note:
+            votes.append(comtrade_adj)
+        agree_cnt = sum(1 for v in votes if (v >= 0 and predicted_pct >= 0) or (v < 0 and predicted_pct < 0))
+
+        parts = [f"Yahoo {mkt_label} ({mkt_sym}) {mkt_7d:+.1f}% (7d)"]
         if wb_info:
             parts.append(f"World Bank Pink Sheet {wb_info['name']} {wb_mom:+.1f}% MoM ({wb_period})")
+        if wb_cpi_info:
+            parts.append(f"WB India CPI {wb_cpi_info[0]}% ({wb_cpi_info[1]})")
         if policy_note:
             parts.append(policy_note)
         if comtrade_note:
             parts.append(comtrade_note)
+        parts.extend(opt_notes)
         parts.append(f"USD/INR ₹{fx_rate:.2f} ({fx_pct:+.1f}%), BACI {baci_pct:+.1f}%")
+        parts.append(f"1D-ResNet Consensus ({agree_cnt}/{len(votes)} sources align)")
         reason = " | ".join(parts) + f" [Updated {fetched_at}]."
     else:
         predicted_pct = round(baci_pct + policy_adj + comtrade_adj, 1)
