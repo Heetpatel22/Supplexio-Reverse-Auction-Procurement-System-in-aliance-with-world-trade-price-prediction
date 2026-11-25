@@ -757,7 +757,7 @@ def procurement_oracle():
     else:
         from live_market_intel import compute_live_forecast
         trend, trend_pct, market_driver, live_updated_at = compute_live_forecast(
-            hsn, name, chapter_name, base_price_inr, baci_trend_pct, models=models
+            hsn, name, chapter_name, base_price_inr, baci_trend_pct, models=models, include_comtrade=True
         )
 
     # Ceiling & Floor

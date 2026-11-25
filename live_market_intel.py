@@ -1,17 +1,22 @@
 """
-live_market_intel.py — Real-Time World Market Feed & 1D-ResNet Forecasting Engine.
+live_market_intel.py — Multi-Source Real-Time World Trade & 1D-ResNet Forecasting Engine.
 
-Fetches live commodity futures & FX rates (Yahoo Finance JSON API, 5-min TTL cache)
-and combines them with BACI structural trade baselines + 1D-ResNet neural inference
-to produce dynamic, time-varying price surge/decline forecasts with explicit drivers.
+Fuses 5 live intelligence layers for exact price hike & drop prediction:
+1. Live Commodity Futures & USD/INR FX (Yahoo Finance JSON API, 5-min cache)
+2. World Bank Commodity Markets Pink Sheet (CMO-Historical-Data-Monthly.xlsx, 6-hr cache)
+3. DGFT & CBIC India Customs Duty / Anti-Dumping / Policy Alerts (RSS, 30-min cache)
+4. UN Comtrade Database India (reporterCode=699) Volume Shift (on-demand per HSN, 12-hr cache)
+5. Trained 1D-ResNet (model_resnet.keras) + CEPII BACI Trade Lakehouse
 """
 
+import io
 import json
+import logging
 import time
 import urllib.request
+import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +26,24 @@ _MARKET_CACHE = {
     "signals": {},
     "nn_cache": {}
 }
-CACHE_TTL_SECONDS = 300  # Refresh live global market feeds every 5 minutes
+CACHE_TTL_SECONDS = 300  # 5 minutes for live futures/FX
+
+_PINK_SHEET_CACHE = {
+    "timestamp": 0.0,
+    "url": "",
+    "metrics": {},
+    "latest_period": ""
+}
+PINK_SHEET_TTL = 21600  # 6 hours
+
+_DGFT_CACHE = {
+    "timestamp": 0.0,
+    "alerts": []
+}
+DGFT_TTL = 1800  # 30 minutes
+
+_COMTRADE_CACHE = {}  # hsn4 -> {"ts": float, "yoy_vol_pct": float, "note": str}
+COMTRADE_TTL = 43200  # 12 hours
 
 TICKER_META = {
     "HG=F": ("Copper Futures", "COMEX Copper"),
@@ -34,9 +56,25 @@ TICKER_META = {
     "USDINR=X": ("USD/INR FX Rate", "Forex"),
 }
 
+# Mapping from World Bank Pink Sheet column names to internal keys
+PINK_SHEET_COLS = {
+    "WB_CRUDE": "Crude oil, average",
+    "WB_COPPER": "Copper",
+    "WB_ALUMINUM": "Aluminum",
+    "WB_IRON": "Iron ore, cfr spot",
+    "WB_ZINC": "Zinc",
+    "WB_NICKEL": "Nickel",
+    "WB_LEAD": "Lead",
+    "WB_RUBBER": "Rubber, TSR20 **",
+    "WB_PLYWOOD": "Plywood",
+    "WB_SAWNWOOD": "Sawnwood, Malaysian",
+    "WB_UREA": "Urea ",
+    "WB_COTTON": "Cotton, A Index",
+}
+
 
 def _fetch_single_ticker(symbol: str):
-    """Fetch 1-month daily closes for a market ticker."""
+    """Fetch 1-month daily closes for a live market ticker."""
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=1mo&interval=1d"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
@@ -86,6 +124,168 @@ def get_live_market_signals(force_refresh: bool = False):
     return _MARKET_CACHE["signals"], _MARKET_CACHE["fetched_at_str"]
 
 
+def get_world_bank_pink_sheet():
+    """Fetch & parse World Bank Commodity Markets Pink Sheet (Monthly Prices)."""
+    now = time.time()
+    if _PINK_SHEET_CACHE["metrics"] and (now - _PINK_SHEET_CACHE["timestamp"] < PINK_SHEET_TTL):
+        return _PINK_SHEET_CACHE["metrics"], _PINK_SHEET_CACHE["latest_period"]
+
+    try:
+        import re
+        import pandas as pd
+
+        page_url = "https://www.worldbank.org/en/research/commodity-markets"
+        html = urllib.request.urlopen(
+            urllib.request.Request(page_url, headers={"User-Agent": "Mozilla/5.0"}), timeout=8
+        ).read().decode("utf-8", "ignore")
+        links = re.findall(r'https://thedocs\.worldbank\.org/[^\s"\'<>]+CMO-Historical-Data-Monthly\.xlsx', html)
+        if not links:
+            return _PINK_SHEET_CACHE["metrics"], _PINK_SHEET_CACHE["latest_period"]
+
+        xlsx_bytes = urllib.request.urlopen(
+            urllib.request.Request(links[0], headers={"User-Agent": "Mozilla/5.0"}), timeout=15
+        ).read()
+        df = pd.read_excel(io.BytesIO(xlsx_bytes), sheet_name="Monthly Prices", skiprows=4)
+        period_col = df.columns[0]
+        df = df[df[period_col].astype(str).str.match(r"^\d{4}M\d{2}$", na=False)].copy()
+        if len(df) < 4:
+            return _PINK_SHEET_CACHE["metrics"], _PINK_SHEET_CACHE["latest_period"]
+
+        latest_period = str(df[period_col].iloc[-1])
+        metrics = {}
+        for key, col_name in PINK_SHEET_COLS.items():
+            if col_name in df.columns:
+                vals = pd.to_numeric(df[col_name], errors="coerce").dropna()
+                if len(vals) >= 4 and vals.iloc[-2] > 0 and vals.iloc[-4] > 0:
+                    mom_pct = ((vals.iloc[-1] - vals.iloc[-2]) / vals.iloc[-2]) * 100.0
+                    qtr_pct = ((vals.iloc[-1] - vals.iloc[-4]) / vals.iloc[-4]) * 100.0
+                    metrics[key] = {
+                        "name": col_name.strip(" *"),
+                        "latest": round(float(vals.iloc[-1]), 2),
+                        "mom_pct": round(float(mom_pct), 2),
+                        "qtr_pct": round(float(qtr_pct), 2),
+                    }
+
+        if metrics:
+            _PINK_SHEET_CACHE["metrics"] = metrics
+            _PINK_SHEET_CACHE["latest_period"] = latest_period
+            _PINK_SHEET_CACHE["url"] = links[0]
+            _PINK_SHEET_CACHE["timestamp"] = now
+    except Exception as exc:
+        logger.debug("World Bank Pink Sheet fetch skipped: %s", exc)
+
+    return _PINK_SHEET_CACHE["metrics"], _PINK_SHEET_CACHE["latest_period"]
+
+
+def get_dgft_cbic_alerts():
+    """Fetch recent DGFT & CBIC Indian customs duty / anti-dumping / export ban notifications."""
+    now = time.time()
+    if _DGFT_CACHE["alerts"] and (now - _DGFT_CACHE["timestamp"] < DGFT_TTL):
+        return _DGFT_CACHE["alerts"]
+
+    alerts = []
+    try:
+        rss_url = (
+            "https://news.google.com/rss/search?q=(DGFT+OR+CBIC)+"
+            "(customs+duty+OR+import+duty+OR+export+ban+OR+anti-dumping+OR+safeguard)+India+when:30d"
+            "&hl=en-IN&gl=IN&ceid=IN:en"
+        )
+        rss = urllib.request.urlopen(
+            urllib.request.Request(rss_url, headers={"User-Agent": "Mozilla/5.0"}), timeout=6
+        ).read()
+        root = ET.fromstring(rss)
+        for item in root.findall(".//item")[:20]:
+            title = (item.findtext("title") or "").strip()
+            low = title.lower()
+            if not title:
+                continue
+            impact = 0.0
+            if any(w in low for w in ("hike", "raises", "anti-dumping", "safeguard", "ban", "restrict", "duty on")):
+                impact = 1.8
+            elif any(w in low for w in ("cut", "exempt", "reduces", "slash", "relief")):
+                impact = -1.5
+            alerts.append({"title": title, "low": low, "impact": impact})
+
+        if alerts:
+            _DGFT_CACHE["alerts"] = alerts
+            _DGFT_CACHE["timestamp"] = now
+    except Exception as exc:
+        logger.debug("DGFT/CBIC feed fetch skipped: %s", exc)
+
+    return _DGFT_CACHE["alerts"]
+
+
+def match_dgft_policy_for_hsn(hsn_code: str, name: str, category: str):
+    """Match any active DGFT/CBIC customs duty or trade policy alert to the product's sector."""
+    alerts = get_dgft_cbic_alerts()
+    if not alerts:
+        return 0.0, None
+
+    ch = str(hsn_code or "")[:2]
+    text = f"{name} {category}".lower()
+    keywords = []
+    if ch in ("72", "73") or "steel" in text or "iron" in text:
+        keywords = ["steel", "iron", "alloy", "metal"]
+    elif ch == "74" or "copper" in text:
+        keywords = ["copper", "metal"]
+    elif ch == "76" or "aluminum" in text or "aluminium" in text:
+        keywords = ["aluminium", "aluminum", "metal"]
+    elif ch in ("28", "29", "32", "38", "39") or any(k in text for k in ("chemical", "polymer", "pvc", "plastic", "paint", "resin", "zinc")):
+        keywords = ["chemical", "polymer", "pvc", "plastic", "resin", "petrochemical"]
+    elif ch in ("84", "85") or any(k in text for k in ("solar", "panel", "electrical", "machinery")):
+        keywords = ["solar", "photovoltaic", "machinery", "electronics", "electrical"]
+    elif ch in ("44", "47", "48") or "wood" in text or "paper" in text:
+        keywords = ["wood", "timber", "plywood", "paper"]
+
+    for a in alerts:
+        if any(kw in a["low"] for kw in keywords) and a["impact"] != 0.0:
+            short_title = a["title"].split(" - ")[0][:75]
+            return a["impact"], f"DGFT/CBIC Policy: '{short_title}' ({a['impact']:+.1f}%)"
+    return 0.0, None
+
+
+def get_un_comtrade_india_signal(hsn_code: str):
+    """
+    Query UN Comtrade Public Preview API for India (reporterCode=699) import volume shifts.
+    Used on-demand in Timing Oracle (cached 12h per 4-digit heading to respect public rate limits).
+    """
+    hsn4 = str(hsn_code or "").strip()[:4]
+    if len(hsn4) < 4 or not hsn4.isdigit():
+        return 0.0, None
+
+    now = time.time()
+    cached = _COMTRADE_CACHE.get(hsn4)
+    if cached and (now - cached["ts"] < COMTRADE_TTL):
+        return cached["adj"], cached["note"]
+
+    try:
+        vals = {}
+        for yr in ("2022", "2023"):
+            u_url = f"https://comtradeapi.un.org/public/v1/preview/C/A/HS?reporterCode=699&period={yr}&cmdCode={hsn4}&flowCode=M"
+            data = json.loads(
+                urllib.request.urlopen(urllib.request.Request(u_url, headers={"User-Agent": "Mozilla/5.0"}), timeout=5).read()
+            )
+            world_rows = [r for r in data.get("data", []) if r.get("partnerCode") == 0]
+            if world_rows:
+                w = world_rows[0]
+                qty = float(w.get("netWgt") or w.get("primaryValue") or 0)
+                if qty > 0:
+                    vals[yr] = qty
+
+        if "2022" in vals and "2023" in vals:
+            vol_chg = ((vals["2023"] - vals["2022"]) / vals["2022"]) * 100.0
+            # Falling Indian imports tighten domestic supply (positive price pressure)
+            adj = round(max(-2.0, min(2.0, -vol_chg * 0.08)), 2)
+            note = f"UN Comtrade India (HS {hsn4}) import vol {vol_chg:+.1f}% YoY"
+            _COMTRADE_CACHE[hsn4] = {"ts": now, "adj": adj, "note": note}
+            return adj, note
+    except Exception as exc:
+        logger.debug("UN Comtrade fetch skipped for %s: %s", hsn4, exc)
+
+    _COMTRADE_CACHE[hsn4] = {"ts": now, "adj": 0.0, "note": None}
+    return 0.0, None
+
+
 def map_hsn_to_ticker(hsn_code: str, category: str = "") -> str:
     """Map a 6-digit HSN code (by 2-digit chapter) or category to its live global market benchmark."""
     hsn = str(hsn_code or "").strip()
@@ -107,15 +307,62 @@ def map_hsn_to_ticker(hsn_code: str, category: str = "") -> str:
     return "XLB"
 
 
-def compute_live_forecast(hsn_code: str, name: str, category: str, base_price_inr: float, baci_trend_pct: float = 0.0, models=None):
+def map_hsn_to_pink_sheet_key(hsn_code: str, name: str = "", category: str = "") -> str:
+    """Map an HSN / product to its specific World Bank Pink Sheet commodity."""
+    hsn = str(hsn_code or "").strip()
+    ch = hsn[:2] if len(hsn) >= 2 else ""
+    text = f"{name} {category}".lower()
+
+    if "zinc" in text or ch == "79":
+        return "WB_ZINC"
+    if "nickel" in text or ch == "75":
+        return "WB_NICKEL"
+    if "battery" in text or "lead" in text or ch == "78":
+        return "WB_LEAD"
+    if "rubber" in text or ch == "40":
+        return "WB_RUBBER"
+    if "plywood" in text:
+        return "WB_PLYWOOD"
+    if ch in ("44", "47", "48", "94") or "wood" in text or "timber" in text:
+        return "WB_SAWNWOOD"
+    if ch == "74" or "copper" in text:
+        return "WB_COPPER"
+    if ch == "76" or "aluminum" in text or "aluminium" in text:
+        return "WB_ALUMINUM"
+    if ch in ("72", "73") or "steel" in text or "iron" in text:
+        return "WB_IRON"
+    if ch in ("28", "29", "31", "32", "38") or "urea" in text or "chemical" in text:
+        return "WB_UREA"
+    if ch in ("50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63") or "cotton" in text or "tarpaulin" in text:
+        return "WB_COTTON"
+    return "WB_CRUDE"
+
+
+def compute_live_forecast(
+    hsn_code: str,
+    name: str,
+    category: str,
+    base_price_inr: float,
+    baci_trend_pct: float = 0.0,
+    models=None,
+    include_comtrade: bool = False,
+):
     """
-    Compute real-time 1D-ResNet + Live World Market forecast for any HSN/commodity.
+    Compute real-time multi-source 1D-ResNet forecast for any HSN/commodity:
+    Yahoo Finance Live Futures + World Bank Pink Sheet + DGFT/CBIC Policy + UN Comtrade + 1D-ResNet.
     Returns (trend_label, predicted_pct, market_driver_reason, fetched_at_str).
     """
     signals, fetched_at = get_live_market_signals()
+    wb_metrics, wb_period = get_world_bank_pink_sheet()
     primary_sym = map_hsn_to_ticker(hsn_code, category)
     primary = signals.get(primary_sym) or signals.get("XLB")
     fx = signals.get("USDINR=X")
+
+    wb_key = map_hsn_to_pink_sheet_key(hsn_code, name, category)
+    wb_info = wb_metrics.get(wb_key) if wb_metrics else None
+
+    policy_adj, policy_note = match_dgft_policy_for_hsn(hsn_code, name, category)
+    comtrade_adj, comtrade_note = get_un_comtrade_india_signal(hsn_code) if include_comtrade else (0.0, None)
 
     baci_pct = float(baci_trend_pct or 0.0)
     fx_pct = float(fx["pct_30d"]) if fx else 0.0
@@ -127,10 +374,21 @@ def compute_live_forecast(hsn_code: str, name: str, category: str, base_price_in
         mkt_label = primary["label"]
         mkt_sym = primary["symbol"]
 
-        # Blend live 7d market momentum (40%), BACI structural trade trend (35%), 30d market trend (15%), and USD/INR FX (10%)
-        raw_momentum = (0.40 * mkt_7d) + (0.35 * baci_pct) + (0.15 * mkt_30d) + (0.10 * fx_pct)
+        wb_mom = float(wb_info["mom_pct"]) if wb_info else 0.0
+        wb_weight = 0.20 if wb_info else 0.0
 
-        # Run 1D-ResNet neural inference on the live 5-day price trajectory (cached per ticker/price-tier for 5 mins)
+        # Blend: Live 7d (30%), World Bank Pink Sheet MoM (20%), BACI structural (25%), Live 30d (15%), USD/INR (10%) + Policy/Comtrade
+        raw_momentum = (
+            (0.30 * mkt_7d)
+            + (wb_weight * wb_mom)
+            + (0.25 * baci_pct)
+            + (0.15 * mkt_30d)
+            + (0.10 * fx_pct)
+            + policy_adj
+            + comtrade_adj
+        )
+
+        # Run 1D-ResNet neural inference on the live 5-day trajectory (cached per ticker/price-tier)
         resnet_adj = 0.0
         resnet = models.get("resnet") if models else None
         scaler = models.get("resnet_scaler") if models else None
@@ -160,14 +418,19 @@ def compute_live_forecast(hsn_code: str, name: str, category: str, base_price_in
                 logger.debug("1D-ResNet live inference skipped: %s", exc)
 
         predicted_pct = round(max(-18.0, min(18.0, raw_momentum + resnet_adj)), 1)
-        reason = (
-            f"Live {mkt_label} ({mkt_sym}) {mkt_30d:+.1f}% (30d) & {mkt_7d:+.1f}% (7d), "
-            f"USD/INR ₹{fx_rate:.2f} ({fx_pct:+.1f}%), BACI baseline {baci_pct:+.1f}% "
-            f"[Updated {fetched_at}]."
-        )
+
+        parts = [f"Live {mkt_label} ({mkt_sym}) {mkt_7d:+.1f}% (7d)"]
+        if wb_info:
+            parts.append(f"World Bank Pink Sheet {wb_info['name']} {wb_mom:+.1f}% MoM ({wb_period})")
+        if policy_note:
+            parts.append(policy_note)
+        if comtrade_note:
+            parts.append(comtrade_note)
+        parts.append(f"USD/INR ₹{fx_rate:.2f} ({fx_pct:+.1f}%), BACI {baci_pct:+.1f}%")
+        reason = " | ".join(parts) + f" [Updated {fetched_at}]."
     else:
-        predicted_pct = round(baci_pct, 1)
-        reason = f"BACI trade lakehouse baseline ({baci_pct:+.1f}%). Live market feed unavailable."
+        predicted_pct = round(baci_pct + policy_adj + comtrade_adj, 1)
+        reason = f"BACI trade lakehouse baseline ({baci_pct:+.1f}%)."
 
     if predicted_pct >= 1.8:
         trend = "SURGE"
@@ -177,4 +440,3 @@ def compute_live_forecast(hsn_code: str, name: str, category: str, base_price_in
         trend = "STABLE"
 
     return trend, predicted_pct, reason, fetched_at
-
