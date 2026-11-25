@@ -316,6 +316,12 @@
                   <span class="text-xs font-semibold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-full" id="aiSurgeAlertCount">
                     Actionable Alert
                   </span>
+                  <div class="inline-flex items-center gap-1 ml-1" id="aiSurgePager">
+                    <button type="button" onclick="cycleSurgeAlert(-1)" title="Previous Alert" class="w-6 h-6 rounded-md bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold transition">‹</button>
+                    <span class="text-[11px] font-mono font-bold text-slate-600 px-1" id="aiSurgePageLabel">1 / 1</span>
+                    <button type="button" onclick="cycleSurgeAlert(1)" title="Next Alert" class="w-6 h-6 rounded-md bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold transition">›</button>
+                    <button type="button" onclick="toggleAllSurgeAlerts()" id="aiSurgeExpandBtn" class="ml-1 px-2 py-0.5 rounded-md bg-white border border-rose-200 hover:bg-rose-100 text-rose-700 text-[11px] font-bold transition">View All</button>
+                  </div>
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
@@ -346,6 +352,9 @@
             </div>
 
           </div>
+
+          <!-- Expandable Multi-Alert List (Shows ALL Surge Alerts) -->
+          <div id="aiSurgeAllList" class="hidden mt-4 pt-4 border-t border-rose-200/70 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2.5 max-h-64 overflow-y-auto pr-1"></div>
         </div>
 
         <!-- Controls Bar: Search, Filters, Sorting & View Toggle -->
@@ -904,43 +913,110 @@
     const pageSize = 10;
 
     let activeSurgeItemId = null;
+    let surgeProposalsList = [];
+    let currentSurgeIdx = 0;
 
-    function updateAISurgeAlertCard() {
-      const lowItems = (inventoryData || []).filter(i => (i.status === 'Low' || i.qty <= i.min || i.auction === 'Auction Needed'));
+    function renderSelectedSurgeAlert(idx) {
+      if (!surgeProposalsList || surgeProposalsList.length === 0) return;
+      currentSurgeIdx = ((idx % surgeProposalsList.length) + surgeProposalsList.length) % surgeProposalsList.length;
+      const p = surgeProposalsList[currentSurgeIdx];
+
       const countEl = document.getElementById('aiSurgeAlertCount');
+      const pageLabelEl = document.getElementById('aiSurgePageLabel');
       const nameEl = document.getElementById('aiSurgeItemName');
       const detailsEl = document.getElementById('aiSurgeDetails');
       const pctEl = document.getElementById('aiSurgePct');
       const priceEl = document.getElementById('aiSurgePrice');
+      const descEl = document.getElementById('aiSurgeDesc');
       const greetEl = document.getElementById('aiChatGreeting');
 
-      const renderProposal = (itemName, hsn, qty, minQty, surgeStr, ceiling, itemId, alertCount) => {
-        activeSurgeItemId = itemId;
-        if (countEl) countEl.textContent = alertCount + ' Actionable Alert' + (alertCount === 1 ? '' : 's');
-        if (nameEl) nameEl.textContent = itemName;
-        if (detailsEl) detailsEl.textContent = 'HSN Code: ' + (hsn || 'General') + ' | Stock: ' + qty + ' / Min: ' + minQty;
-        if (pctEl) pctEl.textContent = surgeStr + ' SURGE FORECASTED';
-        if (priceEl) priceEl.innerHTML = '₹' + Number(ceiling || 0).toLocaleString() + ' <span class="text-xs text-slate-500 font-normal">/ unit</span>';
-        if (greetEl) greetEl.textContent = 'Hello! I monitored your live inventory SKUs. ' + itemName + ' (HSN ' + (hsn || 'General') + ') is below threshold (' + qty + '/' + minQty + ') with an active price surge (' + surgeStr + '). Would you like me to trigger an auction?';
-      };
+      activeSurgeItemId = p.resolvedId || p.inventory_id;
+      const totalAlerts = surgeProposalsList.length;
+      if (countEl) countEl.textContent = totalAlerts + ' Actionable Alert' + (totalAlerts === 1 ? '' : 's');
+      if (pageLabelEl) pageLabelEl.textContent = (currentSurgeIdx + 1) + ' / ' + totalAlerts;
+      if (nameEl) nameEl.textContent = p.item_name;
+      if (detailsEl) detailsEl.textContent = 'HSN Code: ' + (p.hsn_code || 'General') + ' | Stock: ' + p.current_stock + ' / Min: ' + p.min_threshold;
+      if (pctEl) pctEl.textContent = (p.predicted_price_surge || '+7.4%') + ' SURGE FORECASTED';
+      if (priceEl) priceEl.innerHTML = '₹' + Number(p.ai_suggested_ceiling || 0).toLocaleString() + ' <span class="text-xs text-slate-500 font-normal">/ unit</span>';
+      if (descEl) descEl.textContent = 'Detected raw material inventory below safe threshold paired with forecasted global import price surge (' + (p.predicted_price_surge || '+7.4%') + ') within 30 days. Reverse auction pre-drafted to lock in supplier contracts prior to price hike.';
+      if (greetEl) greetEl.textContent = 'Hello! I monitored your live inventory SKUs (' + totalAlerts + ' alerts). ' + p.item_name + ' (HSN ' + (p.hsn_code || 'General') + ') is below threshold (' + p.current_stock + '/' + p.min_threshold + ') with an active price surge (' + (p.predicted_price_surge || '+7.4%') + '). Would you like me to trigger an auction?';
+    }
 
-      // Immediately render from live MySQL-backed inventoryData
+    function renderAllSurgeGrid() {
+      const grid = document.getElementById('aiSurgeAllList');
+      if (!grid) return;
+      if (!surgeProposalsList || surgeProposalsList.length === 0) {
+        grid.innerHTML = '<div class="text-xs text-slate-500 p-2">No active surge alerts.</div>';
+        return;
+      }
+      grid.innerHTML = surgeProposalsList.map((p, i) => {
+        const isSelected = (i === currentSurgeIdx);
+        return '<div onclick="renderSelectedSurgeAlert(' + i + '); renderAllSurgeGrid();" class="p-3 rounded-xl border cursor-pointer transition flex items-center justify-between gap-2 ' + (isSelected ? 'bg-white border-rose-400 ring-2 ring-rose-500/20 shadow-sm' : 'bg-white/80 border-slate-200 hover:border-rose-300') + '">' +
+          '<div class="min-w-0">' +
+            '<div class="flex items-center gap-1.5">' +
+              '<span class="text-xs font-bold text-slate-900 truncate">' + escapeHtml(p.item_name) + '</span>' +
+              '<span class="px-1.5 py-0.5 text-[10px] font-extrabold text-rose-700 bg-rose-100 rounded">' + escapeHtml(p.predicted_price_surge || '+7.4%') + '</span>' +
+            '</div>' +
+            '<div class="text-[11px] font-mono text-slate-500 mt-0.5">HSN ' + escapeHtml(p.hsn_code || 'General') + ' • Stock ' + p.current_stock + '/' + p.min_threshold + '</div>' +
+          '</div>' +
+          '<button type="button" onclick="event.stopPropagation(); openCreateAuctionModal(' + (p.resolvedId || p.inventory_id) + ')" class="px-2.5 py-1.5 text-[11px] font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg shrink-0">Auction</button>' +
+        '</div>';
+      }).join('');
+    }
+
+    function cycleSurgeAlert(delta) {
+      renderSelectedSurgeAlert(currentSurgeIdx + delta);
+      renderAllSurgeGrid();
+    }
+
+    function toggleAllSurgeAlerts() {
+      const grid = document.getElementById('aiSurgeAllList');
+      const btn = document.getElementById('aiSurgeExpandBtn');
+      if (!grid) return;
+      const willShow = grid.classList.contains('hidden');
+      grid.classList.toggle('hidden');
+      if (btn) btn.textContent = willShow ? 'Hide All' : 'View All';
+      if (willShow) renderAllSurgeGrid();
+    }
+
+    function updateAISurgeAlertCard() {
+      const lowItems = (inventoryData || []).filter(i => (i.status === 'Low' || i.qty <= i.min || i.auction === 'Auction Needed'));
       if (lowItems.length > 0) {
-        const top = lowItems[0];
-        const matchedCatalog = (allCatalogProducts || []).find(p => p.name === top.name || p.hsnCode === top.hsn);
-        const unitPrice = top.priceCeiling || (matchedCatalog && matchedCatalog.unitPrice ? Math.round(matchedCatalog.unitPrice * 1.05) : 2500);
-        renderProposal(top.name, top.hsn || (matchedCatalog && matchedCatalog.hsnCode) || 'General', top.qty, top.min, '+' + (top.surge || 7.4) + '%', unitPrice, top.id, lowItems.length);
+        surgeProposalsList = lowItems.map(top => {
+          const matchedCatalog = (allCatalogProducts || []).find(p => p.name === top.name || p.hsnCode === top.hsn);
+          const unitPrice = top.priceCeiling || (matchedCatalog && matchedCatalog.unitPrice ? Math.round(matchedCatalog.unitPrice * 1.05) : 2500);
+          return {
+            inventory_id: top.id,
+            resolvedId: top.id,
+            item_name: top.name,
+            hsn_code: top.hsn || (matchedCatalog && matchedCatalog.hsnCode) || 'General',
+            current_stock: top.qty,
+            min_threshold: top.min,
+            predicted_price_surge: '+' + (top.surge || 7.4) + '%',
+            ai_suggested_ceiling: unitPrice
+          };
+        });
+        renderSelectedSurgeAlert(0);
       }
 
-      // Enhance with live 1D-ResNet Flask surge check
+      // Enhance with live 1D-ResNet Flask surge check for ALL flagged items
       fetch('http://localhost:5000/api/inventory-surge-check')
         .then(r => r.json())
         .then(data => {
           if (data && data.status === 'success' && data.proposals && data.proposals.length > 0) {
-            const p = data.proposals[0];
-            const invMatch = (inventoryData || []).find(i => i.id == p.inventory_id || i.name === p.item_name);
-            const resolvedId = invMatch ? invMatch.id : p.inventory_id;
-            renderProposal(p.item_name, p.hsn_code, p.current_stock, p.min_threshold, p.predicted_price_surge || '+7.4%', p.ai_suggested_ceiling, resolvedId, data.total_proposals || data.proposals.length);
+            surgeProposalsList = data.proposals.map(p => {
+              const invMatch = (inventoryData || []).find(i => i.id == p.inventory_id || i.name === p.item_name);
+              const resolvedId = invMatch ? invMatch.id : p.inventory_id;
+              if (invMatch) {
+                const pctNum = parseFloat(String(p.predicted_price_surge || '7.4').replace(/[^0-9.]/g, '')) || 7.4;
+                invMatch.surge = pctNum;
+                invMatch.priceCeiling = p.ai_suggested_ceiling;
+              }
+              return Object.assign({}, p, { resolvedId: resolvedId });
+            });
+            renderSelectedSurgeAlert(0);
+            renderAllSurgeGrid();
+            renderApp();
           }
         })
         .catch(() => {});
