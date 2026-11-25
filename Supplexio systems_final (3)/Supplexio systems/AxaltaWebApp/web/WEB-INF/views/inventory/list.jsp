@@ -313,20 +313,20 @@
                   <span class="text-xs font-bold text-slate-700 bg-white/80 px-2.5 py-0.5 rounded-md border border-slate-200">
                     1D-ResNet Trade Intelligence Engine
                   </span>
-                  <span class="text-xs font-semibold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-full">
-                    1 Actionable Alert
+                  <span class="text-xs font-semibold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-full" id="aiSurgeAlertCount">
+                    Actionable Alert
                   </span>
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
-                  <h3 class="text-base font-bold text-slate-900" id="aiSurgeItemName">Bitumen Primer</h3>
+                  <h3 class="text-base font-bold text-slate-900" id="aiSurgeItemName">Low Stock Raw Material</h3>
                   <span class="inline-flex items-center text-xs font-extrabold text-rose-600 bg-rose-100 px-2 py-0.5 rounded" id="aiSurgePct">
                     +7.4% SURGE FORECASTED
                   </span>
-                  <span class="text-xs text-slate-500 font-mono" id="aiSurgeDetails">HSN Code: 270811 | Stock: 40 / Min: 50</span>
+                  <span class="text-xs text-slate-500 font-mono" id="aiSurgeDetails">Scanning live MySQL inventory...</span>
                 </div>
                 
-                <p class="text-xs text-slate-600 mt-1 max-w-3xl leading-relaxed">
+                <p class="text-xs text-slate-600 mt-1 max-w-3xl leading-relaxed" id="aiSurgeDesc">
                   Detected raw material inventory below safe threshold paired with forecasted global import price surge (+7.4%) within 30 days. Reverse auction pre-drafted to lock in supplier contracts prior to price hike.
                 </p>
               </div>
@@ -336,7 +336,7 @@
             <div class="flex items-center justify-between lg:justify-end gap-4 pt-3 lg:pt-0 border-t lg:border-t-0 border-rose-200/60 shrink-0">
               <div class="text-left lg:text-right pr-2">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">AI Target Price Ceiling</span>
-                <span class="text-xl font-extrabold text-slate-900 font-mono">₹2,625 <span class="text-xs text-slate-500 font-normal">/ unit</span></span>
+                <span class="text-xl font-extrabold text-slate-900 font-mono" id="aiSurgePrice">₹-- <span class="text-xs text-slate-500 font-normal">/ unit</span></span>
               </div>
               
               <button onclick="triggerSurgeAuction()" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-700 hover:to-amber-700 rounded-xl shadow-md shadow-rose-500/20 hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0">
@@ -842,8 +842,8 @@
         </button>
       </div>
       <div class="p-3.5 h-64 overflow-y-auto text-xs space-y-2.5 bg-slate-50" id="aiChatMessages">
-        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-slate-700">
-          Hello! I monitored your inventory SKUs. Bitumen Primer is below threshold with an active price surge (+7.4%). Would you like me to trigger an auction?
+        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-slate-700" id="aiChatGreeting">
+          Hello! I am monitoring your live inventory SKUs for low-stock thresholds and 1D-ResNet price surges. Ask me about restock recommendations or click "Launch Reverse Auction" on any alert!
         </div>
       </div>
       <div class="p-2 bg-white border-t border-slate-200 flex items-center gap-1.5">
@@ -878,7 +878,7 @@
         { id: 91, name: "Aluminum Section", qty: 80, min: 50, max: 200, hsn: "760429", status: "Medium", auction: "Not Needed" },
         { id: 61, name: "Angle Valve", qty: 100, min: 50, max: 200, hsn: "848180", status: "Medium", auction: "Not Needed" },
         { id: 86, name: "Barbed Wire", qty: 200, min: 50, max: 200, hsn: "731300", status: "High", auction: "Not Needed" },
-        { id: 43, name: "Bitumen Primer", qty: 40, min: 50, max: 200, hsn: "270811", status: "Low", auction: "Auction Needed", surge: 7.4, priceCeiling: 2625 },
+        { id: 43, name: "Marble Chips", qty: 40, min: 50, max: 200, hsn: "251741", status: "Low", auction: "Auction Needed", surge: 7.4, priceCeiling: 475 },
         { id: 52, name: "Brass Door Handle", qty: 80, min: 50, max: 200, hsn: "830241", status: "Medium", auction: "Not Needed" },
         { id: 100, name: "Bubble Wrap", qty: 60, min: 50, max: 200, hsn: "392310", status: "Medium", auction: "Not Needed" },
         { id: 68, name: "Cable Tie", qty: 150, min: 50, max: 200, hsn: "392690", status: "Medium", auction: "Not Needed" },
@@ -903,11 +903,55 @@
     let currentPage = 1;
     const pageSize = 10;
 
+    let activeSurgeItemId = null;
+
+    function updateAISurgeAlertCard() {
+      const lowItems = (inventoryData || []).filter(i => (i.status === 'Low' || i.qty <= i.min || i.auction === 'Auction Needed'));
+      const countEl = document.getElementById('aiSurgeAlertCount');
+      const nameEl = document.getElementById('aiSurgeItemName');
+      const detailsEl = document.getElementById('aiSurgeDetails');
+      const pctEl = document.getElementById('aiSurgePct');
+      const priceEl = document.getElementById('aiSurgePrice');
+      const greetEl = document.getElementById('aiChatGreeting');
+
+      const renderProposal = (itemName, hsn, qty, minQty, surgeStr, ceiling, itemId, alertCount) => {
+        activeSurgeItemId = itemId;
+        if (countEl) countEl.textContent = alertCount + ' Actionable Alert' + (alertCount === 1 ? '' : 's');
+        if (nameEl) nameEl.textContent = itemName;
+        if (detailsEl) detailsEl.textContent = 'HSN Code: ' + (hsn || 'General') + ' | Stock: ' + qty + ' / Min: ' + minQty;
+        if (pctEl) pctEl.textContent = surgeStr + ' SURGE FORECASTED';
+        if (priceEl) priceEl.innerHTML = '₹' + Number(ceiling || 0).toLocaleString() + ' <span class="text-xs text-slate-500 font-normal">/ unit</span>';
+        if (greetEl) greetEl.textContent = 'Hello! I monitored your live inventory SKUs. ' + itemName + ' (HSN ' + (hsn || 'General') + ') is below threshold (' + qty + '/' + minQty + ') with an active price surge (' + surgeStr + '). Would you like me to trigger an auction?';
+      };
+
+      // Immediately render from live MySQL-backed inventoryData
+      if (lowItems.length > 0) {
+        const top = lowItems[0];
+        const matchedCatalog = (allCatalogProducts || []).find(p => p.name === top.name || p.hsnCode === top.hsn);
+        const unitPrice = top.priceCeiling || (matchedCatalog && matchedCatalog.unitPrice ? Math.round(matchedCatalog.unitPrice * 1.05) : 2500);
+        renderProposal(top.name, top.hsn || (matchedCatalog && matchedCatalog.hsnCode) || 'General', top.qty, top.min, '+' + (top.surge || 7.4) + '%', unitPrice, top.id, lowItems.length);
+      }
+
+      // Enhance with live 1D-ResNet Flask surge check
+      fetch('http://localhost:5000/api/inventory-surge-check')
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.status === 'success' && data.proposals && data.proposals.length > 0) {
+            const p = data.proposals[0];
+            const invMatch = (inventoryData || []).find(i => i.id == p.inventory_id || i.name === p.item_name);
+            const resolvedId = invMatch ? invMatch.id : p.inventory_id;
+            renderProposal(p.item_name, p.hsn_code, p.current_stock, p.min_threshold, p.predicted_price_surge || '+7.4%', p.ai_suggested_ceiling, resolvedId, data.total_proposals || data.proposals.length);
+          }
+        })
+        .catch(() => {});
+    }
+
     // Initialization
     window.onload = function() {
       lucide.createIcons();
       setupMobileMenu();
       renderApp();
+      updateAISurgeAlertCard();
       if (window.location.search.includes('openAdd=true') || window.location.hash === '#addProduct') {
         openAddProductModal();
         const urlParams = new URLSearchParams(window.location.search);
@@ -1289,10 +1333,14 @@
     }
 
     function triggerSurgeAuction() {
-      const surgeItem = inventoryData.find(i => (i.surge || (i.name && i.name.toLowerCase().includes('bitumen'))));
+      if (activeSurgeItemId) {
+        openCreateAuctionModal(activeSurgeItemId);
+        return;
+      }
+      const surgeItem = inventoryData.find(i => (i.status === 'Low' || i.qty <= i.min || i.auction === 'Auction Needed'));
       if (surgeItem) {
         openCreateAuctionModal(surgeItem.id);
-      } else {
+      } else if (inventoryData.length > 0) {
         openCreateAuctionModal(inventoryData[0].id);
       }
     }
