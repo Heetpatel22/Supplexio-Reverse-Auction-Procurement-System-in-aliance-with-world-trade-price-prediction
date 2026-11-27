@@ -107,14 +107,37 @@ html.dark [class~="bg-rose-50/70"] {
     color: #FDA4AF !important;
 }
 
-/* Headers, Modals, Bootstrap Surfaces */
+/* Headers, Modals, Bootstrap Surfaces, Light Gradients & To-Do Filter Tabs */
 html.dark .card-header,
 html.dark .modal-header,
 html.dark .modal-footer,
+html.dark .table-card-header,
+html.dark .input-group-text,
 html.dark .bg-light {
     background-color: #0F172A !important;
     border-color: #1E293B !important;
     color: #F8FAFC !important;
+}
+html.dark [class*="from-white"],
+html.dark [class*="via-rose-50"],
+html.dark [class*="to-amber-50"] {
+    background-image: none !important;
+    background-color: #111827 !important;
+    border-color: #1E293B !important;
+}
+html.dark .filter-tab:not(.active),
+html.dark .btn-light,
+html.dark .btn-outline-secondary,
+html.dark .btn-white,
+html.dark .action-btn {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #E2E8F0 !important;
+}
+html.dark .filter-tab.active {
+    background-color: #0D9488 !important;
+    border-color: #0D9488 !important;
+    color: #FFFFFF !important;
 }
 
 /* Typography */
