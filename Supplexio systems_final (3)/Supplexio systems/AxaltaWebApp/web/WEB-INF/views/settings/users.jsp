@@ -680,6 +680,42 @@
                     </div>
                 </div>
 
+                <%
+                    String ua = request.getHeader("User-Agent");
+                    if (ua == null) ua = "Unknown Browser";
+                    String browserLabel = ua.contains("Edg") ? "Microsoft Edge" : (ua.contains("Chrome") ? "Google Chrome" : (ua.contains("Firefox") ? "Mozilla Firefox" : (ua.contains("Safari") ? "Safari" : "Web Browser")));
+                    String osLabel = ua.contains("Windows") ? "Windows" : (ua.contains("Mac") ? "macOS" : (ua.contains("Linux") ? "Linux" : "Desktop / Mobile"));
+                    String clientIp = request.getRemoteAddr();
+                    String sessIdShort = session.getId() != null && session.getId().length() >= 8 ? session.getId().substring(0, 8) : session.getId();
+                    String lastAccessedStr = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format(new java.util.Date(session.getLastAccessedTime()));
+                %>
+                <!-- Active Login Sessions (Where Account Is Logged In) -->
+                <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] shadow-card overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100 dark:border-[#1E293B] bg-slate-50/70 dark:bg-slate-900/40 flex items-center justify-between">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900 dark:text-white">Active Login Sessions</h2>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Devices and locations currently authenticated to this buyer account.</p>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">1 Active Session</span>
+                    </div>
+                    <div class="p-4 space-y-2.5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-[#1E293B]">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-emerald-500/12 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-900 dark:text-white"><%= browserLabel %> on <%= osLabel %> — Current Session</div>
+                                    <div class="text-[11px] font-mono text-slate-500 dark:text-slate-400">IP: <%= clientIp %> • Session: <%= sessIdShort %>... • Last Active: <%= lastAccessedStr %></div>
+                                </div>
+                            </div>
+                            <span class="self-start sm:self-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">THIS DEVICE</span>
+                        </div>
+                    </div>
+                </div>
+
                 <c:if test="${isAdmin}">
                     <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] shadow-card overflow-hidden">
                         <div class="px-5 py-4 border-b border-slate-100 dark:border-[#1E293B] bg-slate-50/70 dark:bg-slate-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
