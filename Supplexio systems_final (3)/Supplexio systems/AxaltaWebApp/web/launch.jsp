@@ -52,13 +52,20 @@
     <style>
         .tabular-nums { font-variant-numeric: tabular-nums; }
 
-        .bg-supplexio-hero {
-            background: radial-gradient(ellipse 85% 65% at 50% 0%, #163B7C 0%, #0B1E47 52%, #071533 100%);
+        .bg-supplexio-canvas {
+            background-color: #071533;
+            background-image:
+                radial-gradient(circle, rgba(255, 255, 255, 0.065) 1px, transparent 1px),
+                radial-gradient(ellipse 85% 45% at 50% 0%, #163B7C 0%, #0B1E47 45%, #071533 100%);
+            background-size: 28px 28px, 100% 100%;
+            background-attachment: fixed, fixed;
         }
 
-        .bg-dot-grid {
-            background-size: 28px 28px;
-            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+        .sp-float-card {
+            box-shadow: 0 24px 55px -14px rgba(2, 6, 23, 0.78), 0 8px 20px -6px rgba(13, 148, 136, 0.14);
+        }
+        .sp-float-card:hover {
+            box-shadow: 0 30px 65px -12px rgba(2, 6, 23, 0.88), 0 12px 28px -6px rgba(45, 212, 191, 0.22);
         }
 
         /* Explicit Supplexio Navy-Teal Top Navbar */
@@ -125,7 +132,7 @@
     </style>
 </head>
 
-<body class="bg-[#F4F7FC] text-slate-800 font-sans antialiased overflow-x-hidden">
+<body class="bg-supplexio-canvas text-slate-100 font-sans antialiased overflow-x-hidden min-h-screen">
 
     <!-- Toast Notification Stack -->
     <div id="toastContainer" class="fixed top-5 right-5 z-[80] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"></div>
@@ -225,8 +232,7 @@
     <!-- =================================================================== -->
     <!-- 3. IMMERSIVE HERO SECTION (2-COLUMN SPLIT)                          -->
     <!-- =================================================================== -->
-    <section class="relative bg-supplexio-hero text-white overflow-hidden pt-12 pb-16 lg:pt-16 lg:pb-24">
-        <div class="absolute inset-0 bg-dot-grid opacity-70 pointer-events-none"></div>
+    <section class="relative text-white overflow-hidden pt-12 pb-16 lg:pt-16 lg:pb-24">
         <div class="absolute -top-24 left-1/4 w-[520px] h-[520px] rounded-full bg-cyan-400/10 blur-3xl pointer-events-none"></div>
         <div class="absolute bottom-0 right-1/4 w-[480px] h-[480px] rounded-full bg-teal-500/10 blur-3xl pointer-events-none"></div>
 
@@ -345,24 +351,24 @@
     </section>
 
     <!-- =================================================================== -->
-    <!-- 4. CAPABILITIES BENTO GRID (Balanced 2x2 Grid on #F4F7FC)           -->
+    <!-- 4. CAPABILITIES BENTO GRID (Balanced 2x2 Floating Grid)             -->
     <!-- =================================================================== -->
     <section id="capabilities" class="py-16 lg:py-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="max-w-2xl mb-10">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-[10.5px] font-mono font-bold uppercase tracking-widest text-[#163B7C]">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[10.5px] font-mono font-bold uppercase tracking-widest text-[#2DD4BF]">
                     UNIFIED PROCUREMENT ARCHITECTURE
                 </div>
-                <h2 class="mt-3 text-2xl sm:text-4xl font-extrabold text-[#0B1E47] tracking-tight leading-tight">
+                <h2 class="mt-3 text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
                     Built to compress raw material spend from trigger to payout.
                 </h2>
-                <p class="mt-2.5 text-sm sm:text-base text-slate-600 leading-relaxed">
+                <p class="mt-2.5 text-sm sm:text-base text-slate-300 leading-relaxed">
                     Every workflow shares one real-time ledger — eliminating fragmented RFQ emails, manual vendor comparisons, and GST invoice mismatches.
                 </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-7 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between">
+                <div class="bg-white text-slate-800 rounded-2xl border border-white/25 p-6 sm:p-7 sp-float-card hover:-translate-y-1 transition-all flex flex-col justify-between">
                     <div>
                         <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 text-[#163B7C] flex items-center justify-center mb-5">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -381,7 +387,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-7 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between">
+                <div class="bg-white text-slate-800 rounded-2xl border border-white/25 p-6 sm:p-7 sp-float-card hover:-translate-y-1 transition-all flex flex-col justify-between">
                     <div>
                         <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200/70 text-[#F59E0B] flex items-center justify-center mb-5">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -400,7 +406,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-[#E2E8F0] p-6 sm:p-7 shadow-card hover:shadow-card-hover transition-all flex flex-col justify-between">
+                <div class="bg-white text-slate-800 rounded-2xl border border-white/25 p-6 sm:p-7 sp-float-card hover:-translate-y-1 transition-all flex flex-col justify-between">
                     <div>
                         <div class="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200/70 text-[#10B981] flex items-center justify-center mb-5">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -454,19 +460,19 @@
     <!-- =================================================================== -->
     <!-- 5. PUBLIC ACTIVE REVERSE AUCTIONS FLOOR (#marketplace, LIVE DB SYNC)-->
     <!-- =================================================================== -->
-    <section id="marketplace" class="py-16 lg:py-20 bg-white border-y border-[#E2E8F0] scroll-mt-20">
+    <section id="marketplace" class="py-16 lg:py-20 scroll-mt-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
             <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-8">
                 <div>
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10.5px] font-mono font-bold uppercase tracking-widest text-emerald-700">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/35 text-[10.5px] font-mono font-bold uppercase tracking-widest text-emerald-300">
                         <span class="w-2 h-2 rounded-full bg-[#10B981] animate-ping"></span>
                         PUBLIC ACTIVE REVERSE AUCTIONS • REAL-TIME SYNC
                     </div>
-                    <h2 class="mt-3 text-2xl sm:text-4xl font-extrabold text-[#0B1E47] tracking-tight">
+                    <h2 class="mt-3 text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
                         Live Sourcing Lots Open for Bidding
                     </h2>
-                    <p class="mt-2 text-sm text-slate-600 max-w-2xl">
+                    <p class="mt-2 text-sm text-slate-300 max-w-2xl">
                         Inspect live L1 floor prices, ceiling benchmarks, and ticking countdowns synced directly from our procurement database. Approved suppliers can place binding reverse bids.
                     </p>
                 </div>
@@ -491,20 +497,20 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
             <div class="max-w-2xl mb-10">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-[10.5px] font-mono font-bold uppercase tracking-widest text-[#0D9488]">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[10.5px] font-mono font-bold uppercase tracking-widest text-[#2DD4BF]">
                     END-TO-END WORKFLOW
                 </div>
-                <h2 class="mt-3 text-2xl sm:text-4xl font-extrabold text-[#0B1E47] tracking-tight">
+                <h2 class="mt-3 text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
                     From Demand Trigger to Escrow Payout in 5 Steps
                 </h2>
-                <p class="mt-2 text-sm sm:text-base text-slate-600">
+                <p class="mt-2 text-sm sm:text-base text-slate-300">
                     Click any step below to explore how Supplexio automates sourcing, or model your annual procurement savings with our interactive estimator.
                 </p>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-7 items-stretch">
 
-                <div class="lg:col-span-7 bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-card flex flex-col justify-between space-y-6">
+                <div class="lg:col-span-7 bg-white text-slate-800 rounded-2xl border border-white/25 p-6 sp-float-card flex flex-col justify-between space-y-6">
                     <div>
                         <div class="flex items-center justify-between mb-4">
                             <span class="text-xs font-bold text-[#0B1E47]">Interactive Auction Lifecycle</span>
@@ -587,23 +593,23 @@
     <!-- =================================================================== -->
     <!-- 7. ROLE-SPECIFIC WORKSPACES (SIDE-BY-SIDE COMPARISON)               -->
     <!-- =================================================================== -->
-    <section class="py-16 lg:py-20 bg-white border-y border-[#E2E8F0]">
+    <section class="py-16 lg:py-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto mb-11">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-[10.5px] font-mono font-bold uppercase tracking-widest text-[#163B7C]">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[10.5px] font-mono font-bold uppercase tracking-widest text-[#2DD4BF]">
                     ROLE-SPECIFIC WORKSPACES
                 </div>
-                <h2 class="mt-3 text-2xl sm:text-4xl font-extrabold text-[#0B1E47] tracking-tight">
+                <h2 class="mt-3 text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
                     Two Tailored Portals, One Synchronized Engine
                 </h2>
-                <p class="mt-2 text-sm sm:text-base text-slate-600">
+                <p class="mt-2 text-sm sm:text-base text-slate-300">
                     Purpose-built interfaces that maximize cost governance for enterprise buyers and bidding speed for verified suppliers.
                 </p>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-7">
 
-                <div class="bg-[#F4F7FC] rounded-2xl border-2 border-[#0B1E47]/15 p-7 sm:p-8 flex flex-col justify-between shadow-card">
+                <div class="bg-white text-slate-800 rounded-2xl border border-white/25 p-7 sm:p-8 flex flex-col justify-between sp-float-card hover:-translate-y-1 transition-all">
                     <div>
                         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0B1E47] text-[#2DD4BF] text-[10px] font-mono font-bold uppercase tracking-wider">
                             BUYER ENTERPRISE WORKSPACE
@@ -639,7 +645,7 @@
                     </a>
                 </div>
 
-                <div class="bg-[#F4F7FC] rounded-2xl border-2 border-[#0D9488]/25 p-7 sm:p-8 flex flex-col justify-between shadow-card">
+                <div class="bg-white text-slate-800 rounded-2xl border border-white/25 p-7 sm:p-8 flex flex-col justify-between sp-float-card hover:-translate-y-1 transition-all">
                     <div>
                         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0D9488] text-white text-[10px] font-mono font-bold uppercase tracking-wider">
                             SUPPLIER OPEN MARKETPLACE
@@ -685,13 +691,13 @@
     <section id="faq" class="py-16 lg:py-20 scroll-mt-20">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-10">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200/75 text-[10.5px] font-mono font-bold uppercase tracking-widest text-slate-600">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[10.5px] font-mono font-bold uppercase tracking-widest text-[#2DD4BF]">
                     EXECUTIVE FAQ
                 </div>
-                <h2 class="mt-3 text-2xl sm:text-4xl font-extrabold text-[#0B1E47] tracking-tight">
+                <h2 class="mt-3 text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
                     Frequently Asked Questions
                 </h2>
-                <p class="mt-2 text-sm text-slate-600">
+                <p class="mt-2 text-sm text-slate-300">
                     Answers on reverse auction governance, 1D-ResNet trade intelligence, supplier vetting, and GST settlement.
                 </p>
             </div>
@@ -985,7 +991,7 @@
                 const label = c === 'All' ? ('All Lots (' + liveAuctions.length + ')') : escHtml(c);
                 return '<button type="button" onclick="setMarketFilter(\'' + escHtml(c).replace(/'/g, "\\'") + '\')" ' +
                     'class="px-4 py-2 rounded-xl text-xs transition-all ' +
-                    (active ? 'font-bold bg-[#0B1E47] text-white shadow-sm' : 'font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200') + '">' +
+                    (active ? 'font-bold bg-[#2DD4BF] text-slate-950 shadow-lg' : 'font-semibold bg-white/10 text-slate-200 border border-white/15 hover:bg-white/20') + '">' +
                     label + '</button>';
             }).join('');
         }
@@ -1010,7 +1016,7 @@
 
             grid.innerHTML = list.map(lot => {
                 const savedPct = Number(lot.savingsPct || 0).toFixed(1);
-                return '<article class="bg-white rounded-2xl border border-[#E2E8F0] shadow-card hover:shadow-card-hover transition-all overflow-hidden flex flex-col justify-between">' +
+                return '<article class="bg-white text-slate-800 rounded-2xl border border-white/25 sp-float-card hover:-translate-y-1 transition-all overflow-hidden flex flex-col justify-between">' +
                     '<div>' +
                         '<div class="bg-gradient-to-r from-[#0B1E47] via-[#12336B] to-[#0E5A6D] px-5 py-4 text-white">' +
                             '<div class="flex items-center justify-between gap-2 mb-1.5">' +
@@ -1147,7 +1153,7 @@
             const container = document.getElementById('faqAccordion');
             container.innerHTML = faqItems.map((item, idx) => {
                 const isOpen = idx === openFaqIndex;
-                return '<div class="bg-white rounded-2xl border ' + (isOpen ? 'border-[#0D9488]/45 shadow-card' : 'border-[#E2E8F0]') + ' overflow-hidden transition-all">' +
+                return '<div class="bg-white rounded-2xl border ' + (isOpen ? 'border-[#2DD4BF]/60' : 'border-white/20') + ' sp-float-card overflow-hidden transition-all">' +
                     '<button type="button" onclick="toggleFaq(' + idx + ')" class="w-full px-6 py-4 text-left flex items-center justify-between gap-4">' +
                         '<span class="text-sm font-bold text-[#0B1E47]">' + item.q + '</span>' +
                         '<span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform ' + (isOpen ? 'bg-[#0B1E47] text-[#2DD4BF] rotate-45' : 'bg-slate-100 text-slate-600') + ' font-bold text-base">+</span>' +
