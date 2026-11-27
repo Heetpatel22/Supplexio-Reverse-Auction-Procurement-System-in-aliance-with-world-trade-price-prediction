@@ -1063,7 +1063,7 @@
               // INJECT REAL LIVE AUCTIONS FROM BACKEND (or empty fallback)
               const rawAuctions = <%= request.getAttribute("auctionsJson") != null ? request.getAttribute("auctionsJson") : "[]" %>;
 
-              let auctionsData = Array.isArray(rawAuctions) && rawAuctions.length > 0 ? rawAuctions : [];
+              let auctionsData = Array.isArray(rawAuctions) && rawAuctions.length> 0 ? rawAuctions : [];
 
               // STATE VARIABLES
               let filteredAuctions = [...auctionsData];
@@ -1161,7 +1161,7 @@
                   let needsRender = false;
                   auctionsData.forEach(item => {
                     const s = (item.status || '').toUpperCase();
-                    if ((s === 'ACTIVE' || s === 'LIVE BIDDING') && item.remainingSeconds > 0) {
+                    if ((s === 'ACTIVE' || s === 'LIVE BIDDING') && item.remainingSeconds> 0) {
                       item.remainingSeconds--;
                       needsRender = true;
                     }
@@ -1187,7 +1187,7 @@
                   newProdSelect.addEventListener('change', function () {
                     const selected = this.options[this.selectedIndex];
                     const price = selected.getAttribute('data-price');
-                    if (price && price > 0) {
+                    if (price && price> 0) {
                       const startPriceInput = document.getElementById('newStartPrice');
                       if (startPriceInput && !startPriceInput.value) {
                         startPriceInput.value = price;
@@ -1215,13 +1215,13 @@
                 auctionsData.forEach(a => {
                   const start = parseFloat(a.startPrice) || 0;
                   const bid = parseFloat(a.currentBid) || start;
-                  if (start > bid) {
+                  if (start> bid) {
                     totalSavingsSum += (start - bid);
                   }
                   totalStartPriceSum += start;
                 });
 
-                const avgSavingsPct = totalStartPriceSum > 0 ? (totalSavingsSum / totalStartPriceSum) * 100 : 0;
+                const avgSavingsPct = totalStartPriceSum> 0 ? (totalSavingsSum / totalStartPriceSum) * 100 : 0;
 
                 document.getElementById('kpiTotalAuctions').textContent = totalAuctions;
                 document.getElementById('kpiLiveAuctions').textContent = liveAuctions;
@@ -1231,7 +1231,7 @@
 
                 const aiPending = document.getElementById('aiPendingPrompt');
                 if (aiPending) {
-                  aiPending.textContent = awardPending > 0
+                  aiPending.textContent = awardPending> 0
                     ? `\${awardPending} Completed auction(s) await PO award. Immediate award recommended to lock price.`
                     : 'All completed auctions have been processed or awarded.';
                 }
@@ -1295,8 +1295,8 @@
                   if (typeof valA === 'string') valA = valA.toLowerCase();
                   if (typeof valB === 'string') valB = valB.toLowerCase();
 
-                  if (valA < valB) return sortAsc ? -1 : 1;
-                  if (valA > valB) return sortAsc ? 1 : -1;
+                  if (valA <valB) return sortAsc ? -1 : 1;
+                  if (valA> valB) return sortAsc ? 1 : -1;
                   return 0;
                 });
 
@@ -1379,8 +1379,8 @@
 
                   const startPrice = parseFloat(item.startPrice) || 0;
                   const currentBid = parseFloat(item.currentBid) || startPrice;
-                  const hasSavings = startPrice > currentBid;
-                  const savingsPct = hasSavings && startPrice > 0 ? (((startPrice - currentBid) / startPrice) * 100).toFixed(1) : 0;
+                  const hasSavings = startPrice> currentBid;
+                  const savingsPct = hasSavings && startPrice> 0 ? (((startPrice - currentBid) / startPrice) * 100).toFixed(1) : 0;
 
                   const { label, badgeClass, isLive } = getStatusBadge(item.status);
 
@@ -1392,8 +1392,8 @@
             <div class="font-bold text-slate-900">\${escapeHtml(item.product)}</div>
             <div class="flex flex-wrap items-center gap-1.5 mt-1">
               <span class="text-xs text-slate-500 font-medium">\${escapeHtml(item.quantity || '')}</span>
-              \${item.category ? `< span class="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[10px] border border-slate-200 font-medium" >\${ escapeHtml(item.category) }</span > ` : ''}
-              \${item.hsnCode ? `< span class="px-1.5 py-0.2 bg-blue-50 text-blue-700 rounded text-[10px] border border-blue-200 font-mono font-bold tracking-tight" > HSN: \${ escapeHtml(item.hsnCode) }</span > ` : ''}
+              \${item.category ? `<span class="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[10px] border border-slate-200 font-medium">\${ escapeHtml(item.category) }</span> ` : ''}
+              \${item.hsnCode ? `<span class="px-1.5 py-0.2 bg-blue-50 text-blue-700 rounded text-[10px] border border-blue-200 font-mono font-bold tracking-tight"> HSN: \${ escapeHtml(item.hsnCode) }</span> ` : ''}
             </div>
           </td>
           <td class="py-4 px-4 text-right font-mono-tabular text-slate-600">
@@ -1402,21 +1402,21 @@
           <td class="py-4 px-4 text-right">
             <div class="font-mono-tabular font-bold text-slate-900">\${formatINR(currentBid)}</div>
             \${hasSavings ? `
-                    < span class="inline-block mt-0.5 px-1.5 py-0.2 bg-emerald-100 text-emerald-700 text-[10px] font-mono-tabular font-bold rounded" >
+                    <span class="inline-block mt-0.5 px-1.5 py-0.2 bg-emerald-100 text-emerald-700 text-[10px] font-mono-tabular font-bold rounded">
                       -\${ savingsPct }%
-              </span >
+              </span>
                     ` : '<span class="text-[10px] text-slate-400 font-mono-tabular">0% savings</span>'}
           </td>
           <td class="py-4 px-4">
             \${isLive ? `
-                    < div class="flex items-center space-x-2" >
+                    <div class="flex items-center space-x-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-emerald"></span>
                 <span class="font-mono-tabular font-bold text-emerald-700 text-xs bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                   \${formatTime(item.remainingSeconds)}
                 </span>
-              </div >
+              </div>
                     ` : `
-                    < div class="text-xs text-slate-500 font-mono-tabular" >\${ item.startTime ? 'Start: ' + item.startTime : 'Schedule logged' }</div >
+                    <div class="text-xs text-slate-500 font-mono-tabular">\${ item.startTime ? 'Start: ' + item.startTime : 'Schedule logged' }</div>
                       <div class="text-xs text-slate-400 font-mono-tabular">\${item.endTime ? 'End: ' + item.endTime : ''}</div>
                   `}
           </td>
@@ -1426,10 +1426,10 @@
               \${label}
             </span>
             \${item.winner ? `
-                    < div class="text-xs font-semibold text-slate-700 mt-1 flex items-center" >
+                    <div class="text-xs font-semibold text-slate-700 mt-1 flex items-center">
                       <svg class="w-3 h-3 text-amber-500 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                   \${ escapeHtml(item.winner) }
-              </div >
+              </div>
                     ` : ''}
           </td>
           <td class="py-4 px-4 text-center">
@@ -1446,30 +1446,30 @@
 
               <!-- Award PO Button for Completed -->
               \${(item.status || '').toUpperCase() === 'COMPLETED' ? `
-                    < button onclick = "awardPOPrompt(\${item.id})" class="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors" title = "Award Purchase Order" >
+                    <button onclick = "awardPOPrompt(\${item.id})" class="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors" title = "Award Purchase Order">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </button >
+                </button>
                     ` : ''}
 
               <!-- View PO Button for Awarded / In-Progress PO -->
               \${['AWARDED', 'PO_DRAFT', 'PO_SENT', 'PO_ACCEPTED', 'INVOICING_PENDING', 'PAYMENT_PENDING', 'PAYMENT_SUCCESSFUL'].includes((item.status || '').toUpperCase()) ? `
-                    < a href = "${pageContext.request.contextPath}/user-po-view" class="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors" title = "View in Purchase Orders" >
+                    <a href = "${pageContext.request.contextPath}/user-po-view" class="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors" title = "View in Purchase Orders">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                </a >
+                </a>
                     ` : ''}
 
               <!-- Mark Delivered Button for Paid / Shipped -->
               \${(item.status || '').toUpperCase() === 'PAID' || (item.status || '').toUpperCase() === 'SHIPPED' ? `
-                    < button onclick = "markDelivered(\${item.id}, '\${escapeHtml(item.product)}', \${item.requiredQuantity || 1})" class="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors" title = "Mark as Delivered" >
+                    <button onclick = "markDelivered(\${item.id}, '\${escapeHtml(item.product)}', \${item.requiredQuantity || 1})" class="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors" title = "Mark as Delivered">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                </button >
+                </button>
                     ` : ''}
 
               <!-- Delete Button (when not Delivered or Closed) -->
               \${(item.status || '').toUpperCase() !== 'DELIVERED' && (item.status || '').toUpperCase() !== 'CLOSED' ? `
-                    < button onclick = "deleteAuction(\${item.id})" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title = "Delete Auction" >
+                    <button onclick = "deleteAuction(\${item.id})" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title = "Delete Auction">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button >
+                </button>
                     ` : ''}
             </div>
           </td>
@@ -1497,14 +1497,14 @@
                 prevBtn.className = `px-2.5 py-1 rounded border text-xs font-semibold \${currentPage === 1 ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-600 hover:bg-slate-100'}`;
                 prevBtn.textContent = 'Prev';
                 prevBtn.disabled = currentPage === 1;
-                prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTable(); } };
+                prevBtn.onclick = () => { if (currentPage> 1) { currentPage--; renderTable(); } };
                 btnContainer.appendChild(prevBtn);
 
                 // Page Numbers (sliding window)
                 const maxPagesToShow = 5;
                 let startP = Math.max(1, currentPage - 2);
                 let endP = Math.min(totalPages, startP + maxPagesToShow - 1);
-                if (endP - startP < maxPagesToShow - 1) {
+                if (endP - startP <maxPagesToShow - 1) {
                   startP = Math.max(1, endP - maxPagesToShow + 1);
                 }
 
@@ -1521,7 +1521,7 @@
                 nextBtn.className = `px-2.5 py-1 rounded border text-xs font-semibold \${currentPage === totalPages || totalPages === 0 ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-slate-300 text-slate-600 hover:bg-slate-100'}`;
                 nextBtn.textContent = 'Next';
                 nextBtn.disabled = currentPage === totalPages || totalPages === 0;
-                nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTable(); } };
+                nextBtn.onclick = () => { if (currentPage <totalPages) { currentPage++; renderTable(); } };
                 btnContainer.appendChild(nextBtn);
               }
 
@@ -1592,7 +1592,7 @@
                 document.getElementById('drawerStartPrice').textContent = formatINR(startPrice);
                 document.getElementById('drawerCurrentBid').textContent = formatINR(currentBid);
                 const savings = Math.max(0, startPrice - currentBid);
-                const savingsPct = startPrice > 0 ? ((savings / startPrice) * 100).toFixed(1) : 0;
+                const savingsPct = startPrice> 0 ? ((savings / startPrice) * 100).toFixed(1) : 0;
                 document.getElementById('drawerSavings').textContent = `\${formatINR(savings)} (\${savingsPct}%)`;
 
                 // Drawer Action Buttons
@@ -1681,7 +1681,7 @@
             </div>
             <div class="text-right">
               <p class="font-mono-tabular font-bold text-slate-900">\${formatINR(bid.amount)}</p>
-              \${idx === 0 ? `< span class="text-[9px] font-bold text-emerald-600 uppercase bg-emerald-50 px-1 rounded" > Current Lowest</span > ` : ''}
+              \${idx === 0 ? `<span class="text-[9px] font-bold text-emerald-600 uppercase bg-emerald-50 px-1 rounded"> Current Lowest</span> ` : ''}
             </div>
           `;
                     timeline.appendChild(div);
@@ -1852,8 +1852,8 @@
                 const item = auctionsData.find(a => a.id === id);
                 if (!item) return;
 
-                const defaultWinner = item.winner || (item.bids && item.bids.length > 0 ? item.bids[0].supplier : 'Heet Patel');
-                const supplierId = item.winningSupplierId || (item.bids && item.bids.length > 0 && item.bids[0].supplierId ? item.bids[0].supplierId : 103);
+                const defaultWinner = item.winner || (item.bids && item.bids.length> 0 ? item.bids[0].supplier : 'Heet Patel');
+                const supplierId = item.winningSupplierId || (item.bids && item.bids.length> 0 && item.bids[0].supplierId ? item.bids[0].supplierId : 103);
                 const finalPrice = item.currentBid ? '₹' + item.currentBid.toLocaleString('en-IN') : 'N/A';
 
                 showAppConfirm({
@@ -2321,7 +2321,7 @@
                 const pHsn = opt.getAttribute('data-hsn') || '';
                 const pCategory = opt.getAttribute('data-category') || 'Global Trade';
 
-                if (opt.getAttribute('data-global') === 'true' || parseInt(opt.value, 10) > 10000) {
+                if (opt.getAttribute('data-global') === 'true' || parseInt(opt.value, 10)> 10000) {
                   fetch('http://localhost:5000/api/ensure-product', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -2359,11 +2359,11 @@
                 const qtyInput = document.getElementById('modalQuantity');
                 const qty = parseFloat(qtyInput ? qtyInput.value : 0) || 0;
 
-                if (qty > 0) {
+                if (qty> 0) {
                   fetchModalTimingOracle(opt.value, pName, pHsn, qty); fetchSmartBasketRecommendations(opt.value, pHsn, qty);
                 } else {
                   const priceInput = document.getElementById('modalStartingPrice');
-                  if (priceInput && pPrice > 0 && !priceInput.value) {
+                  if (priceInput && pPrice> 0 && !priceInput.value) {
                     priceInput.value = pPrice;
                   }
                   const card = document.getElementById('modalTimingOracleCard');
@@ -2379,7 +2379,7 @@
                   const pId = select ? select.value : '';
                   const qty = parseFloat(document.getElementById('modalQuantity').value) || 0;
 
-                  if ((pId || modalCustomHsn || modalCustomName) && qty > 0) {
+                  if ((pId || modalCustomHsn || modalCustomName) && qty> 0) {
                     fetchModalTimingOracle(pId, modalCustomName, modalCustomHsn, qty);
                     fetchSmartBasketRecommendations(pId, modalCustomHsn, qty);
                   } else {
@@ -2397,7 +2397,7 @@
                 if (card) card.classList.remove('hidden');
 
                 // Immediate baseline render so graph and metrics NEVER stay blank
-                const baselinePrice = modalCustomPrice > 0 ? modalCustomPrice : 25000;
+                const baselinePrice = modalCustomPrice> 0 ? modalCustomPrice : 25000;
                 const initialData = {
                   benchmark_price_inr: baselinePrice,
                   unit: modalCustomUnit || 'units',
@@ -2583,7 +2583,7 @@
                             ticks: {
                               font: { size: 9, family: 'JetBrains Mono' },
                               color: '#64748b',
-                              callback: function (v) { return '₹' + (v >= 1000 ? Math.round(v / 1000) + 'k' : v); }
+                              callback: function (v) { return '₹' + (v>= 1000 ? Math.round(v / 1000) + 'k' : v); }
                             }
                           }
                         }
@@ -2596,7 +2596,7 @@
                 }
 
                 // High-res SVG Sparkline Fallback (Guaranteed to render under any conditions)
-                if (container && dataPoints && dataPoints.length > 0) {
+                if (container && dataPoints && dataPoints.length> 0) {
                   const minVal = Math.min(...dataPoints);
                   const maxVal = Math.max(...dataPoints);
                   const range = (maxVal - minVal) || 1;
@@ -2741,7 +2741,7 @@
                         .then(r => r.json())
                         .then(data => {
                           const items = data.results || data.products || [];
-                          if (items.length > 0) {
+                          if (items.length> 0) {
                             let html = '<div class="px-3 py-1.5 bg-slate-100 text-[10px] font-bold text-slate-600 uppercase tracking-wider flex items-center justify-between"><span>🌐 High-Volume BACI Commodities</span><span class="text-sky-600 font-mono">5,384 Items</span></div>';
                             items.slice(0, 15).forEach(item => {
                               const safeName = (item.name || '').replace(/'/g, "\\'");
@@ -2814,7 +2814,7 @@
                 const select = document.getElementById('modalProductId');
                 let found = false;
                 if (select) {
-                  for (let i = 0; i < select.options.length; i++) {
+                  for (let i = 0; i <select.options.length; i++) {
                     const optHsn = select.options[i].getAttribute('data-hsn');
                     if (optHsn === hsn) {
                       select.selectedIndex = i;
@@ -2860,9 +2860,9 @@
                 if (unitBadge) unitBadge.textContent = unit;
 
                 const qty = parseFloat(document.getElementById('modalQuantity').value) || 0;
-                if (qty > 0) {
+                if (qty> 0) {
                   const ceilingInput = document.getElementById('modalStartingPrice');
-                  if (ceilingInput && price > 0) {
+                  if (ceilingInput && price> 0) {
                     ceilingInput.value = Math.round(qty * price);
                   }
                   fetchModalTimingOracle(select ? select.value : '', name, hsn, qty);
@@ -2888,7 +2888,7 @@
               function toggleLdpNormalizer(active) {
                 isLdpActive = active;
                 if (!currentDrawerAuction) {
-                  if (auctionsData.length > 0) {
+                  if (auctionsData.length> 0) {
                     currentDrawerAuction = auctionsData[0];
                     activeDrawerId = currentDrawerAuction.id;
                   } else {
@@ -2927,7 +2927,7 @@
                   id: b.id || idx,
                   supplier_id: b.supplierId || idx,
                   supplier_name: b.supplier || b.supplierName || 'Supplier',
-                  country_code: b.countryCode || b.country || (idx === 0 && bids.length > 1 ? 'CHN' : 'IND'),
+                  country_code: b.countryCode || b.country || (idx === 0 && bids.length> 1 ? 'CHN' : 'IND'),
                   amount: b.amount || 0,
                   time: b.time || 'Logged'
                 }));
@@ -3026,7 +3026,7 @@
 
               function simulateOverseasVsDomesticBids() {
                 if (!currentDrawerAuction) {
-                  if (auctionsData.length > 0) {
+                  if (auctionsData.length> 0) {
                     currentDrawerAuction = auctionsData[0];
                     openDrawer(currentDrawerAuction.id);
                   } else {
@@ -3069,7 +3069,7 @@
                 fetch(url)
                   .then(r => r.json())
                   .then(data => {
-                    if (data.status === 'success' && data.bundle_candidates && data.bundle_candidates.length > 0) {
+                    if (data.status === 'success' && data.bundle_candidates && data.bundle_candidates.length> 0) {
                       smartBasketData = data;
                       if (card) card.classList.remove('hidden');
                       if (headline) headline.textContent = data.headline;
