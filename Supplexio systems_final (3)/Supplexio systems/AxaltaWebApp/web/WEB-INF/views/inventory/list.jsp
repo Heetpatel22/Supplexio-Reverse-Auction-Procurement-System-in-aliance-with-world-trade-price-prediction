@@ -72,6 +72,7 @@
 
     [x-cloak] { display: none !important; }
   </style>
+    <jsp:include page="/WEB-INF/views/common/dark-mode.jsp" />
 </head>
 <body class="h-full flex overflow-hidden font-sans text-slate-800 antialiased selection:bg-brand-cyan selection:text-brand-navy">
 
