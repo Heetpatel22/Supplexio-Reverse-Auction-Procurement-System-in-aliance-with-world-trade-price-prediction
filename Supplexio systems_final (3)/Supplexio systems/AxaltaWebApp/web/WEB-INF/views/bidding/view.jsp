@@ -241,29 +241,17 @@
                 </button>
             </nav>
 
-            <!-- Live Engine Status Mini-Widget -->
-            <div class="mx-3 mb-3 p-3 rounded-xl bg-white/5 border border-white/10">
-                <div class="flex items-center justify-between text-[11px] font-medium text-slate-300">
-                    <span class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        Bid Engine
-                    </span>
-                    <span class="font-mono text-emerald-300 text-[10px]">SYNCED</span>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-1 leading-relaxed">Real-time L1 price feed active. Bids reflect immediately across buyers.</p>
-            </div>
-
             <!-- Supplier Profile Card & Logout -->
             <div class="p-3 border-t border-white/10 bg-[#081534]/50">
-                <div class="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10 mb-2">
+                <a href="${pageContext.request.contextPath}/bidding?action=profile" title="Edit Profile &amp; Account Settings" class="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 hover:bg-white/12 border border-white/10 hover:border-[#2DD4BF]/50 mb-2 transition-all cursor-pointer group">
                     <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#2DD4BF] to-[#0D9488] text-slate-950 font-extrabold text-xs flex items-center justify-center shrink-0 shadow uppercase">
                         <c:out value="${fn:substring(sessionScope.supplier.name, 0, 2)}"/>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <div class="text-xs font-bold text-white truncate"><c:out value="${sessionScope.supplier.name}"/></div>
+                        <div class="text-xs font-bold text-white truncate group-hover:text-[#2DD4BF] transition-colors"><c:out value="${sessionScope.supplier.name}"/></div>
                         <div class="text-[10px] text-slate-300 font-mono truncate"><c:out value="${sessionScope.supplier.email}"/></div>
                     </div>
-                </div>
+                </a>
                 <a href="${pageContext.request.contextPath}/bidding?action=logout" class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold text-slate-200 hover:text-white bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-400/30 transition-all">
                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>

@@ -55,6 +55,9 @@ public class BiddingServlet extends HttpServlet {
             case "view":
                 viewAuction(request, response);
                 break;
+            case "profile":
+                showProfile(request, response);
+                break;
             default:
                 listAuctions(request, response);
                 break;
@@ -85,6 +88,9 @@ public class BiddingServlet extends HttpServlet {
                 break;
             case "changePassword":
                 changePassword(request, response);
+                break;
+            case "updateProfile":
+                updateProfile(request, response);
                 break;
             default:
                 listAuctions(request, response);
@@ -280,7 +286,101 @@ public class BiddingServlet extends HttpServlet {
             throw new ServletException("Error changing password", e);
         }
 
+        try {
+            if ("profile".equals(request.getParameter("source"))) {
+                showProfile(request, response);
+                return;
+            }
+        } catch (Exception ignored) {}
         listAuctions(request, response);
+    }
+
+    private void showProfile(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("supplier") == null) {
+            response.sendRedirect(request.getContextPath() + "/bidding?action=login");
+            return;
+        }
+        Supplier supplier = (Supplier) session.getAttribute("supplier");
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT id, name, email, phone, address, status, password FROM suppliers WHERE id = ?")) {
+            stmt.setLong(1, supplier.getId());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    supplier.setName(rs.getString("name"));
+                    supplier.setEmail(rs.getString("email"));
+                    supplier.setPhone(rs.getString("phone"));
+                    supplier.setAddress(rs.getString("address"));
+                    supplier.setStatus(rs.getString("status"));
+                    String pwd = rs.getString("password");
+                    request.setAttribute("supplierIsGoogle", pwd != null && pwd.startsWith("GOOGLE_"));
+                    request.setAttribute("supplierPassword", pwd);
+                    session.setAttribute("supplier", supplier);
+                }
+            }
+        } catch (SQLException e) {
+            throw new ServletException("Error loading supplier profile", e);
+        }
+        request.setAttribute("supplier", supplier);
+        request.getRequestDispatcher("/WEB-INF/views/bidding/profile.jsp").forward(request, response);
+    }
+
+    private void updateProfile(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("supplier") == null) {
+            response.sendRedirect(request.getContextPath() + "/bidding?action=login");
+            return;
+        }
+        Supplier supplier = (Supplier) session.getAttribute("supplier");
+        String name = request.getParameter("name");
+        String email = request.getParameter("email");
+        String phone = request.getParameter("phone");
+        String address = request.getParameter("address");
+
+        if (isBlank(name) || isBlank(email) || isBlank(phone)) {
+            request.setAttribute("profileError", "Supplier / Company Name, Business Email, and Phone Number are required.");
+            showProfile(request, response);
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            try (PreparedStatement checkStmt = conn.prepareStatement(
+                    "SELECT id FROM suppliers WHERE email = ? AND id <> ?")) {
+                checkStmt.setString(1, email.trim());
+                checkStmt.setLong(2, supplier.getId());
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (rs.next()) {
+                        request.setAttribute("profileError", "Another supplier account already uses this email address.");
+                        showProfile(request, response);
+                        return;
+                    }
+                }
+            }
+
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "UPDATE suppliers SET name = ?, email = ?, phone = ?, address = ? WHERE id = ?")) {
+                stmt.setString(1, name.trim());
+                stmt.setString(2, email.trim());
+                stmt.setString(3, phone.trim());
+                stmt.setString(4, address != null ? address.trim() : "");
+                stmt.setLong(5, supplier.getId());
+                stmt.executeUpdate();
+            }
+
+            supplier.setName(name.trim());
+            supplier.setEmail(email.trim());
+            supplier.setPhone(phone.trim());
+            supplier.setAddress(address != null ? address.trim() : "");
+            session.setAttribute("supplier", supplier);
+            request.setAttribute("profileSuccess", "Profile changes saved successfully!");
+        } catch (SQLException e) {
+            throw new ServletException("Error updating supplier profile", e);
+        }
+
+        showProfile(request, response);
     }
 
     private void signup(HttpServletRequest request, HttpServletResponse response)
