@@ -63,7 +63,10 @@
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message: question })
+            body: JSON.stringify({
+                message: question,
+                page: window.location.pathname + window.location.search
+            })
         })
             .then(function (response) {
                 return response.json().then(function (data) {

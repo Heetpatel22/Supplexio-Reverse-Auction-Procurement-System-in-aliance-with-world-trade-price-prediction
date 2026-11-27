@@ -710,3 +710,4 @@ body {
     });
 </script>
 <jsp:include page="/WEB-INF/views/common/dark-mode.jsp" />
+<jsp:include page="/WEB-INF/views/common/ai-chatbot.jsp" />

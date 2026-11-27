@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/ai-chatbot.css">
 <div class="ai-chatbot" id="aiChatbot" data-chat-url="${pageContext.request.contextPath}/ai-chat">
     <button type="button" class="ai-chatbot-toggle" id="aiChatbotToggle" aria-label="Open Supplexio AI assistant">

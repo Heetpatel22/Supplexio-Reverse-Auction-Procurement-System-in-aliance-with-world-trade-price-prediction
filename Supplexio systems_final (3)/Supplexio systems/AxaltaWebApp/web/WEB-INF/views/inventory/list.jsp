@@ -2126,5 +2126,6 @@
       </div>
   </div>
 
+<jsp:include page="/WEB-INF/views/common/ai-chatbot.jsp" />
 </body>
 </html>

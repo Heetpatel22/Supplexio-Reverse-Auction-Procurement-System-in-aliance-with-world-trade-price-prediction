@@ -1342,5 +1342,6 @@
             setInterval(loadUnreadCounts, 15000);
         });
     </script>
+<jsp:include page="/WEB-INF/views/common/ai-chatbot.jsp" />
 </body>
 </html>

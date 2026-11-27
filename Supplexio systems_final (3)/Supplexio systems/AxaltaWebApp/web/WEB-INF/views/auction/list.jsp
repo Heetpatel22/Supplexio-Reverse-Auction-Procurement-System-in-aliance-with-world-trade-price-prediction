@@ -3232,6 +3232,7 @@
               if (window.lucide) { lucide.createIcons(); }
               document.addEventListener("DOMContentLoaded", function () { if (window.lucide) lucide.createIcons(); });
             </script>
-        </body>
+        <jsp:include page="/WEB-INF/views/common/ai-chatbot.jsp" />
+</body>
 
         </html>
