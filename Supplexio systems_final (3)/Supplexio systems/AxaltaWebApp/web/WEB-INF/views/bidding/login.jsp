@@ -456,19 +456,25 @@
                 <span class="text-slate-500 font-mono">v2.4.0</span>
             </div>
 
-        </div>
+            <!-- PORTAL SWITCHING LINKS (Inside White Card, matching Buyer Login layout) -->
+            <div class="mt-5 pt-5 border-t border-slate-100 flex flex-col items-center gap-3">
+                <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm font-medium text-slate-500">
+                    <a href="${pageContext.request.contextPath}/login.jsp" class="hover:text-teal-600 transition-colors flex items-center gap-1.5 no-underline text-slate-600">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        <span>Buyer Login</span>
+                    </a>
+                    <span class="text-slate-300">•</span>
+                    <a href="${pageContext.request.contextPath}/login.jsp?mode=signup" class="hover:text-teal-600 transition-colors no-underline text-slate-600">
+                        Buyer Signup
+                    </a>
+                    <span class="text-slate-300">•</span>
+                    <a href="${pageContext.request.contextPath}/home" class="text-teal-600 hover:text-slate-900 font-semibold transition-colors flex items-center gap-1 no-underline">
+                        <svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
+                        <span>Launch Dashboard</span>
+                    </a>
+                </div>
+            </div>
 
-        <!-- PORTAL SWITCHING FOOTER LINKS -->
-        <div class="mt-7 flex flex-wrap items-center justify-center gap-6 text-sm text-slate-300">
-            <a href="${pageContext.request.contextPath}/login.jsp" class="hover:text-[#2DD4BF] transition-colors flex items-center gap-1.5 no-underline text-slate-300 font-medium">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                <span>Looking for Buyer Portal? Sign In as Buyer</span>
-            </a>
-            <span class="text-slate-600 hidden sm:inline">•</span>
-            <a href="${pageContext.request.contextPath}/home" class="hover:text-[#2DD4BF] transition-colors flex items-center gap-1.5 no-underline text-slate-300 font-medium">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                <span>Back to Launch Dashboard</span>
-            </a>
         </div>
     </main>
 
