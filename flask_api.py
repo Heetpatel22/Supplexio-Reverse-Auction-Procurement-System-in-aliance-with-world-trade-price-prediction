@@ -1233,7 +1233,8 @@ def inventory_surge_check():
         query = """
             SELECT i.id as inv_id, i.item_name, i.quantity, i.min_threshold, i.max_threshold, i.kanban_status,
                    MAX(p.id) as product_id, MAX(p.hsn_code) as hsn_code, MAX(p.category) as category,
-                   MAX(p.base_price) as base_price, MAX(g.trend_pct) as g_trend_pct
+                   MAX(p.base_price) as base_price, MAX(g.trend_pct) as g_trend_pct,
+                   MAX(g.top_suppliers) as top_suppliers
             FROM inventory i
             LEFT JOIN products p ON p.name COLLATE utf8mb4_unicode_ci = i.item_name COLLATE utf8mb4_unicode_ci
             LEFT JOIN global_trade_products g ON g.hsn_code COLLATE utf8mb4_unicode_ci = p.hsn_code COLLATE utf8mb4_unicode_ci
@@ -1279,14 +1280,21 @@ def inventory_surge_check():
                 urgency = "LIVE MARKET DROP OPPORTUNITY"
 
             stock_note = f"Low stock ({qty}/{min_thr})" if is_low else f"Stock {qty}/{min_thr}"
+            raw_suppliers = str(item.get("top_suppliers") or "India, Germany, USA, China").strip()
+            exporting_list = [s.strip() for s in raw_suppliers.split(",") if s.strip() and s.strip().lower() != "india"]
+            exporting_countries = ", ".join(exporting_list) if exporting_list else raw_suppliers
             entry = {
                 "inventory_id": item.get("inv_id"),
                 "product_id": item.get("product_id") or item.get("inv_id"),
                 "item_name": name,
+                "category": cat or "Industrial",
                 "current_stock": qty,
                 "min_threshold": min_thr,
                 "is_low": is_low,
                 "hsn_code": hsn,
+                "spot_price_inr": round(base_price, 2),
+                "exporting_countries": exporting_countries,
+                "importing_country": "India",
                 "trend": trend,
                 "pct_num": float(live_pct),
                 "recommended_quantity": qty_needed,
