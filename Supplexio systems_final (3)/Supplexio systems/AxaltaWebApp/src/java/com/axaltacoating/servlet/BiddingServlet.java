@@ -6,7 +6,9 @@ import com.axaltacoating.model.Supplier;
 import com.axaltacoating.util.DatabaseConnection;
 import com.axaltacoating.util.GoogleTokenVerifier;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,19 +17,24 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 /**
  * Servlet for handling supplier bidding operations.
  */
 @WebServlet(name = "BiddingServlet", urlPatterns = {"/bidding"})
+@MultipartConfig(maxFileSize = 10485760, maxRequestSize = 12582912)
 public class BiddingServlet extends HttpServlet {
 
     /**
@@ -57,6 +64,9 @@ public class BiddingServlet extends HttpServlet {
                 break;
             case "profile":
                 showProfile(request, response);
+                break;
+            case "viewDocument":
+                viewDocument(request, response);
                 break;
             default:
                 listAuctions(request, response);
@@ -91,6 +101,9 @@ public class BiddingServlet extends HttpServlet {
                 break;
             case "updateProfile":
                 updateProfile(request, response);
+                break;
+            case "uploadDocument":
+                uploadDocument(request, response);
                 break;
             default:
                 listAuctions(request, response);
@@ -303,28 +316,151 @@ public class BiddingServlet extends HttpServlet {
             return;
         }
         Supplier supplier = (Supplier) session.getAttribute("supplier");
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT id, name, email, phone, address, status, password FROM suppliers WHERE id = ?")) {
-            stmt.setLong(1, supplier.getId());
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    supplier.setName(rs.getString("name"));
-                    supplier.setEmail(rs.getString("email"));
-                    supplier.setPhone(rs.getString("phone"));
-                    supplier.setAddress(rs.getString("address"));
-                    supplier.setStatus(rs.getString("status"));
-                    String pwd = rs.getString("password");
-                    request.setAttribute("supplierIsGoogle", pwd != null && pwd.startsWith("GOOGLE_"));
-                    request.setAttribute("supplierPassword", pwd);
-                    session.setAttribute("supplier", supplier);
+        Map<String, String> supplierDocs = new HashMap<>();
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            ensureSupplierDocumentsTable(conn);
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT id, name, email, phone, address, status, password FROM suppliers WHERE id = ?")) {
+                stmt.setLong(1, supplier.getId());
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        supplier.setName(rs.getString("name"));
+                        supplier.setEmail(rs.getString("email"));
+                        supplier.setPhone(rs.getString("phone"));
+                        supplier.setAddress(rs.getString("address"));
+                        supplier.setStatus(rs.getString("status"));
+                        String pwd = rs.getString("password");
+                        request.setAttribute("supplierIsGoogle", pwd != null && pwd.startsWith("GOOGLE_"));
+                        request.setAttribute("supplierPassword", pwd);
+                        session.setAttribute("supplier", supplier);
+                    }
+                }
+            }
+            try (PreparedStatement docStmt = conn.prepareStatement(
+                    "SELECT doc_type, file_name FROM supplier_documents WHERE supplier_id = ?")) {
+                docStmt.setLong(1, supplier.getId());
+                try (ResultSet drs = docStmt.executeQuery()) {
+                    while (drs.next()) {
+                        supplierDocs.put(drs.getString("doc_type"), drs.getString("file_name"));
+                    }
                 }
             }
         } catch (SQLException e) {
             throw new ServletException("Error loading supplier profile", e);
         }
+        request.setAttribute("supplierDocs", supplierDocs);
         request.setAttribute("supplier", supplier);
         request.getRequestDispatcher("/WEB-INF/views/bidding/profile.jsp").forward(request, response);
+    }
+
+    private void ensureSupplierDocumentsTable(Connection conn) throws SQLException {
+        try (Statement st = conn.createStatement()) {
+            st.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS supplier_documents (" +
+                "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                "supplier_id BIGINT NOT NULL, " +
+                "doc_type VARCHAR(32) NOT NULL, " +
+                "file_name VARCHAR(255) NOT NULL, " +
+                "content_type VARCHAR(100), " +
+                "file_data LONGBLOB, " +
+                "uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+                "UNIQUE KEY uq_sup_doc (supplier_id, doc_type)" +
+                ")"
+            );
+        }
+    }
+
+    private void uploadDocument(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("supplier") == null) {
+            response.sendRedirect(request.getContextPath() + "/bidding?action=login");
+            return;
+        }
+        Supplier supplier = (Supplier) session.getAttribute("supplier");
+        String docType = request.getParameter("docType");
+        if (!"PAN".equals(docType) && !"AADHAR".equals(docType) && !"REG_CERT".equals(docType)) {
+            request.setAttribute("profileError", "Invalid document type specified.");
+            showProfile(request, response);
+            return;
+        }
+        Part filePart = request.getPart("docFile");
+        if (filePart == null || filePart.getSize() == 0) {
+            request.setAttribute("profileError", "Please select a valid document file to upload.");
+            showProfile(request, response);
+            return;
+        }
+
+        String submittedName = filePart.getSubmittedFileName();
+        String fileName = (submittedName != null && !submittedName.trim().isEmpty())
+                ? new java.io.File(submittedName).getName()
+                : docType + "_document.pdf";
+        String contentType = filePart.getContentType();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (InputStream in = filePart.getInputStream()) {
+            byte[] buf = new byte[8192];
+            int len;
+            while ((len = in.read(buf)) != -1) {
+                baos.write(buf, 0, len);
+            }
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            ensureSupplierDocumentsTable(conn);
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "INSERT INTO supplier_documents (supplier_id, doc_type, file_name, content_type, file_data) " +
+                    "VALUES (?, ?, ?, ?, ?) " +
+                    "ON DUPLICATE KEY UPDATE file_name = VALUES(file_name), content_type = VALUES(content_type), file_data = VALUES(file_data), uploaded_at = CURRENT_TIMESTAMP")) {
+                stmt.setLong(1, supplier.getId());
+                stmt.setString(2, docType);
+                stmt.setString(3, fileName);
+                stmt.setString(4, contentType != null ? contentType : "application/octet-stream");
+                stmt.setBytes(5, baos.toByteArray());
+                stmt.executeUpdate();
+            }
+            request.setAttribute("profileSuccess", "Document \"" + fileName + "\" uploaded successfully!");
+        } catch (SQLException e) {
+            throw new ServletException("Error saving supplier document", e);
+        }
+
+        showProfile(request, response);
+    }
+
+    private void viewDocument(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("supplier") == null) {
+            response.sendRedirect(request.getContextPath() + "/bidding?action=login");
+            return;
+        }
+        Supplier supplier = (Supplier) session.getAttribute("supplier");
+        String docType = request.getParameter("docType");
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            ensureSupplierDocumentsTable(conn);
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT file_name, content_type, file_data FROM supplier_documents WHERE supplier_id = ? AND doc_type = ?")) {
+                stmt.setLong(1, supplier.getId());
+                stmt.setString(2, docType);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        String fileName = rs.getString("file_name");
+                        String contentType = rs.getString("content_type");
+                        byte[] data = rs.getBytes("file_data");
+                        response.setContentType(contentType != null ? contentType : "application/octet-stream");
+                        response.setHeader("Content-Disposition", "inline; filename=\"" + fileName.replace("\"", "") + "\"");
+                        if (data != null) {
+                            response.setContentLength(data.length);
+                            response.getOutputStream().write(data);
+                        }
+                        return;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new ServletException("Error retrieving supplier document", e);
+        }
+        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Document not found");
     }
 
     private void updateProfile(HttpServletRequest request, HttpServletResponse response)

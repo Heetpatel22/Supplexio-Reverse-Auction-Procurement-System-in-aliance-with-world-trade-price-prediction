@@ -478,6 +478,109 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- OPTIONAL BUSINESS DOCUMENTS (Below Account Access & Security) -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] shadow-card overflow-hidden">
+                            <div class="px-5 py-4 border-b border-slate-100 dark:border-[#1E293B] bg-slate-50/70 dark:bg-slate-900/40 flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-folder-open text-[#0D9488] dark:text-[#2DD4BF] text-sm"></i>
+                                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">Business Documents</h3>
+                                </div>
+                                <span class="text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400">Optional</span>
+                            </div>
+
+                            <div class="p-4 space-y-3">
+                                <!-- Card 1: Company PAN Card -->
+                                <form method="post" action="${pageContext.request.contextPath}/bidding" enctype="multipart/form-data" class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B1120] border border-slate-200/80 dark:border-[#1E293B] space-y-2">
+                                    <input type="hidden" name="action" value="uploadDocument">
+                                    <input type="hidden" name="docType" value="PAN">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="text-xs font-bold text-slate-900 dark:text-white">Company PAN Card</div>
+                                        <c:choose>
+                                            <c:when test="${not empty supplierDocs['PAN']}">
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">✓ Provided</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-slate-200/70 dark:bg-slate-800 text-slate-500 dark:text-slate-400">Optional</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <c:if test="${not empty supplierDocs['PAN']}">
+                                        <div class="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate"><c:out value="${supplierDocs['PAN']}"/></div>
+                                    </c:if>
+                                    <div class="flex items-center gap-2 pt-1">
+                                        <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1E47] dark:bg-slate-800 hover:opacity-90 text-white cursor-pointer transition-all">
+                                            <i class="fas fa-upload text-[10px]"></i>
+                                            <span>${not empty supplierDocs['PAN'] ? 'Replace' : 'Upload PAN'}</span>
+                                            <input type="file" name="docFile" accept=".pdf,.png,.jpg,.jpeg" class="hidden" onchange="this.form.submit()">
+                                        </label>
+                                        <c:if test="${not empty supplierDocs['PAN']}">
+                                            <a href="${pageContext.request.contextPath}/bidding?action=viewDocument&docType=PAN" target="_blank" class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[#0D9488] dark:text-[#2DD4BF] hover:underline">View</a>
+                                        </c:if>
+                                    </div>
+                                </form>
+
+                                <!-- Card 2: Aadhar Card of the Owner -->
+                                <form method="post" action="${pageContext.request.contextPath}/bidding" enctype="multipart/form-data" class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B1120] border border-slate-200/80 dark:border-[#1E293B] space-y-2">
+                                    <input type="hidden" name="action" value="uploadDocument">
+                                    <input type="hidden" name="docType" value="AADHAR">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="text-xs font-bold text-slate-900 dark:text-white">Aadhar Card of the Owner</div>
+                                        <c:choose>
+                                            <c:when test="${not empty supplierDocs['AADHAR']}">
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">✓ Provided</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-slate-200/70 dark:bg-slate-800 text-slate-500 dark:text-slate-400">Optional</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <c:if test="${not empty supplierDocs['AADHAR']}">
+                                        <div class="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate"><c:out value="${supplierDocs['AADHAR']}"/></div>
+                                    </c:if>
+                                    <div class="flex items-center gap-2 pt-1">
+                                        <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1E47] dark:bg-slate-800 hover:opacity-90 text-white cursor-pointer transition-all">
+                                            <i class="fas fa-upload text-[10px]"></i>
+                                            <span>${not empty supplierDocs['AADHAR'] ? 'Replace' : 'Upload Aadhar'}</span>
+                                            <input type="file" name="docFile" accept=".pdf,.png,.jpg,.jpeg" class="hidden" onchange="this.form.submit()">
+                                        </label>
+                                        <c:if test="${not empty supplierDocs['AADHAR']}">
+                                            <a href="${pageContext.request.contextPath}/bidding?action=viewDocument&docType=AADHAR" target="_blank" class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[#0D9488] dark:text-[#2DD4BF] hover:underline">View</a>
+                                        </c:if>
+                                    </div>
+                                </form>
+
+                                <!-- Card 3: Business Registration Certificate -->
+                                <form method="post" action="${pageContext.request.contextPath}/bidding" enctype="multipart/form-data" class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B1120] border border-slate-200/80 dark:border-[#1E293B] space-y-2">
+                                    <input type="hidden" name="action" value="uploadDocument">
+                                    <input type="hidden" name="docType" value="REG_CERT">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="text-xs font-bold text-slate-900 dark:text-white">Business Registration Certificate</div>
+                                        <c:choose>
+                                            <c:when test="${not empty supplierDocs['REG_CERT']}">
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">✓ Provided</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-slate-200/70 dark:bg-slate-800 text-slate-500 dark:text-slate-400">Optional</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <c:if test="${not empty supplierDocs['REG_CERT']}">
+                                        <div class="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate"><c:out value="${supplierDocs['REG_CERT']}"/></div>
+                                    </c:if>
+                                    <div class="flex items-center gap-2 pt-1">
+                                        <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1E47] dark:bg-slate-800 hover:opacity-90 text-white cursor-pointer transition-all">
+                                            <i class="fas fa-upload text-[10px]"></i>
+                                            <span>${not empty supplierDocs['REG_CERT'] ? 'Replace' : 'Upload Certificate'}</span>
+                                            <input type="file" name="docFile" accept=".pdf,.png,.jpg,.jpeg" class="hidden" onchange="this.form.submit()">
+                                        </label>
+                                        <c:if test="${not empty supplierDocs['REG_CERT']}">
+                                            <a href="${pageContext.request.contextPath}/bidding?action=viewDocument&docType=REG_CERT" target="_blank" class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[#0D9488] dark:text-[#2DD4BF] hover:underline">View</a>
+                                        </c:if>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -584,12 +687,40 @@
             if (phone) document.getElementById('heroPhone').textContent = phone;
         }
 
+        var uploadedDocs = {
+            PAN: '<c:out value="${supplierDocs[\'PAN\']}"/>',
+            AADHAR: '<c:out value="${supplierDocs[\'AADHAR\']}"/>',
+            REG_CERT: '<c:out value="${supplierDocs[\'REG_CERT\']}"/>'
+        };
+
         function openBuyerPreviewModal() {
             var company = document.getElementById('companyNameInput').value.trim();
             var email = document.getElementById('businessEmailInput').value.trim();
             var phone = document.getElementById('contactPhoneInput').value.trim();
             var address = document.getElementById('businessAddressInput').value.trim();
             var initials = company.split(' ').map(function(w) { return w[0]; }).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'SP';
+
+            var docItems = [
+                { key: 'PAN', label: 'Company PAN Card', file: uploadedDocs.PAN },
+                { key: 'AADHAR', label: 'Aadhar Card of the Owner', file: uploadedDocs.AADHAR },
+                { key: 'REG_CERT', label: 'Business Registration Certificate', file: uploadedDocs.REG_CERT }
+            ];
+            var providedCount = docItems.filter(function(d) { return d.file && d.file.length > 0; }).length;
+            var allProvided = providedCount === 3;
+
+            var docsHtml = docItems.map(function(d) {
+                var ok = d.file && d.file.length > 0;
+                return '<div class="flex items-center justify-between gap-2 py-1">' +
+                    '<span class="text-slate-700 dark:text-slate-200">' + (ok ? '<span class="text-emerald-500 font-bold mr-1">✓</span>' : '<span class="text-slate-400 mr-1">•</span>') + d.label + '</span>' +
+                    (ok
+                        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">Provided</span>'
+                        : '<span class="px-2 py-0.5 rounded-full text-[10px] font-mono text-slate-400 bg-slate-200/60 dark:bg-slate-800">Not Provided</span>') +
+                    '</div>';
+            }).join('');
+
+            var docsHeaderBadge = allProvided
+                ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40">✓ All Verification Documents Provided (3/3)</span>'
+                : '<span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-300">' + providedCount + ' / 3 Provided</span>';
 
             document.getElementById('buyerPreviewBody').innerHTML =
                 '<div class="flex items-center gap-4 pb-4 border-b border-slate-200 dark:border-[#1E293B]">' +
@@ -603,6 +734,13 @@
                     '<div><span class="font-semibold text-slate-400 uppercase text-[10px] block">Business Email</span><span class="font-mono text-slate-800 dark:text-slate-100">' + escapeHtml(email) + '</span></div>' +
                     '<div><span class="font-semibold text-slate-400 uppercase text-[10px] block">Phone</span><span class="font-mono text-slate-800 dark:text-slate-100">' + escapeHtml(phone) + '</span></div>' +
                     '<div><span class="font-semibold text-slate-400 uppercase text-[10px] block">Address</span><span class="text-slate-700 dark:text-slate-200">' + escapeHtml(address || 'Not provided') + '</span></div>' +
+                '</div>' +
+                '<div class="p-4 rounded-xl ' + (allProvided ? 'bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50' : 'bg-slate-50 dark:bg-[#0B1120] border-slate-200 dark:border-[#1E293B]') + ' border space-y-2 text-xs">' +
+                    '<div class="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-200/70 dark:border-slate-800">' +
+                        '<span class="font-bold text-slate-800 dark:text-white uppercase text-[10px] tracking-wider">Submitted Business Documents</span>' +
+                        docsHeaderBadge +
+                    '</div>' +
+                    docsHtml +
                 '</div>';
 
             var modal = document.getElementById('buyerPreviewModal');
