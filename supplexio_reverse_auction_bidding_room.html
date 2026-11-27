@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplexio — Reverse Auction Bidding Room | Aluminum Plates</title>
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        supple: {
+                            navy: '#0B1E47',
+                            midnavy: '#12336B',
+                            royal: '#16367D',
+                            deepblue: '#1E3A8A',
+                            teal: '#0D9488',
+                            cyan: '#2DD4BF',
+                            amber: '#F59E0B',
+                            canvas: '#F4F7FC'
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 18px -6px rgba(15, 23, 42, 0.06)',
+                        'card-hover': '0 10px 24px -8px rgba(11, 30, 71, 0.12)'
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* Strict tabular numbers for prices, quantities, and timers */
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+
+        /* Subtle mesh dot-grid overlay for dark navy hero banner */
+        .hero-dot-grid {
+            background-size: 24px 24px;
+            background-image: radial-gradient(circle, rgba(45, 212, 191, 0.16) 1px, transparent 1px);
+        }
+
+        /* Sleek custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+        /* Toast slide-in animation */
+        @keyframes toastSlideIn {
+            from { transform: translateX(110%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-enter { animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* Flash highlight on price update */
+        @keyframes priceFlash {
+            0% { background-color: rgba(16, 185, 129, 0.28); }
+            100% { background-color: transparent; }
+        }
+        .price-flash { animation: priceFlash 1.2s ease-out; }
+    </style>
+</head>
+
+<body class="h-full bg-[#F4F7FC] dark:bg-[#0B1120] text-slate-800 dark:text-slate-100 font-sans antialiased transition-colors duration-200">
+
+    <!-- Toast Notification Stack -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-[80] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"></div>
+
+    <div class="min-h-screen flex">
+
+        <!-- =============================================================== -->
+        <!-- FIXED LEFT SIDEBAR (260px Desktop / Collapsible Mobile Drawer)  -->
+        <!-- =============================================================== -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-[260px] text-white flex flex-col border-r border-white/10 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none" style="background: linear-gradient(180deg, #0B1E47 0%, #102A63 50%, #16367D 100%);">
+
+            <!-- Supplexio Brand Logo Badge -->
+            <div class="p-4 border-b border-white/10">
+                <div class="bg-gradient-to-br from-[#0B1E3D] to-[#0F3D4C] px-4 py-3 rounded-2xl border border-cyan-500/25 shadow-lg">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <!-- Layered Hexagon / Geometric Icon -->
+                        <svg class="w-5 h-5 text-[#2DD4BF]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                        <span class="text-xl font-extrabold tracking-tight text-white">Supple<span class="text-[#2DD4BF]">xio</span></span>
+                    </div>
+                    <div class="text-[9px] font-bold tracking-[0.2em] text-slate-300 uppercase mt-1 flex items-center justify-center gap-1.5">
+                        <span>BID BOLD</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#F59E0B] shadow-[0_0_8px_#F59E0B]"></span>
+                        <span>SOURCE SMART</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portal Context Label -->
+            <div class="px-4 pt-4 pb-2 flex items-center justify-between">
+                <span class="text-[10px] font-mono font-semibold uppercase tracking-widest text-cyan-200/75">Supplier Portal</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-400/25">Approved</span>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 px-3 py-1 space-y-1.5 overflow-y-auto">
+                <!-- 1. Live Auctions (ACTIVE) -->
+                <a href="#" onclick="event.preventDefault(); showToast('Viewing active bidding room: Aluminum Plates', 'info')" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-cyan-400/15 border-l-4 border-[#2DD4BF] text-white font-semibold text-sm shadow-sm transition-all">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4 text-[#2DD4BF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span>Live Auctions</span>
+                    </div>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/35">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        LIVE
+                    </span>
+                </a>
+
+                <!-- 2. My Purchase Orders -->
+                <a href="#" onclick="event.preventDefault(); showToast('Navigating to My Purchase Orders (4 actions pending)...', 'info')" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200/90 hover:text-white hover:bg-white/10 font-medium text-sm transition-all">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span>My Purchase Orders</span>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-white/10 text-cyan-200">4</span>
+                </a>
+
+                <!-- 3. Settings -->
+                <a href="#" onclick="event.preventDefault(); showToast('Opening Supplier Settings & KYC Profile...', 'info')" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200/90 hover:text-white hover:bg-white/10 font-medium text-sm transition-all">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <span>Settings</span>
+                    </div>
+                </a>
+            </nav>
+
+            <!-- Live Feed Status Pill -->
+            <div class="mx-3 mb-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                <div class="flex items-center justify-between text-[11px] font-medium text-slate-300">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Auction Socket
+                    </span>
+                    <span class="font-mono text-emerald-300 text-[10px]">CONNECTED</span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1 leading-relaxed">Sub-second L1 price updates &amp; binding timestamp sync active.</p>
+            </div>
+
+            <!-- Bottom Section: Logout + Supplier Profile Card -->
+            <div class="p-3 border-t border-white/10 bg-[#081534]/50 space-y-2.5">
+                <button type="button" onclick="showToast('Signed out of Heet Patel supplier session.', 'info')" class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold text-slate-200 hover:text-white bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-400/35 transition-all">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+
+                <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/8 border border-white/10">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#2DD4BF] to-[#0D9488] text-slate-950 font-extrabold text-xs flex items-center justify-center shrink-0 shadow">
+                        HP
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-bold text-white truncate">Heet Patel</span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
+                        </div>
+                        <div class="text-[10px] text-emerald-300 font-semibold leading-tight">Tier-1 Verified</div>
+                        <div class="text-[10px] text-slate-300/80 font-mono truncate">pheet039@gmail.com</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile Sidebar Backdrop -->
+        <div id="sidebarBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 z-30 bg-slate-950/60 backdrop-blur-sm hidden lg:hidden"></div>
+
+        <!-- =============================================================== -->
+        <!-- MAIN WORKSPACE AREA                                             -->
+        <!-- =============================================================== -->
+        <main class="flex-1 lg:ml-[260px] flex flex-col min-w-0">
+
+            <!-- Mobile Header Bar -->
+            <div class="lg:hidden sticky top-0 z-20 bg-[#0B1E47] text-white px-4 py-3 flex items-center justify-between border-b border-white/10 shadow">
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="toggleMobileSidebar()" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white" aria-label="Open Navigation">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    <span class="font-extrabold tracking-tight text-base">Supple<span class="text-[#2DD4BF]">xio</span></span>
+                </div>
+                <button type="button" onclick="toggleDarkMode()" class="p-2 rounded-lg bg-white/10 text-amber-300" aria-label="Toggle Dark Mode">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-4 sm:p-6 lg:p-7 max-w-[1520px] w-full mx-auto space-y-5">
+
+                <!-- ======================================================= -->
+                <!-- TOP BREADCRUMB & QUICK UTILITIES BAR                    -->
+                <!-- ======================================================= -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-slate-800 rounded-2xl px-4 py-3 shadow-card">
+                    <!-- Breadcrumb -->
+                    <div class="flex items-center gap-2 text-xs font-medium">
+                        <a href="#" onclick="event.preventDefault(); showToast('Returning to Supplier Auction Marketplace...', 'info')" class="inline-flex items-center gap-1.5 text-[#1E3A8A] dark:text-[#2DD4BF] hover:underline font-semibold">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            <span>Supplier Auction Marketplace</span>
+                        </a>
+                        <span class="text-slate-300 dark:text-slate-600">/</span>
+                        <span class="text-slate-600 dark:text-slate-300 font-semibold">Place Bid</span>
+                    </div>
+
+                    <!-- Right Utilities: Simulate Competitor Bid + Dark Mode Toggle -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="simulateCompetitorBid()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 border border-amber-500/35 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            <span>Simulate Competitor Bid</span>
+                        </button>
+
+                        <button type="button" onclick="toggleDarkMode()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-amber-300 border border-slate-200 dark:border-slate-700 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                            <span id="darkModeLabel" class="text-slate-700 dark:text-slate-200">Dark Mode</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ======================================================= -->
+                <!-- DARK NAVY AUCTION COMMAND HERO BANNER                   -->
+                <!-- ======================================================= -->
+                <section class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0B1E47] via-[#12336B] to-[#0F3D4C] text-white p-6 lg:p-7 shadow-lg border border-white/10">
+                    <div class="absolute inset-0 hero-dot-grid opacity-75 pointer-events-none"></div>
+                    <div class="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none"></div>
+
+                    <div class="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                        <!-- Left: Badges & Lot Title -->
+                        <div class="space-y-2.5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/35">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                                    LIVE REVERSE AUCTION
+                                </span>
+                                <span id="heroStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-emerald-500/25 text-emerald-200 border border-emerald-400/40">
+                                    Your Status: L1 Lowest Bid
+                                </span>
+                            </div>
+
+                            <div>
+                                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">Aluminum Plates</h1>
+                                <p class="text-xs sm:text-sm text-cyan-100/80 font-mono mt-1">
+                                    Lot #AUC-2026-AP10 • Open Supplier Marketplace
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Right: High-Contrast Live Countdown Boxes + Quick Message Buyer -->
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                            <!-- Live Countdown Module -->
+                            <div class="bg-slate-950/35 backdrop-blur-md border border-white/15 rounded-2xl px-4 py-3">
+                                <div class="text-[10px] font-mono uppercase tracking-widest text-rose-300 font-bold mb-1.5 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
+                                    Time Remaining
+                                </div>
+                                <div class="flex items-center gap-2 font-mono tabular-nums">
+                                    <div class="bg-white/10 border border-white/10 rounded-xl px-2.5 py-1.5 text-center min-w-[54px]">
+                                        <div id="cdDays" class="text-lg font-extrabold text-white leading-none">174</div>
+                                        <div class="text-[9px] text-cyan-200/80 uppercase mt-0.5">Days</div>
+                                    </div>
+                                    <span class="text-white/50 font-bold">:</span>
+                                    <div class="bg-white/10 border border-white/10 rounded-xl px-2.5 py-1.5 text-center min-w-[46px]">
+                                        <div id="cdHours" class="text-lg font-extrabold text-white leading-none">06</div>
+                                        <div class="text-[9px] text-cyan-200/80 uppercase mt-0.5">Hrs</div>
+                                    </div>
+                                    <span class="text-white/50 font-bold">:</span>
+                                    <div class="bg-white/10 border border-white/10 rounded-xl px-2.5 py-1.5 text-center min-w-[46px]">
+                                        <div id="cdMins" class="text-lg font-extrabold text-white leading-none">44</div>
+                                        <div class="text-[9px] text-cyan-200/80 uppercase mt-0.5">Min</div>
+                                    </div>
+                                    <span class="text-white/50 font-bold">:</span>
+                                    <div class="bg-rose-500/20 border border-rose-400/35 rounded-xl px-2.5 py-1.5 text-center min-w-[46px]">
+                                        <div id="cdSecs" class="text-lg font-extrabold text-rose-300 leading-none">45</div>
+                                        <div class="text-[9px] text-rose-200 uppercase mt-0.5">Sec</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Message Buyer CTA -->
+                            <button type="button" onclick="openMessageModal()" class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/12 hover:bg-white/20 text-white font-bold text-xs border border-white/20 backdrop-blur-sm transition-all self-start sm:self-center">
+                                <svg class="w-4 h-4 text-[#2DD4BF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>Message Buyer</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================================================= -->
+                <!-- EXECUTIVE KPI SUMMARY STRIP (4 Compact Cards)           -->
+                <!-- ======================================================= -->
+                <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <!-- KPI 1: Current Lowest Price (L1) -->
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-slate-800 p-4 shadow-card flex items-start justify-between">
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-wider text-[#0D9488] dark:text-[#2DD4BF]">Current Lowest Price (L1)</p>
+                            <div id="kpiCurrentPrice" class="mt-1.5 text-xl font-extrabold text-slate-900 dark:text-white font-mono tabular-nums rounded px-0.5 transition-colors">
+                                ₹2,322,450.00
+                            </div>
+                            <p id="kpiUnitRate" class="text-[11px] text-slate-500 dark:text-slate-400 font-mono tabular-nums mt-1">₹2,32,245.00 / unit</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-teal-500/12 text-[#0D9488] dark:text-[#2DD4BF] flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2: Starting Ceiling Price -->
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-slate-800 p-4 shadow-card flex items-start justify-between">
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Starting Ceiling Price</p>
+                            <div class="mt-1.5 text-xl font-extrabold text-slate-900 dark:text-white font-mono tabular-nums">
+                                ₹2,322,540.00
+                            </div>
+                            <div class="mt-1 flex items-center gap-1.5">
+                                <span id="kpiTotalDropBadge" class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/12 text-emerald-700 dark:text-emerald-300 tabular-nums">
+                                    -₹90.00
+                                </span>
+                                <span class="text-[11px] text-slate-400">below ceiling</span>
+                            </div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-[#1E3A8A] dark:text-blue-400 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- KPI 3: Quantity & Schedule -->
+                    <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-slate-800 p-4 shadow-card flex items-start justify-between">
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Quantity &amp; Schedule</p>
+                            <div class="mt-1.5 text-xl font-extrabold text-slate-900 dark:text-white font-mono tabular-nums">
+                                10 Units
+                            </div>
+                            <p class="text-[10.5px] text-slate-500 dark:text-slate-400 font-mono tabular-nums mt-1 truncate" title="Start: 2026-11-22 02:23 → End: 2027-05-21 02:23">
+                                2026-11-22 02:23 → 2027-05-21 02:23
+                            </p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- KPI 4: Your Bid Position -->
+                    <div id="kpiPositionCard" class="bg-white dark:bg-[#111827] rounded-2xl border border-emerald-200 dark:border-emerald-500/35 p-4 shadow-card flex items-start justify-between transition-colors">
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Your Bid Position</p>
+                            <div id="kpiPositionText" class="mt-1.5 text-xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight">
+                                #1 (Lowest Bid)
+                            </div>
+                            <p id="kpiTotalBidsSub" class="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-1">2 Bids Recorded</p>
+                        </div>
+                        <div id="kpiPositionIconBox" class="w-10 h-10 rounded-xl bg-emerald-500/12 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================================================= -->
+                <!-- TWO-COLUMN MAIN WORKSPACE (68% Left / 32% Right)        -->
+                <!-- ======================================================= -->
+                <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                    <!-- =================================================== -->
+                    <!-- LEFT COLUMN (lg:col-span-8 ~ 67-68%)                -->
+                    <!-- =================================================== -->
+                    <div class="lg:col-span-8 space-y-6">
+
+                        <!-- 1. PLACE YOUR BID CARD -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-slate-800 shadow-card overflow-hidden">
+                            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-50/70 dark:bg-slate-900/50">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#1E3A8A] to-[#0D9488] text-white flex items-center justify-center shadow-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Place Your Bid</h2>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Submit a binding lower price to secure or defend L1 position.</p>
+                                    </div>
+                                </div>
+                                <span id="bidRulePill" class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-blue-50 dark:bg-blue-950/60 text-[#1E3A8A] dark:text-[#2DD4BF] border border-blue-200 dark:border-blue-800 tabular-nums">
+                                    Must be &lt; ₹2,322,450.00
+                                </span>
+                            </div>
+
+                            <form id="placeBidForm" onsubmit="handlePlaceBid(event)" class="p-5 space-y-4">
+                                <!-- Input Row -->
+                                <div>
+                                    <label for="bidAmountInput" class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Your Bid Amount (₹)</label>
+                                    <div class="flex flex-col sm:flex-row gap-3">
+                                        <div class="relative flex-1">
+                                            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-lg font-mono font-bold text-slate-400">₹</span>
+                                            <input type="number" step="0.01" id="bidAmountInput" oninput="updateBidPreview()" placeholder="e.g. 2322350.00" class="w-full pl-9 pr-4 py-3 text-lg font-mono font-extrabold tabular-nums bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white transition-all">
+                                        </div>
+                                        <button type="submit" id="placeBidBtn" class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#1E3A8A] via-[#154B87] to-[#0D9488] hover:opacity-95 active:scale-[0.99] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"></path>
+                                            </svg>
+                                            <span>Place Binding Bid</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Undercut Preset Chips -->
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mr-1">Quick Undercut:</span>
+                                    <button type="button" onclick="applyQuickUndercut('fixed', 100)" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-slate-700 dark:text-slate-200 hover:text-[#0D9488] dark:hover:text-[#2DD4BF] border border-slate-200 dark:border-slate-700 transition-all">-₹100</button>
+                                    <button type="button" onclick="applyQuickUndercut('fixed', 500)" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-slate-700 dark:text-slate-200 hover:text-[#0D9488] dark:hover:text-[#2DD4BF] border border-slate-200 dark:border-slate-700 transition-all">-₹500</button>
+                                    <button type="button" onclick="applyQuickUndercut('fixed', 1000)" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-slate-700 dark:text-slate-200 hover:text-[#0D9488] dark:hover:text-[#2DD4BF] border border-slate-200 dark:border-slate-700 transition-all">-₹1,000</button>
+                                    <button type="button" onclick="applyQuickUndercut('percent', 0.5)" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-slate-700 dark:text-slate-200 hover:text-[#0D9488] dark:hover:text-[#2DD4BF] border border-slate-200 dark:border-slate-700 transition-all">-0.5%</button>
+                                    <button type="button" onclick="applyQuickUndercut('percent', 1.0)" class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-slate-700 dark:text-slate-200 hover:text-[#0D9488] dark:hover:text-[#2DD4BF] border border-slate-200 dark:border-slate-700 transition-all">-1.0%</button>
+                                </div>
+
+                                <!-- Validation Error Banner (Hidden by default) -->
+                                <div id="bidErrorBanner" class="hidden p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-xs font-semibold text-rose-600 dark:text-rose-300 flex items-center gap-2">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span id="bidErrorText">Your bid must be strictly lower than the current price.</span>
+                                </div>
+
+                                <!-- Live Dynamic Preview Strip -->
+                                <div id="bidPreviewStrip" class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 text-xs">
+                                    <div>
+                                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">New Unit Rate</span>
+                                        <span id="previewUnitRate" class="font-mono tabular-nums font-bold text-slate-800 dark:text-slate-100 mt-0.5 block">—</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">Reduction vs Current</span>
+                                        <span id="previewReduction" class="font-mono tabular-nums font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">—</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">Total Savings vs Ceiling</span>
+                                        <span id="previewCeilingSavings" class="font-mono tabular-nums font-bold text-[#0D9488] dark:text-[#2DD4BF] mt-0.5 block">—</span>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- 2. BID PRICE TREND CARD (Chart.js) -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-slate-800 shadow-card overflow-hidden">
+                            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/50">
+                                <div>
+                                    <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">Bid Price Trend</h2>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Showing bid price trend over time</p>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold bg-teal-50 dark:bg-teal-950/50 text-[#0D9488] dark:text-[#2DD4BF] border border-teal-200/80 dark:border-teal-800">
+                                    LIVE TELEMETRY
+                                </span>
+                            </div>
+                            <div class="p-5">
+                                <div class="relative h-[280px] w-full">
+                                    <canvas id="bidTrendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. ALL BIDS LEDGER CARD -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-slate-800 shadow-card overflow-hidden">
+                            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-900/50">
+                                <div class="flex items-center gap-2.5">
+                                    <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">All Bids</h2>
+                                    <span id="allBidsCounterPill" class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-blue-50 dark:bg-blue-950/60 text-[#1E3A8A] dark:text-cyan-300 border border-blue-200 dark:border-blue-800">
+                                        2 Bids
+                                    </span>
+                                </div>
+
+                                <!-- Filter: All / My Bids Toggle -->
+                                <div class="inline-flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700 text-xs font-semibold">
+                                    <button type="button" id="filterAllBidsBtn" onclick="setBidsFilter('all')" class="px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-[#0B1E47] dark:text-[#2DD4BF] shadow-sm transition-all">
+                                        All Bids
+                                    </button>
+                                    <button type="button" id="filterMyBidsBtn" onclick="setBidsFilter('mine')" class="px-3 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all">
+                                        My Bids
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-50/90 dark:bg-slate-900/70 border-b border-[#E2E8F0] dark:border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                            <th class="py-3 px-5">Supplier</th>
+                                            <th class="py-3 px-4 text-right">Bid Amount</th>
+                                            <th class="py-3 px-4">Bid Time</th>
+                                            <th class="py-3 px-4 text-right">Delta</th>
+                                            <th class="py-3 px-5 text-right">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="allBidsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 text-xs"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- =================================================== -->
+                    <!-- RIGHT COLUMN (lg:col-span-4 ~ 32-33%)               -->
+                    <!-- =================================================== -->
+                    <div class="lg:col-span-4 space-y-6">
+
+                        <!-- 1. PRODUCT PHOTOS & ATTACHMENTS CARD -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-slate-800 shadow-card overflow-hidden">
+                            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/50">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-[#1E3A8A] dark:text-[#2DD4BF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">Product Photos</h3>
+                                </div>
+                                <span id="photoCountBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                    0 Files
+                                </span>
+                            </div>
+
+                            <div class="p-4 space-y-3">
+                                <!-- Hidden File Inputs -->
+                                <input type="file" id="deviceImageInput" accept="image/*" multiple onchange="handleFileUpload(event)" class="hidden">
+                                <input type="file" id="generalFileInput" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" multiple onchange="handleFileUpload(event)" class="hidden">
+
+                                <!-- 3 Action Buttons -->
+                                <div class="space-y-2">
+                                    <button type="button" onclick="openCameraModal()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#1E3A8A] to-[#12336B] hover:opacity-95 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2">
+                                        <svg class="w-4 h-4 text-[#2DD4BF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <span>Click Photo</span>
+                                    </button>
+
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button type="button" onclick="document.getElementById('deviceImageInput').click()" class="py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-1.5">
+                                            <svg class="w-3.5 h-3.5 text-[#0D9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <span>Upload from Device</span>
+                                        </button>
+
+                                        <button type="button" onclick="document.getElementById('generalFileInput').click()" class="py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-xs border border-slate-200 dark:border-slate-700 transition-all flex items-center justify-center gap-1.5">
+                                            <svg class="w-3.5 h-3.5 text-[#1E3A8A] dark:text-[#2DD4BF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                                            </svg>
+                                            <span>Upload Files</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Empty State or Uploaded Thumbnail Grid -->
+                                <div id="uploadedPhotosContainer"></div>
+                            </div>
+                        </div>
+
+                        <!-- 2. BUYER MESSAGES CARD -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-slate-800 shadow-card overflow-hidden">
+                            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/50">
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Buyer Messages</h3>
+                                <span id="unreadMsgPill" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                    1 New
+                                </span>
+                            </div>
+                            <div class="p-4 space-y-3.5">
+                                <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                    Ask clarifications, confirm documents, or respond to buyer questions for this auction.
+                                </p>
+                                <button type="button" onclick="openMessageModal()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#0B1E47] via-[#12336B] to-[#0D9488] hover:opacity-95 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4 text-[#2DD4BF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <span>Message Buyer</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 3. YOUR BIDS CARD -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-slate-800 shadow-card overflow-hidden">
+                            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/50">
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Your Bids</h3>
+                                <span id="yourBidsCountBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-teal-50 dark:bg-teal-950/50 text-[#0D9488] dark:text-[#2DD4BF] border border-teal-200 dark:border-teal-800">
+                                    2 Placed
+                                </span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-50 dark:bg-slate-900/70 border-b border-slate-100 dark:border-slate-800 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                            <th class="py-2.5 px-4">Amount</th>
+                                            <th class="py-2.5 px-4 text-right">Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="yourBidsTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 text-xs"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 4. BIDDING TIPS CARD -->
+                        <div class="bg-white dark:bg-[#111827] rounded-2xl border border-[#E2E8F0] dark:border-slate-800 shadow-card overflow-hidden">
+                            <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2 bg-slate-50/70 dark:bg-slate-900/50">
+                                <svg class="w-4 h-4 text-[#1E3A8A] dark:text-[#2DD4BF]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Bidding Tips</h3>
+                            </div>
+                            <ul class="divide-y divide-slate-100 dark:divide-slate-800 text-xs text-slate-600 dark:text-slate-300">
+                                <li class="p-3.5 flex items-start gap-2.5">
+                                    <span class="w-5 h-5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#1E3A8A] dark:text-[#2DD4BF] flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">i</span>
+                                    <span>Your bid must be lower than the current price.</span>
+                                </li>
+                                <li class="p-3.5 flex items-start gap-2.5">
+                                    <span class="w-5 h-5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#1E3A8A] dark:text-[#2DD4BF] flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">i</span>
+                                    <span>Open supplier access means faster competition, so bid early and monitor the trend.</span>
+                                </li>
+                                <li class="p-3.5 flex items-start gap-2.5">
+                                    <span class="w-5 h-5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#1E3A8A] dark:text-[#2DD4BF] flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">i</span>
+                                    <span>You can place multiple bids until the auction ends.</span>
+                                </li>
+                                <li class="p-3.5 flex items-start gap-2.5">
+                                    <span class="w-5 h-5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">!</span>
+                                    <span class="font-medium text-slate-700 dark:text-slate-200">All bids are binding and cannot be withdrawn.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- Footer -->
+                <footer class="pt-3 pb-6 text-center sm:flex sm:items-center sm:justify-between text-xs text-slate-400 dark:text-slate-500 border-t border-slate-200/70 dark:border-slate-800">
+                    <p>© 2026 Supplexio Procurement Systems Inc. All rights reserved.</p>
+                    <p class="font-mono text-[11px] mt-1 sm:mt-0">Lot #AUC-2026-AP10 • Real-Time Binding Reverse Auction</p>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 1: CLICK PHOTO / INSPECTION CAPTURE MODAL                     -->
+    <!-- =================================================================== -->
+    <div id="cameraModal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-[#0B1E47] to-[#12336B] text-white px-5 py-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-200">Visual Verification</span>
+                    <h3 class="text-sm font-extrabold">Capture Product Inspection Photo</h3>
+                </div>
+                <button type="button" onclick="closeCameraModal()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="rounded-xl bg-slate-900 border border-slate-700 p-6 text-center relative overflow-hidden">
+                    <div class="w-14 h-14 rounded-2xl bg-cyan-500/15 border border-cyan-400/30 text-[#2DD4BF] mx-auto flex items-center justify-center mb-3">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-xs font-semibold text-white">Aluminum Plates — Lot #AUC-2026-AP10</p>
+                    <p class="text-[11px] text-slate-400 mt-1">Capture an instant sample inspection snapshot or upload directly from your camera roll.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <button type="button" onclick="captureSamplePhoto('Aluminum_Plate_6061_Surface.svg', 'Surface Finish Inspection')" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#1E3A8A] to-[#0D9488] hover:opacity-95 text-white font-bold text-xs shadow transition-all">
+                        Capture Sample: Alloy 6061-T6 Surface Check
+                    </button>
+                    <button type="button" onclick="captureSamplePhoto('Aluminum_Thickness_Gauge.svg', 'Thickness & Mill Stamp')" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold text-xs border border-slate-200 dark:border-slate-700 transition-all">
+                        Capture Sample: Thickness Gauge &amp; Mill Stamp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 2: IMAGE / ATTACHMENT LIGHTBOX PREVIEW                        -->
+    <!-- =================================================================== -->
+    <div id="previewModal" onclick="closePreviewModal()" class="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div onclick="event.stopPropagation()" class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full overflow-hidden shadow-2xl">
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <span id="previewModalTitle" class="text-xs font-mono font-bold text-slate-800 dark:text-white truncate"></span>
+                <button type="button" onclick="closePreviewModal()" class="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">✕</button>
+            </div>
+            <div id="previewModalBody" class="p-4 flex items-center justify-center bg-slate-50 dark:bg-slate-900 min-h-[260px]"></div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 3: BUYER DESK MESSAGING MODAL                                 -->
+    <!-- =================================================================== -->
+    <div id="messageModal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-[#0B1E47] via-[#12336B] to-[#0F3D4C] text-white p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-[#2DD4BF]">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white">Buyer Procurement Desk</h3>
+                        <p class="text-[11px] font-mono text-cyan-200/90">Lot #AUC-2026-AP10 • Aluminum Plates (10 Units)</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeMessageModal()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Thread -->
+            <div id="msgThreadContainer" class="p-4 flex-1 overflow-y-auto space-y-3 bg-slate-50/70 dark:bg-slate-900/60 min-h-[250px]"></div>
+
+            <!-- Quick Clarifications -->
+            <div class="px-4 py-2 bg-white dark:bg-[#111827] border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-1.5">
+                <button type="button" onclick="fillMessageDraft('Confirming 6061-T6 alloy grade with Mill Test Certificate (MTC) included.')" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Confirm 6061-T6 &amp; MTC</button>
+                <button type="button" onclick="fillMessageDraft('Can delivery be scheduled in 2 staggered consignments?')" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Ask Delivery Schedule</button>
+            </div>
+
+            <!-- Composer -->
+            <form onsubmit="handleSendMessage(event)" class="p-3.5 bg-white dark:bg-[#111827] border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
+                <input type="text" id="msgInput" required placeholder="Type your message to the buyer..." class="flex-1 px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-800 dark:text-slate-100">
+                <button type="submit" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#1E3A8A] to-[#0D9488] hover:opacity-95 text-white text-xs font-bold shadow transition-all">
+                    Send
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- FLOATING WARM-AMBER AI BIDDING COPILOT                              -->
+    <!-- =================================================================== -->
+    <div id="aiCopilotPopover" class="fixed bottom-24 right-5 z-50 w-80 sm:w-96 max-w-[calc(100vw-2.5rem)] bg-white dark:bg-[#111827] border border-amber-400/40 rounded-2xl shadow-2xl hidden flex-col overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-[#F59E0B] to-amber-400 text-slate-950 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-slate-950 text-amber-400 flex items-center justify-center shadow">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2a2 2 0 012 2v1h3a3 3 0 013 3v8a3 3 0 01-3 3H7a3 3 0 01-3-3V8a3 3 0 013-3h3V4a2 2 0 012-2zm-3 9a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-5 5h4a1 1 0 110 2h-4a1 1 0 110-2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-xs font-extrabold leading-tight">Supplexio AI Bidding Copilot</h4>
+                    <p class="text-[10px] font-mono font-bold opacity-80">LIVE REVERSE AUCTION ADVISOR</p>
+                </div>
+            </div>
+            <button type="button" onclick="toggleAiCopilot()" class="p-1 rounded-lg hover:bg-black/10 text-slate-950">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Messages -->
+        <div id="copilotMessages" class="p-3.5 h-60 overflow-y-auto space-y-2.5 text-xs bg-slate-50/70 dark:bg-slate-900/50">
+            <div class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 leading-relaxed">
+                Hi <strong>Heet Patel</strong>! You currently hold <strong>L1 Lowest Bid</strong> on <strong>Aluminum Plates</strong> at <strong>₹2,322,450.00</strong>. Ask me for bid recommendations, trend analysis, or buyer message drafts.
+            </div>
+        </div>
+
+        <!-- Quick Prompts -->
+        <div class="px-3 py-2 bg-white dark:bg-[#111827] border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-1.5">
+            <button type="button" onclick="askCopilot('Suggest optimal undercut bid')" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 transition-colors">
+                Suggest optimal undercut bid
+            </button>
+            <button type="button" onclick="askCopilot('Analyze price trend')" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 transition-colors">
+                Analyze price trend
+            </button>
+            <button type="button" onclick="askCopilot('Draft spec query to buyer')" class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 transition-colors">
+                Draft spec query to buyer
+            </button>
+        </div>
+
+        <!-- Input -->
+        <form onsubmit="handleCopilotSubmit(event)" class="p-2.5 bg-white dark:bg-[#111827] border-t border-slate-200 dark:border-slate-800 flex gap-2">
+            <input type="text" id="copilotInput" placeholder="Ask AI bidding advisor..." class="flex-1 px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-amber-500 text-slate-800 dark:text-slate-100">
+            <button type="submit" class="px-3 py-1.5 rounded-xl bg-[#F59E0B] hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors">
+                Ask
+            </button>
+        </form>
+    </div>
+
+    <!-- Floating Warm-Amber Robot Trigger Button -->
+    <button type="button" onclick="toggleAiCopilot()" title="Supplexio AI Bidding Copilot" class="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-[#F59E0B] to-amber-300 text-slate-950 shadow-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center ring-4 ring-amber-500/25">
+        <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2a2 2 0 012 2v1h3a3 3 0 013 3v8a3 3 0 01-3 3H7a3 3 0 01-3-3V8a3 3 0 013-3h3V4a2 2 0 012-2zm-3 9a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-5 5h4a1 1 0 110 2h-4a1 1 0 110-2z"/>
+        </svg>
+    </button>
+
+    <!-- =================================================================== -->
+    <!-- CORE APPLICATION SCRIPT                                             -->
+    <!-- =================================================================== -->
+    <script>
+        // Auction State (Exact values from screenshot)
+        const CURRENT_USER = 'Heet Patel';
+        const auctionState = {
+            lotId: 'AUC-2026-AP10',
+            product: 'Aluminum Plates',
+            quantity: 10,
+            startingPrice: 2322540.00,
+            currentPrice: 2322450.00,
+            startTime: '2026-11-22 02:23',
+            endTime: '2027-05-21 02:23',
+            // 174d 6h 44m 45s in seconds
+            timeLeftSec: (174 * 86400) + (6 * 3600) + (44 * 60) + 45,
+            // Chronological bid history (oldest to newest for chart; reversed for tables)
+            bids: [
+                {
+                    id: 1,
+                    supplier: 'Heet Patel',
+                    amount: 2322500.00,
+                    time: '2026-11-22 02:27:21',
+                    chartLabel: '11/22/2026, 2:27 AM',
+                    delta: -40.00,
+                    isUser: true
+                },
+                {
+                    id: 2,
+                    supplier: 'Heet Patel',
+                    amount: 2322450.00,
+                    time: '2026-11-27 19:37:48',
+                    chartLabel: '11/27/2026, 7:37 PM',
+                    delta: -50.00,
+                    isUser: true
+                }
+            ],
+            photos: [],
+            unreadMessages: 1,
+            messages: [
+                {
+                    sender: 'Buyer Procurement Desk',
+                    text: 'Hello Heet Patel, thank you for participating in Lot #AUC-2026-AP10 (Aluminum Plates, Qty: 10). Please ensure Mill Test Certificates (MTC) and alloy grade 6061-T6 documentation are ready upon award.',
+                    time: '2026-11-27 18:10',
+                    isBuyer: true
+                }
+            ]
+        };
+
+        let bidsFilterMode = 'all'; // 'all' | 'mine'
+        let trendChart = null;
+
+        // Format currency consistently with screenshot style (₹2,322,450.00)
+        function formatINR(num) {
+            return '₹' + Number(num).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        // Format unit rate in Indian lakh style for unit rate callout (₹2,32,245.00)
+        function formatUnitINR(num) {
+            return '₹' + Number(num).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        // Current timestamp formatter: YYYY-MM-DD HH:MM:SS
+        function getFormattedNow() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        }
+
+        function getShortChartTime() {
+            const d = new Date();
+            return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+        }
+
+        // =================================================================
+        // 1. LIVE COUNTDOWN ENGINE (1-Second Interval)
+        // =================================================================
+        function updateCountdownDisplay() {
+            const sTotal = Math.max(0, auctionState.timeLeftSec);
+            const days = Math.floor(sTotal / 86400);
+            const hours = Math.floor((sTotal % 86400) / 3600);
+            const mins = Math.floor((sTotal % 3600) / 60);
+            const secs = sTotal % 60;
+
+            document.getElementById('cdDays').textContent = String(days);
+            document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('cdMins').textContent = String(mins).padStart(2, '0');
+            document.getElementById('cdSecs').textContent = String(secs).padStart(2, '0');
+        }
+
+        function tickCountdown() {
+            if (auctionState.timeLeftSec > 0) {
+                auctionState.timeLeftSec -= 1;
+            }
+            updateCountdownDisplay();
+        }
+
+        // =================================================================
+        // 2. KPI STRIP & STATUS SYNCHRONIZATION
+        // =================================================================
+        function updateKpiAndHeaders(flashPrice = false) {
+            const latestBid = auctionState.bids[auctionState.bids.length - 1];
+            const isUserLeading = latestBid && latestBid.isUser;
+            const totalDrop = auctionState.startingPrice - auctionState.currentPrice;
+            const unitRate = auctionState.currentPrice / auctionState.quantity;
+
+            // Current Price KPI
+            const kpiPriceEl = document.getElementById('kpiCurrentPrice');
+            kpiPriceEl.textContent = formatINR(auctionState.currentPrice);
+            if (flashPrice) {
+                kpiPriceEl.classList.remove('price-flash');
+                void kpiPriceEl.offsetWidth;
+                kpiPriceEl.classList.add('price-flash');
+            }
+            document.getElementById('kpiUnitRate').textContent = `${formatUnitINR(unitRate)} / unit`;
+
+            // Ceiling Drop KPI
+            document.getElementById('kpiTotalDropBadge').textContent = `-${formatINR(totalDrop)}`;
+
+            // Rule Pill in Place Your Bid Card
+            document.getElementById('bidRulePill').textContent = `Must be < ${formatINR(auctionState.currentPrice)}`;
+
+            // Hero Status Badge & KPI Position Card
+            const heroBadge = document.getElementById('heroStatusBadge');
+            const posCard = document.getElementById('kpiPositionCard');
+            const posText = document.getElementById('kpiPositionText');
+            const posIcon = document.getElementById('kpiPositionIconBox');
+
+            if (isUserLeading) {
+                heroBadge.textContent = 'Your Status: L1 Lowest Bid';
+                heroBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-emerald-500/25 text-emerald-200 border border-emerald-400/40';
+
+                posCard.className = 'bg-white dark:bg-[#111827] rounded-2xl border border-emerald-200 dark:border-emerald-500/35 p-4 shadow-card flex items-start justify-between transition-colors';
+                posText.textContent = '#1 (Lowest Bid)';
+                posText.className = 'mt-1.5 text-xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight';
+                posIcon.className = 'w-10 h-10 rounded-xl bg-emerald-500/12 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0';
+            } else {
+                heroBadge.textContent = 'Your Status: Outbid — Counter Now';
+                heroBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-rose-500/25 text-rose-200 border border-rose-400/45 animate-pulse';
+
+                posCard.className = 'bg-white dark:bg-[#111827] rounded-2xl border border-rose-300 dark:border-rose-500/45 p-4 shadow-card flex items-start justify-between transition-colors';
+                posText.textContent = 'Outbid (Rank #2)';
+                posText.className = 'mt-1.5 text-xl font-extrabold text-rose-600 dark:text-rose-400 tracking-tight';
+                posIcon.className = 'w-10 h-10 rounded-xl bg-rose-500/12 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0';
+            }
+
+            document.getElementById('kpiTotalBidsSub').textContent = `${auctionState.bids.length} Bids Recorded`;
+            document.getElementById('allBidsCounterPill').textContent = `${auctionState.bids.length} Bids`;
+        }
+
+        // =================================================================
+        // 3. BID FORM, QUICK PRESETS & LIVE VALIDATION
+        // =================================================================
+        function applyQuickUndercut(mode, value) {
+            let nextPrice = auctionState.currentPrice;
+            if (mode === 'fixed') {
+                nextPrice = auctionState.currentPrice - value;
+            } else if (mode === 'percent') {
+                nextPrice = auctionState.currentPrice * (1 - value / 100);
+            }
+            nextPrice = Math.max(1, Number(nextPrice.toFixed(2)));
+            document.getElementById('bidAmountInput').value = nextPrice.toFixed(2);
+            updateBidPreview();
+        }
+
+        function updateBidPreview() {
+            const rawVal = document.getElementById('bidAmountInput').value.trim();
+            const val = parseFloat(rawVal);
+            const errorBanner = document.getElementById('bidErrorBanner');
+            const errorText = document.getElementById('bidErrorText');
+
+            const unitEl = document.getElementById('previewUnitRate');
+            const redEl = document.getElementById('previewReduction');
+            const savEl = document.getElementById('previewCeilingSavings');
+
+            if (!rawVal) {
+                errorBanner.classList.add('hidden');
+                unitEl.textContent = '—';
+                redEl.textContent = '—';
+                savEl.textContent = '—';
+                return false;
+            }
+
+            if (isNaN(val) || val <= 0) {
+                errorText.textContent = 'Please enter a valid positive bid amount.';
+                errorBanner.classList.remove('hidden');
+                unitEl.textContent = '—';
+                redEl.textContent = '—';
+                savEl.textContent = '—';
+                return false;
+            }
+
+            if (val >= auctionState.currentPrice) {
+                errorText.textContent = `Invalid bid: Amount must be strictly lower than current L1 price (${formatINR(auctionState.currentPrice)}).`;
+                errorBanner.classList.remove('hidden');
+                unitEl.textContent = `${formatUnitINR(val / auctionState.quantity)} / unit`;
+                redEl.textContent = 'Not lower';
+                savEl.textContent = '—';
+                return false;
+            }
+
+            errorBanner.classList.add('hidden');
+            const reduction = auctionState.currentPrice - val;
+            const totalSavings = auctionState.startingPrice - val;
+            const savingsPct = (totalSavings / auctionState.startingPrice) * 100;
+
+            unitEl.textContent = `${formatUnitINR(val / auctionState.quantity)} / unit`;
+            redEl.textContent = `-${formatINR(reduction)}`;
+            savEl.textContent = `${savingsPct.toFixed(3)}% (-${formatINR(totalSavings)})`;
+            return true;
+        }
+
+        function handlePlaceBid(e) {
+            e.preventDefault();
+            if (!updateBidPreview()) {
+                const rawVal = document.getElementById('bidAmountInput').value.trim();
+                if (!rawVal) {
+                    document.getElementById('bidErrorText').textContent = 'Please enter your bid amount before submitting.';
+                    document.getElementById('bidErrorBanner').classList.remove('hidden');
+                }
+                showToast('Bid rejected: Please enter a valid lower amount.', 'error');
+                return;
+            }
+
+            const newAmount = Number(parseFloat(document.getElementById('bidAmountInput').value).toFixed(2));
+            const delta = Number((newAmount - auctionState.currentPrice).toFixed(2));
+
+            auctionState.currentPrice = newAmount;
+            auctionState.bids.push({
+                id: auctionState.bids.length + 1,
+                supplier: CURRENT_USER,
+                amount: newAmount,
+                time: getFormattedNow(),
+                chartLabel: getShortChartTime(),
+                delta: delta,
+                isUser: true
+            });
+
+            document.getElementById('bidAmountInput').value = '';
+            updateBidPreview();
+            refreshAllViews(true);
+            showToast(`Binding L1 Bid Placed at ${formatINR(newAmount)}!`, 'success');
+        }
+
+        // Simulate a rival supplier undercutting the current L1 price
+        function simulateCompetitorBid() {
+            const competitors = ['Apex Alloys India', 'Shreeji Metal Works', 'Kalyani Industrial Corp'];
+            const rival = competitors[Math.floor(Math.random() * competitors.length)];
+            // Undercut by ₹250 to ₹1,200
+            const undercut = [250, 500, 750, 1200][Math.floor(Math.random() * 4)];
+            const newAmount = Number(Math.max(1000, auctionState.currentPrice - undercut).toFixed(2));
+            const delta = Number((newAmount - auctionState.currentPrice).toFixed(2));
+
+            auctionState.currentPrice = newAmount;
+            auctionState.bids.push({
+                id: auctionState.bids.length + 1,
+                supplier: rival,
+                amount: newAmount,
+                time: getFormattedNow(),
+                chartLabel: getShortChartTime(),
+                delta: delta,
+                isUser: false
+            });
+
+            refreshAllViews(true);
+            showToast(`Outbid Alert! ${rival} bid ${formatINR(newAmount)} (-₹${undercut}).`, 'warning');
+        }
+
+        // =================================================================
+        // 4. CHART.JS BID PRICE TREND ANALYTICS
+        // =================================================================
+        function buildOrUpdateChart() {
+            const ctx = document.getElementById('bidTrendChart').getContext('2d');
+            const isDark = document.documentElement.classList.contains('dark');
+
+            const labels = auctionState.bids.map(b => b.chartLabel);
+            const dataPoints = auctionState.bids.map(b => b.amount);
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 270);
+            gradient.addColorStop(0, isDark ? 'rgba(45, 212, 191, 0.30)' : 'rgba(13, 148, 136, 0.22)');
+            gradient.addColorStop(1, isDark ? 'rgba(45, 212, 191, 0.00)' : 'rgba(30, 58, 138, 0.00)');
+
+            const gridColor = isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(148, 163, 184, 0.20)';
+            const tickColor = isDark ? '#94A3B8' : '#64748B';
+            const lineColor = isDark ? '#2DD4BF' : '#1E3A8A';
+
+            if (trendChart) {
+                trendChart.data.labels = labels;
+                trendChart.data.datasets[0].data = dataPoints;
+                trendChart.data.datasets[0].borderColor = lineColor;
+                trendChart.data.datasets[0].backgroundColor = gradient;
+                trendChart.data.datasets[0].pointBackgroundColor = isDark ? '#0B1120' : '#FFFFFF';
+                trendChart.data.datasets[0].pointBorderColor = lineColor;
+                trendChart.options.scales.x.ticks.color = tickColor;
+                trendChart.options.scales.y.ticks.color = tickColor;
+                trendChart.options.scales.x.grid.color = gridColor;
+                trendChart.options.scales.y.grid.color = gridColor;
+                trendChart.update();
+                return;
+            }
+
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Bid Amount (₹)',
+                        data: dataPoints,
+                        borderColor: lineColor,
+                        backgroundColor: gradient,
+                        borderWidth: 2.8,
+                        fill: true,
+                        tension: 0.28,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBorderWidth: 2.5,
+                        pointBackgroundColor: isDark ? '#0B1120' : '#FFFFFF',
+                        pointBorderColor: lineColor
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0B1E47',
+                            titleColor: '#94A3B8',
+                            bodyColor: '#FFFFFF',
+                            borderColor: 'rgba(45, 212, 191, 0.4)',
+                            borderWidth: 1,
+                            padding: 10,
+                            cornerRadius: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: function (context) {
+                                    const bid = auctionState.bids[context.dataIndex];
+                                    return `${formatINR(context.parsed.y)}  (${bid ? bid.supplier : ''})`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: gridColor, drawBorder: false },
+                            ticks: { color: tickColor, font: { family: 'JetBrains Mono', size: 10 } }
+                        },
+                        y: {
+                            grid: { color: gridColor, drawBorder: false },
+                            ticks: {
+                                color: tickColor,
+                                font: { family: 'JetBrains Mono', size: 10 },
+                                callback: value => '₹' + Number(value).toLocaleString('en-US')
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // =================================================================
+        // 5. ALL BIDS LEDGER & YOUR BIDS TABLES
+        // =================================================================
+        function setBidsFilter(mode) {
+            bidsFilterMode = mode;
+            const allBtn = document.getElementById('filterAllBidsBtn');
+            const myBtn = document.getElementById('filterMyBidsBtn');
+
+            if (mode === 'all') {
+                allBtn.className = 'px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-[#0B1E47] dark:text-[#2DD4BF] shadow-sm transition-all';
+                myBtn.className = 'px-3 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all';
+            } else {
+                myBtn.className = 'px-3 py-1 rounded-lg bg-white dark:bg-slate-700 text-[#0B1E47] dark:text-[#2DD4BF] shadow-sm transition-all';
+                allBtn.className = 'px-3 py-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-all';
+            }
+            renderBidsTables();
+        }
+
+        function renderBidsTables() {
+            // Descending order (newest / lowest first)
+            const reversedBids = [...auctionState.bids].reverse();
+            const lowestId = reversedBids[0] ? reversedBids[0].id : null;
+
+            const filteredAll = bidsFilterMode === 'mine'
+                ? reversedBids.filter(b => b.isUser)
+                : reversedBids;
+
+            const allBody = document.getElementById('allBidsTableBody');
+            allBody.innerHTML = filteredAll.map(bid => {
+                const isLowest = bid.id === lowestId;
+                let statusBadge = '';
+                if (isLowest) {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/35">Lowest Bid</span>`;
+                } else if (bid.isUser) {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/15 text-[#1E3A8A] dark:text-blue-300 border border-blue-500/30">Your Bid</span>`;
+                } else {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">Competitor</span>`;
+                }
+
+                return `
+                    <tr class="${isLowest ? 'bg-emerald-50/40 dark:bg-emerald-950/20' : ''} hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <td class="py-3.5 px-5 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full ${bid.isUser ? 'bg-[#0D9488] text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200'} text-[10px] font-bold flex items-center justify-center shrink-0">
+                                    ${bid.supplier.split(' ').map(w => w[0]).slice(0, 2).join('')}
+                                </span>
+                                <span>${bid.supplier}</span>
+                                ${bid.isUser ? '<span class="text-[10px] font-mono text-[#0D9488] dark:text-[#2DD4BF]">(You)</span>' : ''}
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-4 text-right font-mono tabular-nums font-extrabold text-slate-900 dark:text-white whitespace-nowrap">
+                            ${formatINR(bid.amount)}
+                        </td>
+                        <td class="py-3.5 px-4 font-mono tabular-nums text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            ${bid.time}
+                        </td>
+                        <td class="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                            -${formatINR(Math.abs(bid.delta))}
+                        </td>
+                        <td class="py-3.5 px-5 text-right whitespace-nowrap">
+                            ${statusBadge}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Your Bids Right-Column Card
+            const myBids = reversedBids.filter(b => b.isUser);
+            document.getElementById('yourBidsCountBadge').textContent = `${myBids.length} Placed`;
+            const yourBody = document.getElementById('yourBidsTableBody');
+            yourBody.innerHTML = myBids.map(b => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    <td class="py-3 px-4 font-mono tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                        ${formatINR(b.amount)}
+                    </td>
+                    <td class="py-3 px-4 text-right font-mono tabular-nums text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        ${b.time}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function refreshAllViews(flashPrice = false) {
+            updateKpiAndHeaders(flashPrice);
+            renderBidsTables();
+            buildOrUpdateChart();
+        }
+
+        // =================================================================
+        // 6. PRODUCT PHOTOS & ATTACHMENTS
+        // =================================================================
+        function renderPhotosGrid() {
+            const container = document.getElementById('uploadedPhotosContainer');
+            const badge = document.getElementById('photoCountBadge');
+            badge.textContent = `${auctionState.photos.length} ${auctionState.photos.length === 1 ? 'File' : 'Files'}`;
+
+            if (auctionState.photos.length === 0) {
+                container.innerHTML = `
+                    <div class="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700/80 bg-slate-50/60 dark:bg-slate-900/50 p-5 text-center">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">No product photos uploaded yet.</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Attach lot inspection photos or MTC spec sheets.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="grid grid-cols-2 gap-2.5 pt-1">
+                    ${auctionState.photos.map(item => `
+                        <div class="group relative rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden">
+                            <button type="button" onclick="openPreviewModal('${item.id}')" class="w-full block text-left">
+                                ${item.isImage
+                                    ? `<img src="${item.url}" alt="${item.name}" class="w-full h-24 object-cover">`
+                                    : `<div class="w-full h-24 flex flex-col items-center justify-center bg-blue-50 dark:bg-blue-950/40 text-[#1E3A8A] dark:text-[#2DD4BF]">
+                                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                        <span class="text-[10px] font-mono font-bold mt-1">DOCUMENT</span>
+                                       </div>`
+                                }
+                                <div class="p-2">
+                                    <div class="text-[11px] font-semibold text-slate-800 dark:text-slate-100 truncate">${item.name}</div>
+                                    <div class="text-[10px] font-mono text-slate-400">${item.size}</div>
+                                </div>
+                            </button>
+                            <button type="button" onclick="removePhoto('${item.id}')" title="Remove File" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-950/70 hover:bg-rose-600 text-white text-[11px] font-bold flex items-center justify-center transition-colors">
+                                ×
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function handleFileUpload(event) {
+            const files = Array.from(event.target.files || []);
+            if (files.length === 0) return;
+
+            files.forEach(file => {
+                const url = URL.createObjectURL(file);
+                const sizeKB = Math.max(1, Math.round(file.size / 1024));
+                auctionState.photos.push({
+                    id: 'file-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+                    name: file.name,
+                    size: sizeKB > 1024 ? `${(sizeKB / 1024).toFixed(1)} MB` : `${sizeKB} KB`,
+                    url: url,
+                    isImage: file.type.startsWith('image/')
+                });
+            });
+
+            event.target.value = '';
+            renderPhotosGrid();
+            showToast(`Uploaded ${files.length} ${files.length === 1 ? 'file' : 'files'} to lot documentation.`, 'success');
+        }
+
+        function openCameraModal() {
+            const m = document.getElementById('cameraModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeCameraModal() {
+            const m = document.getElementById('cameraModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        // Generates a clean inline-SVG Blob preview for instant sample inspection photos
+        function captureSamplePhoto(filename, caption) {
+            const svgMarkup = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="300" viewBox="0 0 480 300">
+                <defs>
+                    <linearGradient id="plateGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#0B1E47"/>
+                        <stop offset="55%" stop-color="#1E3A8A"/>
+                        <stop offset="100%" stop-color="#0D9488"/>
+                    </linearGradient>
+                </defs>
+                <rect width="480" height="300" fill="url(#plateGrad)"/>
+                <rect x="34" y="34" width="412" height="232" rx="14" fill="rgba(255,255,255,0.08)" stroke="rgba(45,212,191,0.45)" stroke-width="2"/>
+                <rect x="64" y="76" width="352" height="118" rx="8" fill="#CBD5E1" stroke="#94A3B8" stroke-width="2"/>
+                <line x1="64" y1="108" x2="416" y2="108" stroke="#94A3B8" stroke-width="1" stroke-dasharray="6 4"/>
+                <line x1="64" y1="142" x2="416" y2="142" stroke="#94A3B8" stroke-width="1" stroke-dasharray="6 4"/>
+                <text x="240" y="132" text-anchor="middle" font-family="monospace" font-size="16" font-weight="bold" fill="#0F172A">ALUMINUM PLATES 6061-T6</text>
+                <text x="240" y="156" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#334155">${caption}</text>
+                <text x="240" y="238" text-anchor="middle" font-family="monospace" font-size="11" fill="#2DD4BF">SUPPLEXIO VERIFIED CAPTURE • LOT #AUC-2026-AP10</text>
+            </svg>`;
+            const blob = new Blob([svgMarkup], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+
+            auctionState.photos.push({
+                id: 'cap-' + Date.now(),
+                name: filename,
+                size: '148 KB',
+                url: url,
+                isImage: true
+            });
+
+            closeCameraModal();
+            renderPhotosGrid();
+            showToast(`Captured inspection photo: ${filename}`, 'success');
+        }
+
+        function removePhoto(id) {
+            auctionState.photos = auctionState.photos.filter(p => p.id !== id);
+            renderPhotosGrid();
+            showToast('Attachment removed.', 'info');
+        }
+
+        function openPreviewModal(id) {
+            const item = auctionState.photos.find(p => p.id === id);
+            if (!item) return;
+            document.getElementById('previewModalTitle').textContent = `${item.name} (${item.size})`;
+            document.getElementById('previewModalBody').innerHTML = item.isImage
+                ? `<img src="${item.url}" alt="${item.name}" class="max-h-[65vh] rounded-xl shadow">`
+                : `<div class="text-center p-8">
+                    <p class="text-sm font-bold text-slate-800 dark:text-white">${item.name}</p>
+                    <p class="text-xs text-slate-500 mt-1">Document attached and ready for buyer verification.</p>
+                   </div>`;
+            const m = document.getElementById('previewModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closePreviewModal() {
+            const m = document.getElementById('previewModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        // =================================================================
+        // 7. BUYER DESK MESSAGING MODAL
+        // =================================================================
+        function openMessageModal() {
+            auctionState.unreadMessages = 0;
+            const unreadPill = document.getElementById('unreadMsgPill');
+            if (unreadPill) unreadPill.classList.add('hidden');
+
+            renderMessages();
+            const m = document.getElementById('messageModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeMessageModal() {
+            const m = document.getElementById('messageModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function fillMessageDraft(text) {
+            document.getElementById('msgInput').value = text;
+            document.getElementById('msgInput').focus();
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('msgThreadContainer');
+            container.innerHTML = auctionState.messages.map(m => `
+                <div class="flex flex-col ${m.isBuyer ? 'items-start' : 'items-end'}">
+                    <div class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${m.isBuyer ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-tl-sm' : 'bg-gradient-to-r from-[#1E3A8A] to-[#0D9488] text-white rounded-tr-sm shadow-sm'}">
+                        <div class="text-[10px] font-bold ${m.isBuyer ? 'text-[#0D9488] dark:text-[#2DD4BF]' : 'text-cyan-100'} mb-0.5">${m.sender}</div>
+                        <p>${m.text}</p>
+                    </div>
+                    <span class="text-[10px] font-mono text-slate-400 mt-1 px-1">${m.time}</span>
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function handleSendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            auctionState.messages.push({
+                sender: CURRENT_USER,
+                text: text,
+                time: getFormattedNow().slice(0, 16),
+                isBuyer: false
+            });
+            input.value = '';
+            renderMessages();
+            showToast('Message sent to Buyer Procurement Desk.', 'success');
+
+            // Simulated buyer reply
+            setTimeout(() => {
+                auctionState.messages.push({
+                    sender: 'Buyer Procurement Desk',
+                    text: 'Thank you for confirming. Our QA engineering team has noted your update for Lot #AUC-2026-AP10 (Aluminum Plates). Your bid eligibility remains active.',
+                    time: getFormattedNow().slice(0, 16),
+                    isBuyer: true
+                });
+                renderMessages();
+            }, 850);
+        }
+
+        // =================================================================
+        // 8. AI BIDDING COPILOT, DARK MODE, SIDEBAR & TOASTS
+        // =================================================================
+        function toggleAiCopilot() {
+            const pop = document.getElementById('aiCopilotPopover');
+            pop.classList.toggle('hidden');
+            pop.classList.toggle('flex');
+        }
+
+        function askCopilot(prompt) {
+            document.getElementById('copilotInput').value = prompt;
+            handleCopilotSubmit(new Event('submit'));
+        }
+
+        function handleCopilotSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('copilotInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const box = document.getElementById('copilotMessages');
+            const userEl = document.createElement('div');
+            userEl.className = 'p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-slate-900 dark:text-slate-100 font-medium ml-6';
+            userEl.textContent = text;
+            box.appendChild(userEl);
+            input.value = '';
+
+            setTimeout(() => {
+                const lower = text.toLowerCase();
+                const latest = auctionState.bids[auctionState.bids.length - 1];
+                const dropTotal = auctionState.startingPrice - auctionState.currentPrice;
+                const suggested = Number((auctionState.currentPrice - 500).toFixed(2));
+
+                let reply = `Current L1 on <strong>Aluminum Plates</strong> is <strong class="font-mono">${formatINR(auctionState.currentPrice)}</strong> (${auctionState.bids.length} total bids).`;
+
+                if (lower.includes('undercut') || lower.includes('suggest') || lower.includes('optimal')) {
+                    reply = latest.isUser
+                        ? `You already hold <strong>L1 Lowest Bid</strong> at <strong class="font-mono">${formatINR(auctionState.currentPrice)}</strong>. Wait for a competitor bid before reducing further. If outbid, a disciplined <strong>-₹500</strong> step (<strong class="font-mono">${formatINR(suggested)}</strong>) preserves margin.`
+                        : `You are currently outbid by <strong>${latest.supplier}</strong>! I recommend an immediate counter-bid at <strong class="font-mono">${formatINR(suggested)}</strong> (-₹500) to reclaim L1.`;
+                } else if (lower.includes('trend') || lower.includes('analyze')) {
+                    reply = `Price has moved from ceiling <strong class="font-mono">${formatINR(auctionState.startingPrice)}</strong> to <strong class="font-mono">${formatINR(auctionState.currentPrice)}</strong> (total drop: <strong class="font-mono">-${formatINR(dropTotal)}</strong> across ${auctionState.bids.length} bids). Bidding pace is steady with ample time remaining.`;
+                } else if (lower.includes('draft') || lower.includes('query') || lower.includes('buyer')) {
+                    reply = `Here is a ready-to-send query: <em>"Confirming availability of 10 units Aluminum Plates (6061-T6) with Mill Test Certificate. Please confirm preferred delivery slot upon PO award."</em>`;
+                }
+
+                const aiEl = document.createElement('div');
+                aiEl.className = 'p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 leading-relaxed mr-4';
+                aiEl.innerHTML = reply;
+                box.appendChild(aiEl);
+                box.scrollTop = box.scrollHeight;
+            }, 400);
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            const lbl = document.getElementById('darkModeLabel');
+            if (lbl) lbl.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            buildOrUpdateChart();
+            showToast(isDark ? 'Dark Mode enabled' : 'Light Mode enabled', 'info');
+        }
+
+        function toggleMobileSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebarBackdrop').classList.toggle('hidden');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            let borderClass = 'border-cyan-500/40';
+            let dotClass = 'bg-cyan-400';
+            if (type === 'success') { borderClass = 'border-emerald-500/40'; dotClass = 'bg-emerald-400'; }
+            else if (type === 'warning') { borderClass = 'border-amber-500/40'; dotClass = 'bg-amber-400'; }
+            else if (type === 'error') { borderClass = 'border-rose-500/40'; dotClass = 'bg-rose-400'; }
+
+            toast.className = `toast-enter pointer-events-auto bg-[#0B1E47]/95 backdrop-blur-md border ${borderClass} rounded-xl px-4 py-3 shadow-2xl flex items-center justify-between gap-3 text-xs font-semibold`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    <span class="w-2 h-2 rounded-full ${dotClass} shrink-0 animate-pulse"></span>
+                    <span class="text-white">${message}</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white text-sm leading-none">&times;</button>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.25s ease';
+                setTimeout(() => toast.remove(), 250);
+            }, 3800);
+        }
+
+        // Initialize on Window Load
+        window.onload = function () {
+            updateCountdownDisplay();
+            refreshAllViews(false);
+            renderPhotosGrid();
+            setInterval(tickCountdown, 1000);
+        };
+    </script>
+</body>
+</html>

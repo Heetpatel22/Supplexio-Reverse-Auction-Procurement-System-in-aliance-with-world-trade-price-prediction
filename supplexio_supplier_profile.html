@@ -1,0 +1,2121 @@
+los
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplexio — Supplier Portal | My Profile</title>
+
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        supple: {
+                            navy: '#0B1E47',
+                            midnavy: '#102A63',
+                            royal: '#16367D',
+                            teal: '#0D9488',
+                            cyan: '#2DD4BF',
+                            amber: '#F59E0B',
+                            canvas: '#F4F7FC',
+                            darkbg: '#0B1222',
+                            darkcard: '#111C33'
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 18px -6px rgba(15, 23, 42, 0.06)',
+                        'card-hover': '0 10px 24px -8px rgba(11, 30, 71, 0.12)'
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* Tabular numerals for strict alignment on GSTIN, phone, currency & metrics */
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Subtle atmospheric dot-grid overlay for profile hero banner */
+        .hero-dot-grid {
+            background-size: 22px 22px;
+            background-image: radial-gradient(circle, rgba(45, 212, 191, 0.16) 1px, transparent 1px);
+        }
+
+        /* Sleek scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 9999px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+
+        /* Toast slide-in animation */
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(110%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-enter {
+            animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Circular SVG progress ring transition */
+        .ring-progress {
+            transition: stroke-dashoffset 0.65s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
+        }
+    </style>
+</head>
+
+<body
+    class="h-full bg-[#F4F7FC] dark:bg-[#0B1222] text-slate-800 dark:text-slate-100 font-sans antialiased transition-colors duration-200">
+
+    <!-- Toast Notification Stack -->
+    <div id="toastContainer"
+        class="fixed top-5 right-5 z-[80] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"></div>
+
+    <div class="min-h-screen flex">
+
+        <!-- =============================================================== -->
+        <!-- FIXED LEFT SIDEBAR (260px Desktop / Collapsible Mobile Drawer)  -->
+        <!-- =============================================================== -->
+        <aside id="sidebar"
+            class="fixed inset-y-0 left-0 z-40 w-[260px] text-white flex flex-col border-r border-white/10 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none"
+            style="background: linear-gradient(180deg, #0B1E47 0%, #102A63 55%, #16367D 100%);">
+
+            <!-- Exact Supplexio Logo Badge -->
+            <div class="p-4 border-b border-white/10">
+                <div
+                    class="bg-gradient-to-br from-[#081736] to-[#0E3B4A] px-4 py-3 rounded-2xl border border-cyan-400/20 shadow-lg">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <!-- Hexagon Layers Icon -->
+                        <svg class="w-5 h-5 text-[#2DD4BF]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                        <span class="text-xl font-extrabold tracking-tight text-white">Supple<span
+                                class="text-[#2DD4BF]">xio</span></span>
+                    </div>
+                    <div
+                        class="text-[9px] font-bold tracking-[0.2em] text-slate-300 uppercase mt-1 flex items-center justify-center gap-1.5">
+                        <span>BID BOLD</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#F59E0B] shadow-[0_0_8px_#F59E0B]"></span>
+                        <span>SOURCE SMART</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portal Section Label -->
+            <div class="px-4 pt-4 pb-2 flex items-center justify-between">
+                <span class="text-[10px] font-mono font-semibold uppercase tracking-widest text-cyan-200/75">Supplier
+                    Portal</span>
+                <span
+                    class="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-400/25">Approved</span>
+            </div>
+
+            <!-- Primary Sidebar Navigation -->
+            <nav class="flex-1 px-3 py-1 space-y-1.5 overflow-y-auto">
+                <!-- Live Auctions -->
+                <a href="#"
+                    onclick="event.preventDefault(); showToast('Navigating to Live Auctions Marketplace (3 active lots)...', 'info')"
+                    class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200/90 hover:text-white hover:bg-white/10 font-medium text-sm transition-all">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="2.1">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span>Live Auctions</span>
+                    </div>
+                    <span
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/35">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        3 LIVE
+                    </span>
+                </a>
+
+                <!-- My Purchase Orders -->
+                <a href="#"
+                    onclick="event.preventDefault(); showToast('Navigating to My Purchase Orders (4 actions pending)...', 'info')"
+                    class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200/90 hover:text-white hover:bg-white/10 font-medium text-sm transition-all">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        <span>My Purchase Orders</span>
+                    </div>
+                    <span
+                        class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/25 text-amber-300 border border-amber-400/35 tabular-nums">4</span>
+                </a>
+
+                <!-- My Profile (ACTIVE) -->
+                <a href="#" onclick="event.preventDefault();"
+                    class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/10 backdrop-blur-sm border-l-4 border-[#2DD4BF] text-white font-semibold text-sm shadow-sm transition-all">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4 text-[#2DD4BF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <span>My Profile</span>
+                    </div>
+                    <span id="sidebarStrengthPill"
+                        class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-500/20 text-[#2DD4BF] border border-cyan-400/30 tabular-nums">92%</span>
+                </a>
+
+                <!-- Settings -->
+                <a href="#"
+                    onclick="event.preventDefault(); showToast('Opening Supplier Settings & Preferences...', 'info')"
+                    class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-slate-200/90 hover:text-white hover:bg-white/10 font-medium text-sm transition-all">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                            </path>
+                        </svg>
+                        <span>Settings</span>
+                    </div>
+                </a>
+            </nav>
+
+            <!-- Bottom Section: User Summary Card + Logout -->
+            <div class="p-3 border-t border-white/10 bg-[#081534]/55 space-y-2.5">
+                <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/8 border border-white/10">
+                    <div id="sidebarAvatar"
+                        class="w-9 h-9 rounded-full bg-gradient-to-br from-[#2DD4BF] to-[#0D9488] text-slate-950 font-extrabold text-xs flex items-center justify-center shrink-0 overflow-hidden shadow">
+                        HP
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div id="sidebarContactName" class="text-xs font-bold text-white truncate">Heet Patel</div>
+                        <div
+                            class="inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.2 rounded bg-emerald-500/20 border border-emerald-400/30 text-[9.5px] font-mono font-bold text-emerald-300">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                            Tier-1 Verified
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" onclick="showToast('Signed out of Heet Patel supplier session.', 'info')"
+                    class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold text-slate-200 hover:text-white bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-400/35 transition-all">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Sidebar Backdrop -->
+        <div id="sidebarBackdrop" onclick="toggleMobileSidebar()"
+            class="fixed inset-0 z-30 bg-slate-950/60 backdrop-blur-sm hidden lg:hidden"></div>
+
+        <!-- =============================================================== -->
+        <!-- MAIN WORKSPACE AREA                                             -->
+        <!-- =============================================================== -->
+        <main class="flex-1 lg:ml-[260px] flex flex-col min-w-0">
+
+            <!-- Mobile Top Header -->
+            <div
+                class="lg:hidden sticky top-0 z-20 bg-[#0B1E47] text-white px-4 py-3 flex items-center justify-between border-b border-white/10 shadow">
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="toggleMobileSidebar()"
+                        class="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white" aria-label="Open Sidebar">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    <span class="font-extrabold tracking-tight text-base">Supple<span
+                            class="text-[#2DD4BF]">xio</span></span>
+                </div>
+                <button type="button" onclick="toggleDarkMode()" class="p-2 rounded-lg bg-white/10 text-amber-300"
+                    aria-label="Toggle Dark Mode">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-4 sm:p-6 lg:p-7 max-w-[1520px] w-full mx-auto space-y-6">
+
+                <!-- ======================================================= -->
+                <!-- TOP UTILITY BAR                                         -->
+                <!-- ======================================================= -->
+                <header
+                    class="bg-white dark:bg-[#111C33] border border-[#E2E8F0] dark:border-[#1E293B] rounded-2xl px-4 sm:px-5 py-3.5 shadow-card flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <!-- Breadcrumb -->
+                    <div class="flex items-center gap-2 text-xs font-medium">
+                        <span class="text-slate-400 dark:text-slate-500 font-semibold">Supplier Portal</span>
+                        <span class="text-slate-300 dark:text-slate-600">/</span>
+                        <span class="text-[#0B1E47] dark:text-[#2DD4BF] font-bold">My Profile</span>
+                        <span id="unsavedIndicator"
+                            class="hidden ml-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/35">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            Unsaved Changes
+                        </span>
+                    </div>
+
+                    <!-- Right Actions: Dark Mode + Preview Buyer View + Save CTA -->
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <!-- Dark Mode Switch -->
+                        <button type="button" onclick="toggleDarkMode()"
+                            class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition-all">
+                            <svg class="w-3.5 h-3.5 text-amber-500 dark:text-amber-300" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                                </path>
+                            </svg>
+                            <span id="darkModeBtnText">Dark Mode</span>
+                        </button>
+
+                        <!-- Preview Buyer View -->
+                        <button type="button" onclick="openBuyerPreviewModal()"
+                            class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-[#0B1222] hover:bg-slate-50 dark:hover:bg-slate-800 text-[#0B1E47] dark:text-[#2DD4BF] border border-slate-300 dark:border-slate-700 shadow-sm transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                            <span>Preview Buyer View</span>
+                        </button>
+
+                        <!-- Save Profile Changes -->
+                        <button type="button" id="saveProfileBtn" onclick="saveProfileChanges()"
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-[#102A63] via-[#16367D] to-[#0D9488] hover:opacity-95 active:scale-[0.99] text-white shadow-md transition-all">
+                            <svg class="w-4 h-4 text-[#2DD4BF]" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2.4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Save Profile Changes</span>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- ======================================================= -->
+                <!-- EXECUTIVE PROFILE HERO BANNER                           -->
+                <!-- ======================================================= -->
+                <section
+                    class="relative overflow-hidden rounded-2xl text-white p-6 lg:p-7 shadow-lg border border-white/10"
+                    style="background: linear-gradient(115deg, #0B1E47 0%, #12336B 52%, #0E5A6D 100%);">
+                    <div class="absolute inset-0 hero-dot-grid opacity-75 pointer-events-none"></div>
+                    <div
+                        class="absolute -top-24 -right-20 w-80 h-80 rounded-full bg-cyan-400/15 blur-3xl pointer-events-none">
+                    </div>
+
+                    <div class="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                        <!-- Left: Interactive Logo Avatar + Identity -->
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-5">
+                            <!-- Avatar with Camera Overlay -->
+                            <div class="relative shrink-0 self-start">
+                                <input type="file" id="logoFileInput" accept="image/*"
+                                    onchange="handleLogoUpload(event)" class="hidden">
+                                <div id="heroAvatarContainer"
+                                    class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#2DD4BF] via-[#0D9488] to-[#0B1E47] border-2 border-cyan-300/40 shadow-xl flex items-center justify-center text-2xl sm:text-3xl font-extrabold text-white overflow-hidden">
+                                    HP
+                                </div>
+                                <button type="button" onclick="document.getElementById('logoFileInput').click()"
+                                    title="Upload Company Logo"
+                                    class="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-[#F59E0B] hover:bg-amber-400 text-slate-950 shadow-lg flex items-center justify-center border-2 border-[#0B1E47] transition-transform hover:scale-105">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        stroke-width="2.2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Company & Contact Info -->
+                            <div class="space-y-2">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/35">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7">
+                                            </path>
+                                        </svg>
+                                        Verified Tier-1 Supplier
+                                    </span>
+                                    <span id="heroPrimaryCategoryPill"
+                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-cyan-400/15 text-[#2DD4BF] border border-cyan-400/30">
+                                        Metals, Steel &amp; Structural Raw Materials
+                                    </span>
+                                </div>
+
+                                <h1 id="heroCompanyName"
+                                    class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
+                                    Precision Metals &amp; Alloys Pvt Ltd
+                                </h1>
+
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-200/90">
+                                    <span class="inline-flex items-center gap-1.5 font-medium">
+                                        <svg class="w-3.5 h-3.5 text-[#2DD4BF]" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                            </path>
+                                        </svg>
+                                        <span id="heroContactPerson">Heet Patel</span>
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 font-medium">
+                                        <svg class="w-3.5 h-3.5 text-[#2DD4BF]" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                            </path>
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <span id="heroLocation">Vadodara, Gujarat</span>
+                                    </span>
+                                    <span
+                                        class="inline-flex items-center gap-1.5 font-mono text-[11px] text-cyan-100/80">
+                                        <svg class="w-3.5 h-3.5 text-[#2DD4BF]" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                            </path>
+                                        </svg>
+                                        Member Since May 2025
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Dynamic Profile Strength / Readiness Meter -->
+                        <div
+                            class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 flex items-center gap-4 xl:min-w-[300px] shadow-xl">
+                            <!-- Animated Circular SVG Progress Ring -->
+                            <div class="relative w-16 h-16 shrink-0">
+                                <svg class="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                                    <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.16)"
+                                        stroke-width="6"></circle>
+                                    <circle id="profileRingCircle" class="ring-progress" cx="32" cy="32" r="26"
+                                        fill="none" stroke="#2DD4BF" stroke-width="6" stroke-linecap="round"
+                                        stroke-dasharray="163.36" stroke-dashoffset="13.07"></circle>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span id="profileStrengthPercent"
+                                        class="text-sm font-extrabold font-mono tabular-nums text-white">92%</span>
+                                </div>
+                            </div>
+
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[10px] font-mono uppercase tracking-wider text-cyan-200/85 font-bold">
+                                    Profile Readiness</div>
+                                <div id="profileStrengthStatus" class="text-sm font-bold text-white mt-0.5">Strong Buyer
+                                    Trust</div>
+                                <button type="button" id="profileQuickTipBtn" onclick="openDocModal('iso')"
+                                    class="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/35 transition-colors">
+                                    <span id="profileQuickTipText">Upload ISO 9001 to hit 100% →</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================================================= -->
+                <!-- SUPPLIER PERFORMANCE & TRUST KPI STRIP (4 Cards)        -->
+                <!-- ======================================================= -->
+                <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <!-- KPI 1: Auction Win Rate -->
+                    <div
+                        class="bg-white dark:bg-[#111C33] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] p-4 shadow-card flex items-start justify-between">
+                        <div>
+                            <p
+                                class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                Auction Win Rate</p>
+                            <div
+                                class="mt-1.5 text-xl font-extrabold text-slate-900 dark:text-white font-mono tabular-nums">
+                                68.4%</div>
+                            <p
+                                class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1 font-mono tabular-nums">
+                                14 Awarded / 21 Bids</p>
+                        </div>
+                        <div
+                            class="w-10 h-10 rounded-xl bg-teal-500/12 text-[#0D9488] dark:text-[#2DD4BF] flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2: Fulfilled PO Volume -->
+                    <div
+                        class="bg-white dark:bg-[#111C33] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] p-4 shadow-card flex items-start justify-between">
+                        <div>
+                            <p
+                                class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                Fulfilled PO Volume</p>
+                            <div
+                                class="mt-1.5 text-xl font-extrabold text-slate-900 dark:text-white font-mono tabular-nums">
+                                ₹76,76,901.82</div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1 font-mono">11
+                                Completed POs</p>
+                        </div>
+                        <div
+                            class="w-10 h-10 rounded-xl bg-blue-500/10 text-[#102A63] dark:text-blue-400 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- KPI 3: On-Time Delivery SLA -->
+                    <div
+                        class="bg-white dark:bg-[#111C33] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] p-4 shadow-card flex items-start justify-between">
+                        <div>
+                            <p
+                                class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                On-Time Delivery SLA</p>
+                            <div
+                                class="mt-1.5 text-xl font-extrabold text-slate-900 dark:text-white font-mono tabular-nums">
+                                98.4%</div>
+                            <p class="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mt-1 font-mono">4.9 ★
+                                Buyer Rating</p>
+                        </div>
+                        <div
+                            class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- KPI 4: Compliance & KYC -->
+                    <div
+                        class="bg-white dark:bg-[#111C33] rounded-2xl border border-emerald-200 dark:border-emerald-500/30 p-4 shadow-card flex items-start justify-between">
+                        <div>
+                            <p
+                                class="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                                Compliance &amp; KYC</p>
+                            <div class="mt-1.5 text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                                Tier-1 Verified</div>
+                            <p id="kpiDocsSub"
+                                class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1">GSTIN &amp;
+                                Trade Docs Active</p>
+                        </div>
+                        <div
+                            class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2.2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                </path>
+                            </svg>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================================================= -->
+                <!-- MAIN 2-COLUMN WORKSPACE (8 Cols Left + 4 Cols Right)    -->
+                <!-- ======================================================= -->
+                <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                    <!-- =================================================== -->
+                    <!-- LEFT COLUMN (lg:col-span-8)                         -->
+                    <!-- =================================================== -->
+                    <div class="lg:col-span-8 space-y-6">
+
+                        <!-- CARD A: CORE REGISTRATION & BUSINESS IDENTITY (Exact Signup Fields) -->
+                        <div
+                            class="bg-white dark:bg-[#111C33] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] shadow-card overflow-hidden">
+                            <div
+                                class="px-5 py-4 border-b border-slate-100 dark:border-[#1E293B] bg-slate-50/70 dark:bg-slate-900/40 flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex items-center gap-2.5">
+                                    <div
+                                        class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0B1E47] to-[#0D9488] text-white flex items-center justify-center shadow-sm">
+                                        <svg class="w-4 h-4 text-[#2DD4BF]" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">
+                                            Core Registration &amp; Business Identity</h2>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Primary onboarding
+                                            credentials used on Purchase Orders, GST invoices, and live auctions.</p>
+                                    </div>
+                                </div>
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-blue-50 dark:bg-blue-950/60 text-[#102A63] dark:text-[#2DD4BF] border border-blue-200 dark:border-blue-800">
+                                    SIGNUP PROFILE
+                                </span>
+                            </div>
+
+                            <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Supplier / Company Name * -->
+                                <div class="md:col-span-2">
+                                    <label for="companyNameInput"
+                                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                        Supplier / Company Name <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input type="text" id="companyNameInput" value="Precision Metals & Alloys Pvt Ltd"
+                                        oninput="onProfileFieldChange()"
+                                        class="w-full px-3.5 py-2.5 text-sm font-semibold bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-[#0B1222] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white transition-all">
+                                </div>
+
+                                <!-- Authorized Contact Person * -->
+                                <div>
+                                    <label for="contactPersonInput"
+                                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                        Authorized Contact Person <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input type="text" id="contactPersonInput" value="Heet Patel"
+                                        oninput="onProfileFieldChange()"
+                                        class="w-full px-3.5 py-2.5 text-xs font-medium bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-[#0B1222] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white transition-all">
+                                </div>
+
+                                <!-- Business Email * -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <label for="businessEmailInput"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                            Business Email <span class="text-rose-500">*</span>
+                                        </label>
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                                            ✓ Verified
+                                        </span>
+                                    </div>
+                                    <input type="email" id="businessEmailInput" value="pheet039@gmail.com"
+                                        oninput="onProfileFieldChange(); updateEmailHint();"
+                                        class="w-full px-3.5 py-2.5 text-xs font-mono bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-[#0B1222] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white transition-all">
+                                    <p id="emailDomainHint" class="text-[10.5px] text-slate-400 mt-1">Tip: Use a
+                                        corporate domain (e.g., sales@precisionmetals.in) for faster enterprise buyer
+                                        trust.</p>
+                                </div>
+
+                                <!-- Contact Phone * (+91 prefix) -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <label for="contactPhoneInput"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                            Contact Phone <span class="text-rose-500">*</span>
+                                        </label>
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                                            OTP Verified
+                                        </span>
+                                    </div>
+                                    <div class="flex">
+                                        <span
+                                            class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-mono font-semibold">+91</span>
+                                        <input type="tel" id="contactPhoneInput" value="6351281483" maxlength="10"
+                                            oninput="onProfileFieldChange()"
+                                            class="w-full px-3.5 py-2.5 text-xs font-mono tabular-nums bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-r-xl focus:bg-white dark:focus:bg-[#0B1222] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white transition-all">
+                                    </div>
+                                </div>
+
+                                <!-- GSTIN / Tax ID (Optional) with live 15-char regex validation -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <label for="gstinInput"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                            GSTIN / Tax ID <span class="font-normal text-slate-400">(Optional)</span>
+                                        </label>
+                                        <span id="gstinBadge"
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                                            ✓ GSTN Valid
+                                        </span>
+                                    </div>
+                                    <input type="text" id="gstinInput" value="24AAACP1234F1Z5" maxlength="15"
+                                        oninput="validateGstinLive(); onProfileFieldChange();"
+                                        class="w-full px-3.5 py-2.5 text-xs font-mono tabular-nums uppercase font-semibold bg-slate-50 dark:bg-[#0B1222] border border-emerald-400/60 dark:border-emerald-500/40 rounded-xl focus:bg-white dark:focus:bg-[#0B1222] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white transition-all">
+                                    <p id="gstinHelperText"
+                                        class="text-[10.5px] text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
+                                        15-character Indian GSTIN format verified.</p>
+                                </div>
+
+                                <!-- Business Address * -->
+                                <div class="md:col-span-2">
+                                    <label for="businessAddressInput"
+                                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                        Business Address <span class="text-rose-500">*</span>
+                                    </label>
+                                    <textarea id="businessAddressInput" rows="2" oninput="onProfileFieldChange()"
+                                        class="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-[#0B1222] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white resize-none transition-all">Plot 42, GIDC Industrial Estate, Vadodara, Gujarat 390010</textarea>
+                                </div>
+
+                                <!-- Primary Supply Category * -->
+                                <div class="md:col-span-2">
+                                    <label for="primaryCategorySelect"
+                                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                        Primary Supply Category <span class="text-rose-500">*</span>
+                                    </label>
+                                    <select id="primaryCategorySelect" onchange="onProfileFieldChange()"
+                                        class="w-full px-3.5 py-2.5 text-xs font-medium bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-[#0B1222] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white cursor-pointer transition-all">
+                                        <option value="Metals, Steel & Structural Raw Materials" selected>Metals, Steel
+                                            &amp; Structural Raw Materials</option>
+                                        <option value="Chemicals, Coatings & Polymers">Chemicals, Coatings &amp;
+                                            Polymers</option>
+                                        <option value="Electrical, Cables & Hardware">Electrical, Cables &amp; Hardware
+                                        </option>
+                                        <option value="Construction & Civil Materials">Construction &amp; Civil
+                                            Materials</option>
+                                        <option value="Industrial Machinery & Spares">Industrial Machinery &amp; Spares
+                                        </option>
+                                        <option value="Packaging & Logistics">Packaging &amp; Logistics</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CARD B: B2B SOURCING CAPABILITIES & OPERATIONAL PROFILE -->
+                        <div
+                            class="bg-white dark:bg-[#111C33] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] shadow-card overflow-hidden">
+                            <div
+                                class="px-5 py-4 border-b border-slate-100 dark:border-[#1E293B] bg-slate-50/70 dark:bg-slate-900/40 flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex items-center gap-2.5">
+                                    <div
+                                        class="w-8 h-8 rounded-xl bg-teal-500/12 text-[#0D9488] dark:text-[#2DD4BF] flex items-center justify-center">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">
+                                            B2B Sourcing Capabilities &amp; Operational Profile</h2>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Matches your firm with
+                                            high-value reverse auction RFQs and strengthens buyer confidence.</p>
+                                    </div>
+                                </div>
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-mono font-bold bg-teal-50 dark:bg-teal-950/50 text-[#0D9488] dark:text-[#2DD4BF] border border-teal-200 dark:border-teal-800">
+                                    AUCTION MATCHING
+                                </span>
+                            </div>
+
+                            <div class="p-5 space-y-5">
+                                <!-- Secondary Supply Categories & Materials (Interactive Tag Input) -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                        Secondary Supply Categories &amp; Materials
+                                    </label>
+                                    <div id="materialTagsContainer" class="flex flex-wrap gap-2 mb-2.5"></div>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="newTagInput"
+                                            onkeypress="if(event.key === 'Enter') { event.preventDefault(); addMaterialTag(); }"
+                                            placeholder="Add material or HSN category (e.g., Bitumen Primer, Brass Fittings)..."
+                                            class="flex-1 px-3.5 py-2 text-xs bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-[#0B1222] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white">
+                                        <button type="button" onclick="addMaterialTag()"
+                                            class="px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1E47] dark:bg-[#0D9488] hover:opacity-90 text-white transition-all whitespace-nowrap">
+                                            + Add Tag
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Entity Type, Year, PAN, MSME -->
+                                <div
+                                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-2 border-t border-slate-100 dark:border-[#1E293B]">
+                                    <div class="sm:col-span-2 lg:col-span-2">
+                                        <label for="entityTypeSelect"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Business
+                                            Entity Type</label>
+                                        <select id="entityTypeSelect" onchange="onProfileFieldChange()"
+                                            class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 text-slate-900 dark:text-white cursor-pointer">
+                                            <option value="Private Limited (Pvt Ltd)" selected>Private Limited (Pvt Ltd)
+                                            </option>
+                                            <option value="Proprietorship">Proprietorship</option>
+                                            <option value="LLP">LLP</option>
+                                            <option value="Partnership Firm">Partnership Firm</option>
+                                            <option value="Public Limited">Public Limited</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label for="yearEstablishedInput"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Year
+                                            Established</label>
+                                        <input type="number" id="yearEstablishedInput" value="2018" min="1900"
+                                            max="2026" oninput="onProfileFieldChange()"
+                                            class="w-full px-3 py-2 text-xs font-mono tabular-nums bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 text-slate-900 dark:text-white">
+                                    </div>
+
+                                    <div>
+                                        <label for="panNumberInput"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">PAN
+                                            Number</label>
+                                        <input type="text" id="panNumberInput" value="AAACP1234F" maxlength="10"
+                                            oninput="onProfileFieldChange()"
+                                            class="w-full px-3 py-2 text-xs font-mono uppercase tabular-nums bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 text-slate-900 dark:text-white">
+                                    </div>
+
+                                    <div class="sm:col-span-2">
+                                        <label for="msmeInput"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">MSME
+                                            / Udyam Number</label>
+                                        <input type="text" id="msmeInput" value="UDYAM-GJ-24-0048291"
+                                            oninput="onProfileFieldChange()"
+                                            class="w-full px-3 py-2 text-xs font-mono uppercase tabular-nums bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 text-slate-900 dark:text-white">
+                                    </div>
+
+                                    <div class="sm:col-span-2">
+                                        <label for="websiteInput"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Company
+                                            Website</label>
+                                        <input type="url" id="websiteInput" value="https://precisionmetals.in"
+                                            oninput="onProfileFieldChange()"
+                                            class="w-full px-3 py-2 text-xs font-mono bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 text-slate-900 dark:text-white">
+                                    </div>
+                                </div>
+
+                                <!-- Operational Metrics Row -->
+                                <div
+                                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-2 border-t border-slate-100 dark:border-[#1E293B]">
+                                    <div>
+                                        <label for="monthlyCapacityInput"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Monthly
+                                            Supply Capacity</label>
+                                        <input type="text" id="monthlyCapacityInput" value="250 MT / Month"
+                                            oninput="onProfileFieldChange()"
+                                            class="w-full px-3 py-2 text-xs font-mono tabular-nums bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 text-slate-900 dark:text-white">
+                                    </div>
+
+                                    <div>
+                                        <label for="minOrderValueInput"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Minimum
+                                            Order Value</label>
+                                        <input type="text" id="minOrderValueInput" value="₹10,000"
+                                            oninput="onProfileFieldChange()"
+                                            class="w-full px-3 py-2 text-xs font-mono tabular-nums bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 text-slate-900 dark:text-white">
+                                    </div>
+
+                                    <div>
+                                        <label for="leadTimeInput"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Avg.
+                                            Dispatch Lead Time</label>
+                                        <input type="text" id="leadTimeInput" value="2-4 Business Days"
+                                            oninput="onProfileFieldChange()"
+                                            class="w-full px-3 py-2 text-xs font-medium bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 text-slate-900 dark:text-white">
+                                    </div>
+
+                                    <div>
+                                        <label for="coverageSelect"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Serviceable
+                                            Coverage</label>
+                                        <select id="coverageSelect" onchange="onProfileFieldChange()"
+                                            class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 text-slate-900 dark:text-white cursor-pointer">
+                                            <option value="Pan-India & Export" selected>Pan-India &amp; Export</option>
+                                            <option value="Gujarat & West India">Gujarat &amp; West India</option>
+                                            <option value="Regional Only">Regional Only</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Company Overview / Buyer Pitch -->
+                                <div class="pt-2 border-t border-slate-100 dark:border-[#1E293B]">
+                                    <div class="flex items-center justify-between mb-1.5">
+                                        <label for="companyBioTextarea"
+                                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                            Company Overview / Buyer Pitch
+                                        </label>
+                                        <button type="button" onclick="generateStrongBuyerBio()"
+                                            class="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:underline">
+                                            <span>✨ Enhance with AI</span>
+                                        </button>
+                                    </div>
+                                    <textarea id="companyBioTextarea" rows="3" oninput="onProfileFieldChange()"
+                                        class="w-full px-3.5 py-2.5 text-xs leading-relaxed bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-[#0B1222] focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-800 dark:text-slate-100 transition-all">Precision Metals & Alloys Pvt Ltd is a Vadodara-based Tier-1 industrial supplier specializing in 6061-T6 aluminum plates, copper sheets, structural steel rods, and electrical grade materials. We maintain 250 MT/month ready dispatch capacity with full Mill Test Certificates (MTC), GST compliance, and 98.4% on-time delivery across Pan-India enterprise buyers.</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- =================================================== -->
+                    <!-- RIGHT COLUMN (lg:col-span-4)                        -->
+                    <!-- =================================================== -->
+                    <div class="lg:col-span-4 space-y-6">
+
+                        <!-- CARD C: COMPLIANCE & VERIFICATION VAULT -->
+                        <div
+                            class="bg-white dark:bg-[#111C33] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] shadow-card overflow-hidden">
+                            <div
+                                class="px-5 py-4 border-b border-slate-100 dark:border-[#1E293B] bg-slate-50/70 dark:bg-slate-900/40 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24" stroke-width="2.2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                        </path>
+                                    </svg>
+                                    <h3 class="text-sm font-bold text-slate-900 dark:text-white">Compliance &amp;
+                                        Verification Vault</h3>
+                                </div>
+                                <span id="vaultCountBadge"
+                                    class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                                    3 / 4 Verified
+                                </span>
+                            </div>
+
+                            <div id="complianceVaultList" class="divide-y divide-slate-100 dark:divide-[#1E293B]"></div>
+                        </div>
+
+                        <!-- CARD D: ACCOUNT ACCESS & LINKED SIGN-IN -->
+                        <div
+                            class="bg-white dark:bg-[#111C33] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] shadow-card overflow-hidden">
+                            <div
+                                class="px-5 py-4 border-b border-slate-100 dark:border-[#1E293B] bg-slate-50/70 dark:bg-slate-900/40 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-[#0D9488] dark:text-[#2DD4BF]" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                                    </path>
+                                </svg>
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Account Access &amp; Linked
+                                    Sign-In</h3>
+                            </div>
+
+                            <div class="p-4 space-y-4">
+                                <!-- Password Row -->
+                                <div
+                                    class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B1222] border border-slate-200/80 dark:border-[#1E293B] flex items-center justify-between gap-3">
+                                    <div>
+                                        <div class="text-xs font-bold text-slate-900 dark:text-white">Account Password
+                                        </div>
+                                        <div id="passwordLastChanged"
+                                            class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Last changed
+                                            24 days ago</div>
+                                    </div>
+                                    <button type="button" onclick="openPasswordModal()"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#0B1E47] dark:bg-slate-800 hover:opacity-90 text-white border border-slate-700 transition-all whitespace-nowrap">
+                                        Change Password
+                                    </button>
+                                </div>
+
+                                <!-- Google Sign-In Integration -->
+                                <div
+                                    class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B1222] border border-slate-200/80 dark:border-[#1E293B] flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
+                                            <svg class="w-4 h-4" viewBox="0 0 24 24">
+                                                <path fill="#4285F4"
+                                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                                <path fill="#34A853"
+                                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                                <path fill="#FBBC05"
+                                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                                                <path fill="#EA4335"
+                                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                                            </svg>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div
+                                                class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                                                <span>Google Sign-In</span>
+                                                <span id="googleStatusDot"
+                                                    class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            </div>
+                                            <div id="googleSubText"
+                                                class="text-[10.5px] font-mono text-slate-500 dark:text-slate-400 truncate">
+                                                pheet039@gmail.com</div>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="googleToggleBtn" onclick="toggleGoogleConnection()"
+                                        class="px-3 py-1.5 rounded-lg text-[11px] font-bold bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-800 transition-all whitespace-nowrap">
+                                        Disconnect
+                                    </button>
+                                </div>
+
+                                <!-- Marketplace Visibility Toggle -->
+                                <div
+                                    class="pt-2 border-t border-slate-100 dark:border-[#1E293B] flex items-start justify-between gap-3">
+                                    <div>
+                                        <div class="text-xs font-bold text-slate-900 dark:text-white">Private Auction
+                                            Invites</div>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                                            Allow buyers to invite me directly to private reverse auctions
+                                        </p>
+                                    </div>
+                                    <button type="button" id="visibilityToggleBtn" role="switch" aria-checked="true"
+                                        onclick="toggleMarketplaceVisibility()"
+                                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-[#0D9488] transition-colors duration-200 focus:outline-none mt-0.5">
+                                        <span id="visibilityToggleKnob"
+                                            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 translate-x-5"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CARD E: RECENT BUYER ENDORSEMENTS / RATINGS -->
+                        <div
+                            class="bg-white dark:bg-[#111C33] rounded-2xl border border-[#E2E8F0] dark:border-[#1E293B] shadow-card overflow-hidden">
+                            <div
+                                class="px-5 py-4 border-b border-slate-100 dark:border-[#1E293B] bg-slate-50/70 dark:bg-slate-900/40 flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-slate-900 dark:text-white">Recent Buyer Endorsements
+                                </h3>
+                                <span class="text-xs font-mono font-bold text-amber-500">4.9 ★</span>
+                            </div>
+
+                            <div class="p-4 space-y-3.5">
+                                <!-- Endorsement 1 -->
+                                <div
+                                    class="p-3 rounded-xl bg-slate-50 dark:bg-[#0B1222] border border-slate-200/70 dark:border-[#1E293B] space-y-2">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="font-bold text-slate-900 dark:text-white">Apex Infrastructure
+                                            EPC</span>
+                                        <span class="font-mono text-[10px] text-slate-400">PO-56 • Nov 2026</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                                        "Zero variance on weight inspection and delivered ahead of schedule with clean
+                                        GST invoicing."
+                                    </p>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">Fast
+                                            Dispatch</span>
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-500/12 text-[#102A63] dark:text-blue-300">Zero
+                                            Invoice Discrepancies</span>
+                                    </div>
+                                </div>
+
+                                <!-- Endorsement 2 -->
+                                <div
+                                    class="p-3 rounded-xl bg-slate-50 dark:bg-[#0B1222] border border-slate-200/70 dark:border-[#1E293B] space-y-2">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="font-bold text-slate-900 dark:text-white">Western Coatings &amp;
+                                            Mfg.</span>
+                                        <span class="font-mono text-[10px] text-slate-400">PO-50 • Nov 2026</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+                                        "Exact 6061-T6 grade compliance with Mill Test Certificate provided prior to
+                                        dispatch."
+                                    </p>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-teal-500/12 text-[#0D9488] dark:text-[#2DD4BF]">Exact
+                                            Material Grade</span>
+                                        <span
+                                            class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/12 text-amber-700 dark:text-amber-300">Responsive
+                                            Bid Desk</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- Footer -->
+                <footer
+                    class="pt-3 pb-6 text-center sm:flex sm:items-center sm:justify-between text-xs text-slate-400 dark:text-slate-500 border-t border-slate-200/70 dark:border-[#1E293B]">
+                    <p>© 2026 Supplexio Procurement Systems Inc. All rights reserved.</p>
+                    <p class="font-mono text-[11px] mt-1 sm:mt-0">Supplier Profile Engine • 256-Bit Encrypted KYC Vault
+                    </p>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 1: PREVIEW PUBLIC BUYER CARD MODAL                            -->
+    <!-- =================================================================== -->
+    <div id="buyerPreviewModal"
+        class="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div
+            class="bg-white dark:bg-[#111C33] border border-slate-200 dark:border-[#1E293B] rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <!-- Modal Header -->
+            <div
+                class="bg-gradient-to-r from-[#0B1E47] via-[#12336B] to-[#0E5A6D] text-white px-5 py-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-200">Public Marketplace
+                        Card</span>
+                    <h3 class="text-base font-extrabold tracking-tight">How Procurement Buyers See Your Profile</h3>
+                </div>
+                <button type="button" onclick="closeBuyerPreviewModal()"
+                    class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Dynamic Buyer Preview Body -->
+            <div id="buyerPreviewBody" class="p-6 overflow-y-auto space-y-5"></div>
+
+            <!-- Modal Footer -->
+            <div
+                class="px-5 py-3.5 bg-slate-50 dark:bg-[#0B1222] border-t border-slate-200 dark:border-[#1E293B] flex items-center justify-between">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Live preview reflects your latest form
+                    edits.</span>
+                <button type="button" onclick="closeBuyerPreviewModal()"
+                    class="px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1E47] dark:bg-[#0D9488] text-white hover:opacity-90">
+                    Close Preview
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 2: CHANGE PASSWORD MODAL (With 4-Segment Strength Meter)      -->
+    <!-- =================================================================== -->
+    <div id="passwordModal"
+        class="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div
+            class="bg-white dark:bg-[#111C33] border border-slate-200 dark:border-[#1E293B] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div
+                class="bg-gradient-to-r from-[#0B1E47] to-[#12336B] text-white px-5 py-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-200">Account Security</span>
+                    <h3 class="text-base font-extrabold">Change Account Password</h3>
+                </div>
+                <button type="button" onclick="closePasswordModal()"
+                    class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="changePasswordForm" onsubmit="submitPasswordChange(event)" class="p-5 space-y-4">
+                <div>
+                    <label for="currentPwdInput"
+                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Current Password
+                        <span class="text-rose-500">*</span></label>
+                    <input type="password" id="currentPwdInput" required placeholder="Enter current password"
+                        class="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white">
+                </div>
+
+                <div>
+                    <label for="newPwdInput"
+                        class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">New Password <span
+                            class="text-rose-500">*</span></label>
+                    <div class="relative">
+                        <input type="password" id="newPwdInput" required minlength="6"
+                            oninput="evaluateNewPasswordStrength()" placeholder="At least 8 characters recommended"
+                            class="w-full px-3.5 pr-9 py-2.5 text-xs bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white">
+                        <button type="button" onclick="togglePwdVisibility('newPwdInput')"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- 4-Segment Password Strength Meter -->
+                    <div class="mt-2">
+                        <div
+                            class="flex items-center justify-between text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1">
+                            <span>Strength:</span>
+                            <span id="pwdStrengthText" class="font-bold text-slate-400">Too Short</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-1.5 h-1.5">
+                            <div id="pwdSeg1" class="bg-slate-200 dark:bg-slate-700 rounded-full transition-colors">
+                            </div>
+                            <div id="pwdSeg2" class="bg-slate-200 dark:bg-slate-700 rounded-full transition-colors">
+                            </div>
+                            <div id="pwdSeg3" class="bg-slate-200 dark:bg-slate-700 rounded-full transition-colors">
+                            </div>
+                            <div id="pwdSeg4" class="bg-slate-200 dark:bg-slate-700 rounded-full transition-colors">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="confirmPwdInput"
+                            class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Confirm New Password
+                            <span class="text-rose-500">*</span></label>
+                        <span id="pwdMatchLabel" class="text-[10px] font-semibold hidden"></span>
+                    </div>
+                    <input type="password" id="confirmPwdInput" required oninput="checkPwdMatch()"
+                        placeholder="Re-enter new password"
+                        class="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0D9488]/30 focus:border-[#0D9488] text-slate-900 dark:text-white">
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closePasswordModal()"
+                        class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-[#102A63] to-[#0D9488] hover:opacity-95 text-white shadow">
+                        Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- MODAL 3: DOCUMENT PREVIEW / UPLOAD MODAL                            -->
+    <!-- =================================================================== -->
+    <div id="docModal"
+        class="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div
+            class="bg-white dark:bg-[#111C33] border border-slate-200 dark:border-[#1E293B] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div
+                class="bg-gradient-to-r from-[#0B1E47] via-[#12336B] to-[#0E5A6D] text-white px-5 py-4 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-200">KYC &amp; Compliance
+                        Vault</span>
+                    <h3 id="docModalTitle" class="text-sm font-extrabold">Document Details</h3>
+                </div>
+                <button type="button" onclick="closeDocModal()"
+                    class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4">
+                <!-- Current Document Status Box -->
+                <div id="docModalInfoBox"
+                    class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-[#1E293B] text-xs space-y-1.5">
+                </div>
+
+                <!-- Upload / Replace Dropzone -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Upload / Replace
+                            File</span>
+                        <button type="button" onclick="attachSampleCertificate()"
+                            class="text-[11px] font-semibold text-[#0D9488] dark:text-[#2DD4BF] hover:underline">
+                            + Attach Sample Certificate PDF
+                        </button>
+                    </div>
+                    <label for="docFileInput"
+                        class="flex flex-col items-center justify-center p-5 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-[#0D9488] dark:hover:border-[#2DD4BF] bg-slate-50/70 dark:bg-[#0B1222]/70 cursor-pointer transition-colors text-center">
+                        <svg class="w-7 h-7 text-slate-400 mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="1.8">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                            </path>
+                        </svg>
+                        <span id="docFileSelectedText"
+                            class="text-xs font-semibold text-slate-700 dark:text-slate-200">Click to select PDF, PNG,
+                            or JPG</span>
+                        <span class="text-[10px] text-slate-400 mt-0.5">Instant automated KYC verification</span>
+                        <input type="file" id="docFileInput" accept=".pdf,.png,.jpg,.jpeg"
+                            onchange="handleDocFilePicked(event)" class="hidden">
+                    </label>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-1">
+                    <button type="button" onclick="closeDocModal()"
+                        class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                        Close
+                    </button>
+                    <button type="button" onclick="confirmDocUpload()"
+                        class="px-5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-[#102A63] to-[#0D9488] hover:opacity-95 text-white shadow">
+                        Verify &amp; Save Document
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- FLOATING WARM-AMBER AI PROFILE COPILOT                              -->
+    <!-- =================================================================== -->
+    <div id="aiCopilotPopover"
+        class="fixed bottom-24 right-5 z-50 w-80 sm:w-96 max-w-[calc(100vw-2.5rem)] bg-white dark:bg-[#111C33] border border-amber-400/40 rounded-2xl shadow-2xl hidden flex-col overflow-hidden">
+        <!-- Header -->
+        <div
+            class="bg-gradient-to-r from-[#F59E0B] to-amber-400 text-slate-950 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-slate-950 text-amber-400 flex items-center justify-center shadow">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2a2 2 0 012 2v1h3a3 3 0 013 3v8a3 3 0 01-3 3H7a3 3 0 01-3-3V8a3 3 0 013-3h3V4a2 2 0 012-2zm-3 9a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-5 5h4a1 1 0 110 2h-4a1 1 0 110-2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-xs font-extrabold leading-tight">Supplexio AI Profile Copilot</h4>
+                    <p class="text-[10px] font-mono font-bold opacity-80">READINESS &amp; BUYER CONVERSION</p>
+                </div>
+            </div>
+            <button type="button" onclick="toggleAiCopilot()" class="p-1 rounded-lg hover:bg-black/10 text-slate-950">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Messages -->
+        <div id="copilotMessages"
+            class="p-3.5 h-60 overflow-y-auto space-y-2.5 text-xs bg-slate-50/70 dark:bg-[#0B1222]/70">
+            <div
+                class="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 leading-relaxed">
+                Hi <strong>Heet Patel</strong>! I can help optimize your supplier profile so enterprise buyers invite
+                you to more private reverse auctions. Try one of the quick actions below.
+            </div>
+        </div>
+
+        <!-- Quick Prompts -->
+        <div
+            class="px-3 py-2 bg-white dark:bg-[#111C33] border-t border-slate-100 dark:border-[#1E293B] flex flex-wrap gap-1.5">
+            <button type="button" onclick="askCopilot('Boost profile to 100%')"
+                class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 transition-colors">
+                Boost profile to 100%
+            </button>
+            <button type="button" onclick="askCopilot('Verify GSTIN format')"
+                class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 transition-colors">
+                Verify GSTIN format
+            </button>
+            <button type="button" onclick="askCopilot('Generate strong buyer bio')"
+                class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/30 transition-colors">
+                Generate strong buyer bio
+            </button>
+        </div>
+
+        <!-- Input -->
+        <form onsubmit="handleCopilotSubmit(event)"
+            class="p-2.5 bg-white dark:bg-[#111C33] border-t border-slate-200 dark:border-[#1E293B] flex gap-2">
+            <input type="text" id="copilotInput" placeholder="Ask AI profile assistant..."
+                class="flex-1 px-3 py-1.5 text-xs bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-amber-500 text-slate-800 dark:text-slate-100">
+            <button type="submit"
+                class="px-3 py-1.5 rounded-xl bg-[#F59E0B] hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors">
+                Ask
+            </button>
+        </form>
+    </div>
+
+    <!-- Floating Warm-Amber Robot Button -->
+    <button type="button" onclick="toggleAiCopilot()" title="Supplexio AI Profile Copilot"
+        class="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-[#F59E0B] to-amber-300 text-slate-950 shadow-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center ring-4 ring-amber-500/25">
+        <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+            <path
+                d="M12 2a2 2 0 012 2v1h3a3 3 0 013 3v8a3 3 0 01-3 3H7a3 3 0 01-3-3V8a3 3 0 013-3h3V4a2 2 0 012-2zm-3 9a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-5 5h4a1 1 0 110 2h-4a1 1 0 110-2z" />
+        </svg>
+    </button>
+
+    <!-- =================================================================== -->
+    <!-- CORE APPLICATION SCRIPT                                             -->
+    <!-- =================================================================== -->
+    <script>
+        // Profile Application State
+        const profileState = {
+            logoUrl: null,
+            hasUnsavedChanges: false,
+            googleConnected: true,
+            marketplaceVisible: true,
+            materialTags: [
+                'Aluminum Plates',
+                'Copper Sheets',
+                'Steel Rods',
+                'Electrical Wire 2.5mm',
+                'Granite Slab',
+                'Hardware Tools'
+            ],
+            documents: [
+                {
+                    id: 'gst',
+                    title: 'GST Registration Certificate',
+                    fileName: 'GST_REG06_24AAACP1234F1Z5.pdf',
+                    verified: true,
+                    updatedAt: 'May 14, 2025'
+                },
+                {
+                    id: 'pan',
+                    title: 'Corporate PAN Card',
+                    fileName: 'PAN_PrecisionMetals_AAACP1234F.pdf',
+                    verified: true,
+                    updatedAt: 'May 14, 2025'
+                },
+                {
+                    id: 'cheque',
+                    title: 'Cancelled Cheque / Bank Mandate',
+                    fileName: 'HDFC_Mandate_4821.pdf',
+                    verified: true,
+                    updatedAt: 'Jun 02, 2025'
+                },
+                {
+                    id: 'iso',
+                    title: 'ISO 9001:2015 Quality Certificate',
+                    fileName: null,
+                    verified: false,
+                    updatedAt: null
+                }
+            ]
+        };
+
+        let activeDocModalId = null;
+        let pendingDocFileName = null;
+
+        // Indian 15-Char GSTIN Regex
+        const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+        // =================================================================
+        // 1. PROFILE STRENGTH / READINESS CALCULATION & LIVE SYNC
+        // =================================================================
+        function calculateProfileStrength() {
+            let score = 0;
+
+            // Core fields (56% weight)
+            if (document.getElementById('companyNameInput').value.trim()) score += 10;
+            if (document.getElementById('contactPersonInput').value.trim()) score += 8;
+            if (document.getElementById('businessEmailInput').value.trim()) score += 8;
+            if (document.getElementById('contactPhoneInput').value.trim().length >= 10) score += 8;
+            if (document.getElementById('businessAddressInput').value.trim()) score += 8;
+            if (document.getElementById('primaryCategorySelect').value) score += 6;
+            const gstinVal = document.getElementById('gstinInput').value.trim().toUpperCase();
+            if (GSTIN_REGEX.test(gstinVal)) score += 8;
+
+            // Operational fields (16% weight)
+            if (profileState.materialTags.length > 0) score += 6;
+            if (document.getElementById('panNumberInput').value.trim()) score += 4;
+            if (document.getElementById('companyBioTextarea').value.trim().length >= 30) score += 6;
+
+            // Documents (28% weight: 3 core docs = 20%, ISO 9001 = 8%)
+            const gstDoc = profileState.documents.find(d => d.id === 'gst');
+            const panDoc = profileState.documents.find(d => d.id === 'pan');
+            const chqDoc = profileState.documents.find(d => d.id === 'cheque');
+            const isoDoc = profileState.documents.find(d => d.id === 'iso');
+
+            if (gstDoc && gstDoc.verified) score += 7;
+            if (panDoc && panDoc.verified) score += 7;
+            if (chqDoc && chqDoc.verified) score += 6;
+            if (isoDoc && isoDoc.verified) score += 8;
+
+            score = Math.min(100, Math.max(0, score));
+
+            // Update Circular Ring (circumference = 2 * pi * 26 = 163.36)
+            const circumference = 163.36;
+            const offset = circumference - (score / 100) * circumference;
+            const ring = document.getElementById('profileRingCircle');
+            ring.style.strokeDashoffset = offset.toFixed(2);
+            ring.style.stroke = score === 100 ? '#34D399' : (score >= 80 ? '#2DD4BF' : '#F59E0B');
+
+            document.getElementById('profileStrengthPercent').textContent = `${score}%`;
+            document.getElementById('sidebarStrengthPill').textContent = `${score}%`;
+
+            const statusEl = document.getElementById('profileStrengthStatus');
+            const tipBtn = document.getElementById('profileQuickTipBtn');
+            const tipText = document.getElementById('profileQuickTipText');
+
+            if (score === 100) {
+                statusEl.textContent = '100% Auction-Ready';
+                tipBtn.className = 'mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/35';
+                tipText.textContent = '✓ All KYC & ISO Docs Verified';
+            } else if (isoDoc && !isoDoc.verified) {
+                statusEl.textContent = 'Strong Buyer Trust';
+                tipBtn.className = 'mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/35 transition-colors';
+                tipText.textContent = 'Upload ISO 9001 to hit 100% →';
+            } else {
+                statusEl.textContent = 'Profile Incomplete';
+                tipBtn.className = 'mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/20 text-amber-200 border border-amber-400/35';
+                tipText.textContent = 'Complete required fields →';
+            }
+        }
+
+        function syncHeroIdentity() {
+            const company = document.getElementById('companyNameInput').value.trim() || 'Unnamed Supplier';
+            const contact = document.getElementById('contactPersonInput').value.trim() || 'Authorized User';
+            const category = document.getElementById('primaryCategorySelect').value;
+            const addr = document.getElementById('businessAddressInput').value.trim();
+
+            document.getElementById('heroCompanyName').textContent = company;
+            document.getElementById('heroContactPerson').textContent = contact;
+            document.getElementById('sidebarContactName').textContent = contact;
+            document.getElementById('heroPrimaryCategoryPill').textContent = category;
+
+            // Extract short city/state from address if possible
+            const parts = addr.split(',').map(s => s.trim()).filter(Boolean);
+            const locText = parts.length >= 2
+                ? `${parts[parts.length - 2]}, ${parts[parts.length - 1].replace(/[0-9]/g, '').trim()}`
+                : (addr || 'India');
+            document.getElementById('heroLocation').textContent = locText;
+
+            // Update initials if no custom logo uploaded
+            if (!profileState.logoUrl) {
+                const initials = contact.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'SP';
+                document.getElementById('heroAvatarContainer').textContent = initials;
+                document.getElementById('sidebarAvatar').textContent = initials;
+            }
+        }
+
+        function onProfileFieldChange() {
+            profileState.hasUnsavedChanges = true;
+            document.getElementById('unsavedIndicator').classList.remove('hidden');
+            syncHeroIdentity();
+            calculateProfileStrength();
+        }
+
+        function saveProfileChanges() {
+            const company = document.getElementById('companyNameInput').value.trim();
+            const contact = document.getElementById('contactPersonInput').value.trim();
+            const email = document.getElementById('businessEmailInput').value.trim();
+            const phone = document.getElementById('contactPhoneInput').value.trim();
+
+            if (!company || !contact || !email || phone.length < 10) {
+                showToast('Please complete all required (*) fields with valid details.', 'error');
+                return;
+            }
+
+            profileState.hasUnsavedChanges = false;
+            document.getElementById('unsavedIndicator').classList.add('hidden');
+            syncHeroIdentity();
+            calculateProfileStrength();
+            showToast('Supplier profile saved and synced to the Supplexio marketplace!', 'success');
+        }
+
+        // =================================================================
+        // 2. LIVE GSTIN VALIDATION & EMAIL DOMAIN HINT
+        // =================================================================
+        function validateGstinLive() {
+            const input = document.getElementById('gstinInput');
+            const val = input.value.trim().toUpperCase();
+            const badge = document.getElementById('gstinBadge');
+            const helper = document.getElementById('gstinHelperText');
+
+            if (!val) {
+                badge.textContent = 'Optional';
+                badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700';
+                helper.textContent = 'Add a 15-character GSTIN to boost buyer trust.';
+                helper.className = 'text-[10.5px] text-slate-400 mt-1 font-mono';
+                input.classList.remove('border-rose-400', 'border-emerald-400/60');
+                return false;
+            }
+
+            if (GSTIN_REGEX.test(val)) {
+                badge.textContent = '✓ GSTN Valid';
+                badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30';
+                helper.textContent = '15-character Indian GSTIN format verified.';
+                helper.className = 'text-[10.5px] text-emerald-600 dark:text-emerald-400 mt-1 font-mono';
+                input.classList.remove('border-rose-400');
+                input.classList.add('border-emerald-400/60');
+                return true;
+            } else {
+                badge.textContent = 'Invalid Format';
+                badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-mono font-bold bg-rose-500/15 text-rose-600 dark:text-rose-300 border border-rose-500/30';
+                helper.textContent = 'Expected 15-char format: e.g. 24AAACP1234F1Z5';
+                helper.className = 'text-[10.5px] text-rose-500 mt-1 font-mono';
+                input.classList.remove('border-emerald-400/60');
+                input.classList.add('border-rose-400');
+                return false;
+            }
+        }
+
+        function updateEmailHint() {
+            const email = document.getElementById('businessEmailInput').value.trim();
+            const hint = document.getElementById('emailDomainHint');
+            const domain = (email.split('@')[1] || '').toLowerCase();
+            const publicDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
+            if (domain && !publicDomains.includes(domain)) {
+                hint.textContent = '✓ Corporate domain detected — eligible for priority enterprise RFQ invites.';
+                hint.className = 'text-[10.5px] text-emerald-600 dark:text-emerald-400 mt-1';
+            } else {
+                hint.textContent = 'Tip: Use a corporate domain (e.g., sales@precisionmetals.in) for faster enterprise buyer trust.';
+                hint.className = 'text-[10.5px] text-slate-400 mt-1';
+            }
+        }
+
+        // =================================================================
+        // 3. LOGO UPLOAD HANDLER
+        // =================================================================
+        function handleLogoUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const objectUrl = URL.createObjectURL(file);
+            profileState.logoUrl = objectUrl;
+
+            document.getElementById('heroAvatarContainer').innerHTML = `<img src="${objectUrl}" alt="Company Logo" class="w-full h-full object-cover">`;
+            document.getElementById('sidebarAvatar').innerHTML = `<img src="${objectUrl}" alt="Company Logo" class="w-full h-full object-cover">`;
+            onProfileFieldChange();
+            showToast(`Company logo "${file.name}" uploaded!`, 'success');
+        }
+
+        // =================================================================
+        // 4. INTERACTIVE MATERIAL TAGS / CHIPS
+        // =================================================================
+        function renderMaterialTags() {
+            const container = document.getElementById('materialTagsContainer');
+            if (profileState.materialTags.length === 0) {
+                container.innerHTML = `<span class="text-xs text-slate-400 italic">No secondary material tags added yet.</span>`;
+                return;
+            }
+            container.innerHTML = profileState.materialTags.map((tag, idx) => `
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-teal-50 dark:bg-teal-950/40 text-[#0D9488] dark:text-[#2DD4BF] border border-teal-200/80 dark:border-teal-800/70">
+                    <span>${tag}</span>
+                    <button type="button" onclick="removeMaterialTag(${idx})" title="Remove ${tag}" class="w-4 h-4 rounded-full hover:bg-teal-200/70 dark:hover:bg-teal-800/80 flex items-center justify-center text-[11px] leading-none transition-colors">×</button>
+                </span>
+            `).join('');
+        }
+
+        function addMaterialTag() {
+            const input = document.getElementById('newTagInput');
+            const val = input.value.trim();
+            if (!val) return;
+            if (profileState.materialTags.some(t => t.toLowerCase() === val.toLowerCase())) {
+                showToast(`"${val}" is already listed in your supply categories.`, 'warning');
+                return;
+            }
+            profileState.materialTags.push(val);
+            input.value = '';
+            renderMaterialTags();
+            onProfileFieldChange();
+            showToast(`Added "${val}" to your sourcing capabilities.`, 'success');
+        }
+
+        function removeMaterialTag(index) {
+            const removed = profileState.materialTags.splice(index, 1)[0];
+            renderMaterialTags();
+            onProfileFieldChange();
+            showToast(`Removed "${removed}" tag.`, 'info');
+        }
+
+        // =================================================================
+        // 5. COMPLIANCE & VERIFICATION VAULT + DOCUMENT MODAL
+        // =================================================================
+        function renderComplianceVault() {
+            const listEl = document.getElementById('complianceVaultList');
+            const verifiedCount = profileState.documents.filter(d => d.verified).length;
+            document.getElementById('vaultCountBadge').textContent = `${verifiedCount} / ${profileState.documents.length} Verified`;
+            document.getElementById('kpiDocsSub').textContent = verifiedCount === profileState.documents.length
+                ? 'GSTIN, KYC & ISO 9001 Active'
+                : 'GSTIN & Trade Docs Active';
+
+            listEl.innerHTML = profileState.documents.map(doc => {
+                if (doc.verified) {
+                    return `
+                        <div class="p-4 flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-2.5 min-w-0">
+                                <div class="w-7 h-7 rounded-lg bg-emerald-500/12 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.4">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-xs font-bold text-slate-900 dark:text-white leading-snug">${doc.title}</div>
+                                    <div class="text-[10.5px] font-mono text-slate-400 truncate mt-0.5">${doc.fileName}</div>
+                                    <div class="mt-1.5 flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded-full text-[9.5px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">Verified</span>
+                                        <button type="button" onclick="openDocModal('${doc.id}')" class="text-[11px] font-semibold text-[#0D9488] dark:text-[#2DD4BF] hover:underline">View / Replace</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="p-4 bg-amber-50/40 dark:bg-amber-950/15 flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-2.5 min-w-0">
+                                <div class="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-xs font-bold text-slate-900 dark:text-white leading-snug">${doc.title}</div>
+                                    <div class="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5">Boosts Profile Readiness to 100%</div>
+                                    <div class="mt-1.5 flex items-center gap-2">
+                                        <button type="button" onclick="openDocModal('${doc.id}')" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 border border-amber-500/35 transition-colors">
+                                            Optional — Upload
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        function openDocModal(docId) {
+            activeDocModalId = docId;
+            pendingDocFileName = null;
+            const doc = profileState.documents.find(d => d.id === docId);
+            if (!doc) return;
+
+            document.getElementById('docModalTitle').textContent = doc.title;
+            document.getElementById('docFileInput').value = '';
+            document.getElementById('docFileSelectedText').textContent = 'Click to select PDF, PNG, or JPG';
+
+            const infoBox = document.getElementById('docModalInfoBox');
+            if (doc.verified) {
+                infoBox.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800 dark:text-white">Current Status</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">✓ Verified</span>
+                    </div>
+                    <div class="text-slate-500 dark:text-slate-400 font-mono text-[11px]">File: ${doc.fileName}</div>
+                    <div class="text-slate-400 text-[10.5px]">Last Verified: ${doc.updatedAt}</div>
+                `;
+            } else {
+                infoBox.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800 dark:text-white">Current Status</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300">Not Uploaded</span>
+                    </div>
+                    <div class="text-slate-500 dark:text-slate-400 text-[11px]">Upload your valid certificate to unlock the Verified Quality badge and reach 100% Profile Readiness.</div>
+                `;
+            }
+
+            const modal = document.getElementById('docModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeDocModal() {
+            const modal = document.getElementById('docModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            activeDocModalId = null;
+        }
+
+        function handleDocFilePicked(event) {
+            const file = event.target.files && event.target.files[0];
+            if (file) {
+                pendingDocFileName = file.name;
+                document.getElementById('docFileSelectedText').textContent = `✓ Selected: ${file.name}`;
+            }
+        }
+
+        function attachSampleCertificate() {
+            const doc = profileState.documents.find(d => d.id === activeDocModalId);
+            const prefix = doc && doc.id === 'iso' ? 'ISO_9001_2015_PrecisionMetals.pdf' : `${(doc ? doc.id.toUpperCase() : 'DOC')}_Verified_2026.pdf`;
+            pendingDocFileName = prefix;
+            document.getElementById('docFileSelectedText').textContent = `✓ Selected: ${prefix}`;
+            showToast(`Sample document ${prefix} attached.`, 'info');
+        }
+
+        function confirmDocUpload() {
+            const doc = profileState.documents.find(d => d.id === activeDocModalId);
+            if (!doc) return;
+            if (!pendingDocFileName) {
+                showToast('Please select a file or click "Attach Sample Certificate PDF".', 'warning');
+                return;
+            }
+            doc.fileName = pendingDocFileName;
+            doc.verified = true;
+            doc.updatedAt = 'Nov 27, 2026';
+
+            closeDocModal();
+            renderComplianceVault();
+            calculateProfileStrength();
+            showToast(`${doc.title} verified! Profile Readiness updated.`, 'success');
+        }
+
+        // =================================================================
+        // 6. ACCOUNT ACCESS: PASSWORD MODAL, GOOGLE & VISIBILITY TOGGLES
+        // =================================================================
+        function openPasswordModal() {
+            document.getElementById('changePasswordForm').reset();
+            evaluateNewPasswordStrength();
+            document.getElementById('pwdMatchLabel').classList.add('hidden');
+            const m = document.getElementById('passwordModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closePasswordModal() {
+            const m = document.getElementById('passwordModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function togglePwdVisibility(id) {
+            const el = document.getElementById(id);
+            el.type = el.type === 'password' ? 'text' : 'password';
+        }
+
+        function evaluateNewPasswordStrength() {
+            const pwd = document.getElementById('newPwdInput').value;
+            const txt = document.getElementById('pwdStrengthText');
+            const segs = [1, 2, 3, 4].map(i => document.getElementById(`pwdSeg${i}`));
+            segs.forEach(s => s.className = 'bg-slate-200 dark:bg-slate-700 rounded-full transition-colors');
+
+            if (!pwd || pwd.length < 6) {
+                txt.textContent = 'Too Short';
+                txt.className = 'font-bold text-slate-400';
+                return;
+            }
+
+            let score = 1;
+            if (pwd.length >= 8) score++;
+            if (/[A-Z]/.test(pwd) && /[0-9]/.test(pwd)) score++;
+            if (/[^A-Za-z0-9]/.test(pwd) && pwd.length >= 10) score++;
+
+            if (score === 1) {
+                txt.textContent = 'Weak'; txt.className = 'font-bold text-rose-500';
+                segs[0].className = 'bg-rose-500 rounded-full transition-colors';
+            } else if (score === 2) {
+                txt.textContent = 'Fair'; txt.className = 'font-bold text-amber-500';
+                segs[0].className = segs[1].className = 'bg-amber-500 rounded-full transition-colors';
+            } else if (score === 3) {
+                txt.textContent = 'Good'; txt.className = 'font-bold text-emerald-500';
+                segs[0].className = segs[1].className = segs[2].className = 'bg-emerald-500 rounded-full transition-colors';
+            } else {
+                txt.textContent = 'Strong'; txt.className = 'font-bold text-[#0D9488] dark:text-[#2DD4BF]';
+                segs.forEach(s => s.className = 'bg-[#0D9488] dark:bg-[#2DD4BF] rounded-full transition-colors');
+            }
+            checkPwdMatch();
+        }
+
+        function checkPwdMatch() {
+            const a = document.getElementById('newPwdInput').value;
+            const b = document.getElementById('confirmPwdInput').value;
+            const lbl = document.getElementById('pwdMatchLabel');
+            if (!b) { lbl.classList.add('hidden'); return; }
+            lbl.classList.remove('hidden');
+            if (a === b) {
+                lbl.textContent = '✓ Passwords Match';
+                lbl.className = 'text-[10px] font-semibold text-emerald-600 dark:text-emerald-400';
+            } else {
+                lbl.textContent = '✕ Do Not Match';
+                lbl.className = 'text-[10px] font-semibold text-rose-500';
+            }
+        }
+
+        function submitPasswordChange(e) {
+            e.preventDefault();
+            const newPwd = document.getElementById('newPwdInput').value;
+            const confPwd = document.getElementById('confirmPwdInput').value;
+            if (newPwd !== confPwd) {
+                showToast('New password and confirmation do not match.', 'error');
+                return;
+            }
+            document.getElementById('passwordLastChanged').textContent = 'Last changed just now';
+            closePasswordModal();
+            showToast('Account password updated securely!', 'success');
+        }
+
+        function toggleGoogleConnection() {
+            profileState.googleConnected = !profileState.googleConnected;
+            const btn = document.getElementById('googleToggleBtn');
+            const dot = document.getElementById('googleStatusDot');
+            const sub = document.getElementById('googleSubText');
+            const email = document.getElementById('businessEmailInput').value.trim() || 'pheet039@gmail.com';
+
+            if (profileState.googleConnected) {
+                dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+                sub.textContent = email;
+                btn.textContent = 'Disconnect';
+                btn.className = 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 text-rose-600 dark:text-rose-300 border border-rose-200 dark:border-rose-800 transition-all whitespace-nowrap';
+                showToast(`Google Sign-In linked to ${email}.`, 'success');
+            } else {
+                dot.className = 'w-1.5 h-1.5 rounded-full bg-slate-400';
+                sub.textContent = 'Not connected';
+                btn.textContent = 'Connect Google';
+                btn.className = 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-teal-50 dark:bg-teal-950/50 hover:bg-teal-100 text-[#0D9488] dark:text-[#2DD4BF] border border-teal-200 dark:border-teal-800 transition-all whitespace-nowrap';
+                showToast('Google Sign-In disconnected.', 'info');
+            }
+        }
+
+        function toggleMarketplaceVisibility() {
+            profileState.marketplaceVisible = !profileState.marketplaceVisible;
+            const btn = document.getElementById('visibilityToggleBtn');
+            const knob = document.getElementById('visibilityToggleKnob');
+            btn.setAttribute('aria-checked', String(profileState.marketplaceVisible));
+
+            if (profileState.marketplaceVisible) {
+                btn.classList.remove('bg-slate-300', 'dark:bg-slate-700');
+                btn.classList.add('bg-[#0D9488]');
+                knob.classList.add('translate-x-5');
+                knob.classList.remove('translate-x-0');
+                showToast('Private auction buyer invitations enabled.', 'success');
+            } else {
+                btn.classList.add('bg-slate-300', 'dark:bg-slate-700');
+                btn.classList.remove('bg-[#0D9488]');
+                knob.classList.remove('translate-x-5');
+                knob.classList.add('translate-x-0');
+                showToast('Private auction buyer invitations paused.', 'warning');
+            }
+        }
+
+        // =================================================================
+        // 7. PREVIEW PUBLIC BUYER CARD MODAL (Dynamically reflects form)
+        // =================================================================
+        function openBuyerPreviewModal() {
+            const company = document.getElementById('companyNameInput').value.trim();
+            const contact = document.getElementById('contactPersonInput').value.trim();
+            const email = document.getElementById('businessEmailInput').value.trim();
+            const phone = document.getElementById('contactPhoneInput').value.trim();
+            const gstin = document.getElementById('gstinInput').value.trim().toUpperCase();
+            const address = document.getElementById('businessAddressInput').value.trim();
+            const primaryCat = document.getElementById('primaryCategorySelect').value;
+            const entity = document.getElementById('entityTypeSelect').value;
+            const est = document.getElementById('yearEstablishedInput').value;
+            const cap = document.getElementById('monthlyCapacityInput').value;
+            const mov = document.getElementById('minOrderValueInput').value;
+            const lead = document.getElementById('leadTimeInput').value;
+            const coverage = document.getElementById('coverageSelect').value;
+            const website = document.getElementById('websiteInput').value;
+            const bio = document.getElementById('companyBioTextarea').value.trim();
+            const verifiedDocs = profileState.documents.filter(d => d.verified);
+
+            const initials = contact.split(' ').map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'SP';
+            const avatarHtml = profileState.logoUrl
+                ? `<img src="${profileState.logoUrl}" alt="Logo" class="w-full h-full object-cover">`
+                : initials;
+
+            document.getElementById('buyerPreviewBody').innerHTML = `
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4 pb-5 border-b border-slate-200 dark:border-[#1E293B]">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0B1E47] to-[#0D9488] text-white font-extrabold text-xl flex items-center justify-center shrink-0 overflow-hidden shadow">
+                        ${avatarHtml}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h4 class="text-lg font-extrabold text-slate-900 dark:text-white">${company}</h4>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">✓ Tier-1 Verified</span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${entity} • Est. ${est} • ${primaryCat}</p>
+                        <div class="flex flex-wrap items-center gap-3 mt-1.5 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                            <span>4.9 ★ Rating</span>
+                            <span>•</span>
+                            <span>98.4% On-Time SLA</span>
+                            <span>•</span>
+                            <span>GSTIN: ${gstin || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buyer Pitch -->
+                <div>
+                    <h5 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Supplier Overview</h5>
+                    <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">${bio}</p>
+                </div>
+
+                <!-- Operational Capabilities Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-[#1E293B]">
+                        <span class="text-[10px] uppercase text-slate-400 font-semibold block">Capacity</span>
+                        <span class="font-mono font-bold text-slate-900 dark:text-white mt-0.5 block">${cap}</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-[#1E293B]">
+                        <span class="text-[10px] uppercase text-slate-400 font-semibold block">Min. Order</span>
+                        <span class="font-mono font-bold text-slate-900 dark:text-white mt-0.5 block">${mov}</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-[#1E293B]">
+                        <span class="text-[10px] uppercase text-slate-400 font-semibold block">Lead Time</span>
+                        <span class="font-bold text-slate-900 dark:text-white mt-0.5 block">${lead}</span>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-[#1E293B]">
+                        <span class="text-[10px] uppercase text-slate-400 font-semibold block">Coverage</span>
+                        <span class="font-bold text-slate-900 dark:text-white mt-0.5 block">${coverage}</span>
+                    </div>
+                </div>
+
+                <!-- Materials Supplied -->
+                <div>
+                    <h5 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Materials &amp; Categories Supplied</h5>
+                    <div class="flex flex-wrap gap-1.5">
+                        ${profileState.materialTags.map(t => `<span class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-teal-50 dark:bg-teal-950/50 text-[#0D9488] dark:text-[#2DD4BF] border border-teal-200 dark:border-teal-800">${t}</span>`).join('')}
+                    </div>
+                </div>
+
+                <!-- Verified Compliance & Contact -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div class="p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-800/50">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 block mb-1.5">Verified Compliance (${verifiedDocs.length})</span>
+                        <ul class="space-y-1 text-[11px] text-slate-700 dark:text-slate-200">
+                            ${verifiedDocs.map(d => `<li>✓ ${d.title}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0B1222] border border-slate-200 dark:border-[#1E293B] space-y-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Contact &amp; Dispatch</span>
+                        <div class="font-bold text-slate-900 dark:text-white">${contact}</div>
+                        <div class="font-mono text-[11px] text-slate-600 dark:text-slate-300">${email} • +91 ${phone}</div>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400">${address}</div>
+                        ${website ? `<div class="font-mono text-[11px] text-[#0D9488] dark:text-[#2DD4BF]">${website}</div>` : ''}
+                    </div>
+                </div>
+            `;
+
+            const modal = document.getElementById('buyerPreviewModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeBuyerPreviewModal() {
+            const modal = document.getElementById('buyerPreviewModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // =================================================================
+        // 8. AI PROFILE COPILOT + BIO GENERATOR
+        // =================================================================
+        function generateStrongBuyerBio() {
+            const company = document.getElementById('companyNameInput').value.trim() || 'Precision Metals & Alloys Pvt Ltd';
+            const cat = document.getElementById('primaryCategorySelect').value;
+            const cap = document.getElementById('monthlyCapacityInput').value.trim() || '250 MT / Month';
+            const lead = document.getElementById('leadTimeInput').value.trim() || '2-4 Business Days';
+            const coverage = document.getElementById('coverageSelect').value;
+
+            const enhancedBio = `${company} is a Tier-1 verified industrial partner specializing in ${cat}. Operating with a dedicated ${cap} fulfillment capacity and ${lead} dispatch SLA across ${coverage}, we supply mill-certified materials backed by 98.4% on-time delivery, zero-discrepancy GST billing, and competitive L1 reverse auction pricing.`;
+
+            const textarea = document.getElementById('companyBioTextarea');
+            textarea.value = enhancedBio;
+            onProfileFieldChange();
+            showToast('AI-enhanced executive buyer bio populated!', 'success');
+        }
+
+        function toggleAiCopilot() {
+            const pop = document.getElementById('aiCopilotPopover');
+            pop.classList.toggle('hidden');
+            pop.classList.toggle('flex');
+        }
+
+        function askCopilot(prompt) {
+            document.getElementById('copilotInput').value = prompt;
+            handleCopilotSubmit(new Event('submit'));
+        }
+
+        function handleCopilotSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('copilotInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const box = document.getElementById('copilotMessages');
+            const userEl = document.createElement('div');
+            userEl.className = 'p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-slate-900 dark:text-slate-100 font-medium ml-6';
+            userEl.textContent = text;
+            box.appendChild(userEl);
+            input.value = '';
+
+            setTimeout(() => {
+                const lower = text.toLowerCase();
+                let reply = `Your profile is currently at <strong>${document.getElementById('profileStrengthPercent').textContent}</strong> readiness with <strong>Tier-1 Verified</strong> status.`;
+
+                if (lower.includes('boost') || lower.includes('100')) {
+                    const isoDoc = profileState.documents.find(d => d.id === 'iso');
+                    reply = isoDoc && !isoDoc.verified
+                        ? `You are at <strong>92%</strong>! Upload your <strong>ISO 9001:2015 Quality Certificate</strong> in the Compliance Vault (right column) to immediately hit <strong>100% Profile Readiness</strong> and unlock priority buyer invites.`
+                        : `Congratulations! Your profile is already at <strong>100% Auction Readiness</strong> with all KYC and ISO quality documents verified.`;
+                } else if (lower.includes('gstin') || lower.includes('gst')) {
+                    const valid = validateGstinLive();
+                    const gstVal = document.getElementById('gstinInput').value.trim().toUpperCase();
+                    reply = valid
+                        ? `GSTIN <strong class="font-mono">${gstVal}</strong> passed 15-character Indian GSTN checksum structure (State Code: 24 — Gujarat).`
+                        : `Your current GSTIN entry does not match the standard 15-character Indian format (e.g., <span class="font-mono">24AAACP1234F1Z5</span>). Please update it in Card A.`;
+                } else if (lower.includes('bio') || lower.includes('pitch') || lower.includes('generate')) {
+                    generateStrongBuyerBio();
+                    reply = `Done! I've written a high-converting executive buyer pitch into your <strong>Company Overview / Buyer Pitch</strong> field incorporating your capacity, SLA, and coverage. Click <strong>Save Profile Changes</strong> when ready.`;
+                }
+
+                const aiEl = document.createElement('div');
+                aiEl.className = 'p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 leading-relaxed mr-4';
+                aiEl.innerHTML = reply;
+                box.appendChild(aiEl);
+                box.scrollTop = box.scrollHeight;
+            }, 400);
+        }
+
+        // =================================================================
+        // 9. DARK MODE, MOBILE SIDEBAR & TOAST SYSTEM
+        // =================================================================
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            const btnText = document.getElementById('darkModeBtnText');
+            if (btnText) btnText.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            showToast(isDark ? 'Dark Mode enabled' : 'Light Mode enabled', 'info');
+        }
+
+        function toggleMobileSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebarBackdrop').classList.toggle('hidden');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            let borderClass = 'border-cyan-500/40';
+            let dotClass = 'bg-cyan-400';
+            if (type === 'success') { borderClass = 'border-emerald-500/40'; dotClass = 'bg-emerald-400'; }
+            else if (type === 'warning') { borderClass = 'border-amber-500/40'; dotClass = 'bg-amber-400'; }
+            else if (type === 'error') { borderClass = 'border-rose-500/40'; dotClass = 'bg-rose-400'; }
+
+            toast.className = `toast-enter pointer-events-auto bg-[#0B1E47]/95 backdrop-blur-md border ${borderClass} rounded-xl px-4 py-3 shadow-2xl flex items-center justify-between gap-3 text-xs font-semibold`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    <span class="w-2 h-2 rounded-full ${dotClass} shrink-0 animate-pulse"></span>
+                    <span class="text-white">${message}</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white text-sm leading-none">&times;</button>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.25s ease';
+                setTimeout(() => toast.remove(), 250);
+            }, 3800);
+        }
+
+        // Initialize on Window Load
+        window.onload = function () {
+            renderMaterialTags();
+            renderComplianceVault();
+            validateGstinLive();
+            updateEmailHint();
+            syncHeroIdentity();
+            calculateProfileStrength();
+        };
+    </script>
+</body>
+
+</html>
