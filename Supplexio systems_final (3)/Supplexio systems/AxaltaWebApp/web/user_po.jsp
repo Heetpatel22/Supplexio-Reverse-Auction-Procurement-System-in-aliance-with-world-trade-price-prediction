@@ -227,9 +227,10 @@
                             <%= session.getAttribute("username") != null ? session.getAttribute("username") : "admin" %>
                         </p>
                     </div>
-                    <div class="text-slate-400 group-hover:text-white transition-colors">
-                        <i data-lucide="settings" class="w-4 h-4 text-[#2DD4BF]"></i>
-                    </div>
+                    <a href="${pageContext.request.contextPath}/auth?action=logout" onclick="event.stopPropagation();" class="sp-profile-logout inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 border border-red-600 text-white text-[11px] font-bold shadow-sm transition-all flex-shrink-0" title="Logout">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                        <span>Logout</span>
+                    </a>
                 </div>
             </div>
         </aside>

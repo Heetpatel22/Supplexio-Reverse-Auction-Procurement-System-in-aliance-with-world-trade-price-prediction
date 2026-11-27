@@ -338,11 +338,30 @@ body {
 .sp-profile-pill:hover .sp-profile-username {
     color: #2DD4BF !important;
 }
-.sp-profile-cog {
-    width: 16px !important;
-    height: 16px !important;
-    color: #2DD4BF !important;
+.sp-profile-logout {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    padding: 6px 10px !important;
+    border-radius: 8px !important;
+    background: #ef4444 !important;
+    border: 1px solid #dc2626 !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
     flex-shrink: 0 !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35) !important;
+}
+.sp-profile-logout:hover {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    transform: translateY(-1px) !important;
 }
 
 /* User Profile Modal Styles */
@@ -519,12 +538,15 @@ body {
         </a>
     </nav>
 
-    <!-- Sidebar User Profile Footer (Clickable to Edit Profile & Password) -->
+    <!-- Sidebar User Profile Footer (Clickable to Edit Profile & Password + Logout) -->
     <div class="sp-profile-footer">
         <div onclick="openUserProfileModal()" class="sp-profile-pill" title="Click to update username or change password">
             <div class="sp-profile-avatar" id="sidebar-user-avatar"><%= userInitials %></div>
             <p class="sp-profile-username" id="sidebar-username-display"><%= sessionUser %></p>
-            <i data-lucide="settings" class="sp-profile-cog"></i>
+            <a href="${pageContext.request.contextPath}/auth?action=logout" onclick="event.stopPropagation();" class="sp-profile-logout" title="Logout">
+                <i data-lucide="log-out" style="width:13px; height:13px;"></i>
+                <span>Logout</span>
+            </a>
         </div>
     </div>
 </aside>

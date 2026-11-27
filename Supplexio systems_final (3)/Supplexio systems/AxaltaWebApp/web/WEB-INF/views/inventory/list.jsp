@@ -167,9 +167,10 @@
                             <%= session.getAttribute("username") != null ? session.getAttribute("username") : "admin" %>
                         </p>
                     </div>
-                    <div class="text-slate-400 group-hover:text-white transition-colors">
-                        <i data-lucide="settings" class="w-4 h-4 text-[#2DD4BF]"></i>
-                    </div>
+                    <a href="${pageContext.request.contextPath}/auth?action=logout" onclick="event.stopPropagation();" class="sp-profile-logout inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 border border-red-600 text-white text-[11px] font-bold shadow-sm transition-all flex-shrink-0" title="Logout">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                        <span>Logout</span>
+                    </a>
                 </div>
             </div>
         </aside>
@@ -831,44 +832,8 @@
     </div>
   </div>
 
-  <!-- FLOATING AI ASSISTANT & TOAST CONTAINER -->
+  <!-- TOAST CONTAINER -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
-
-  <!-- AI Assistant Widget -->
-  <div class="fixed bottom-6 left-6 z-40">
-    <div id="aiChatWindow" class="hidden mb-3 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
-      <div class="bg-slate-900 text-white p-3.5 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold text-xs">
-            <i data-lucide="bot" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <h4 class="text-xs font-bold">Supplexio AI Copilot</h4>
-            <p class="text-[10px] text-slate-400">Inventory &amp; Auction Advisor</p>
-          </div>
-        </div>
-        <button onclick="toggleAIChat()" class="text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-      <div class="p-3.5 h-64 overflow-y-auto text-xs space-y-2.5 bg-slate-50" id="aiChatMessages">
-        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-slate-700" id="aiChatGreeting">
-          Hello! I am monitoring your live inventory SKUs for low-stock thresholds and 1D-ResNet price surges. Ask me about restock recommendations or click "Launch Reverse Auction" on any alert!
-        </div>
-      </div>
-      <div class="p-2 bg-white border-t border-slate-200 flex items-center gap-1.5">
-        <input type="text" id="aiInput" placeholder="Ask AI Copilot..." class="flex-1 text-xs px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg focus:outline-none" onkeypress="if(event.key==='Enter') sendAIMessage()">
-        <button onclick="sendAIMessage()" class="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          <i data-lucide="send" class="w-3.5 h-3.5"></i>
-        </button>
-      </div>
-    </div>
-
-    <button onclick="toggleAIChat()" class="w-12 h-12 bg-gradient-to-tr from-blue-600 to-teal-500 hover:scale-105 active:scale-95 text-white rounded-full shadow-xl flex items-center justify-center transition-all group relative">
-      <i data-lucide="bot" class="w-6 h-6"></i>
-      <span class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-white"></span>
-    </button>
-  </div>
 
   <!-- APPLICATION LOGIC JS -->
   <script>
@@ -1862,38 +1827,6 @@
       document.body.removeChild(link);
 
       showToast('Inventory report downloaded as CSV.', 'info');
-    }
-
-    // AI Assistant Chat Widget
-    function toggleAIChat() {
-      const win = document.getElementById('aiChatWindow');
-      win.classList.toggle('hidden');
-    }
-
-    function sendAIMessage() {
-      const input = document.getElementById('aiInput');
-      const text = input.value.trim();
-      if(!text) return;
-
-      const container = document.getElementById('aiChatMessages');
-      
-      // User bubble
-      const userMsg = document.createElement('div');
-      userMsg.className = 'bg-blue-600 text-white p-2.5 rounded-xl ml-6 text-xs shadow-sm';
-      userMsg.innerText = text;
-      container.appendChild(userMsg);
-
-      input.value = '';
-      container.scrollTop = container.scrollHeight;
-
-      // Simulated AI response
-      setTimeout(() => {
-        const aiMsg = document.createElement('div');
-        aiMsg.className = 'bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-slate-700 text-xs';
-        aiMsg.innerText = 'Analyzing your request: "' + text + '". Supplexio 1D-ResNet Trade Engine recommends locking in reverse auction ceilings for low-buffer raw materials to avoid 30-day projected commodity surges.';
-        container.appendChild(aiMsg);
-        container.scrollTop = container.scrollHeight;
-      }, 600);
     }
 
     // Toast Notification System
