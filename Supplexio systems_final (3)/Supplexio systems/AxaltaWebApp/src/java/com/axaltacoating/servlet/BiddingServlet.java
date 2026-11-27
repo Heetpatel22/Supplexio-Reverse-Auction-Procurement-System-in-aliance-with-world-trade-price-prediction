@@ -105,6 +105,9 @@ public class BiddingServlet extends HttpServlet {
             case "uploadDocument":
                 uploadDocument(request, response);
                 break;
+            case "deleteDocument":
+                deleteDocument(request, response);
+                break;
             default:
                 listAuctions(request, response);
                 break;
@@ -461,6 +464,35 @@ public class BiddingServlet extends HttpServlet {
             throw new ServletException("Error retrieving supplier document", e);
         }
         response.sendError(HttpServletResponse.SC_NOT_FOUND, "Document not found");
+    }
+
+    private void deleteDocument(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("supplier") == null) {
+            response.sendRedirect(request.getContextPath() + "/bidding?action=login");
+            return;
+        }
+        Supplier supplier = (Supplier) session.getAttribute("supplier");
+        String docType = request.getParameter("docType");
+        if (!"PAN".equals(docType) && !"AADHAR".equals(docType) && !"REG_CERT".equals(docType)) {
+            request.setAttribute("profileError", "Invalid document type specified.");
+            showProfile(request, response);
+            return;
+        }
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            ensureSupplierDocumentsTable(conn);
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "DELETE FROM supplier_documents WHERE supplier_id = ? AND doc_type = ?")) {
+                stmt.setLong(1, supplier.getId());
+                stmt.setString(2, docType);
+                stmt.executeUpdate();
+            }
+            request.setAttribute("profileSuccess", "Uploaded document removed successfully.");
+        } catch (SQLException e) {
+            throw new ServletException("Error deleting supplier document", e);
+        }
+        showProfile(request, response);
     }
 
     private void updateProfile(HttpServletRequest request, HttpServletResponse response)

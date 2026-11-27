@@ -516,6 +516,9 @@
                                         </label>
                                         <c:if test="${not empty supplierDocs['PAN']}">
                                             <a href="${pageContext.request.contextPath}/bidding?action=viewDocument&docType=PAN" target="_blank" class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[#0D9488] dark:text-[#2DD4BF] hover:underline">View</a>
+                                            <button type="button" onclick="deleteSupplierDoc('PAN')" title="Delete uploaded PAN document" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/25 transition-all">
+                                                <i class="fas fa-trash-alt text-[11px]"></i>
+                                            </button>
                                         </c:if>
                                     </div>
                                 </form>
@@ -546,6 +549,9 @@
                                         </label>
                                         <c:if test="${not empty supplierDocs['AADHAR']}">
                                             <a href="${pageContext.request.contextPath}/bidding?action=viewDocument&docType=AADHAR" target="_blank" class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[#0D9488] dark:text-[#2DD4BF] hover:underline">View</a>
+                                            <button type="button" onclick="deleteSupplierDoc('AADHAR')" title="Delete uploaded Aadhar document" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/25 transition-all">
+                                                <i class="fas fa-trash-alt text-[11px]"></i>
+                                            </button>
                                         </c:if>
                                     </div>
                                 </form>
@@ -576,11 +582,18 @@
                                         </label>
                                         <c:if test="${not empty supplierDocs['REG_CERT']}">
                                             <a href="${pageContext.request.contextPath}/bidding?action=viewDocument&docType=REG_CERT" target="_blank" class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[#0D9488] dark:text-[#2DD4BF] hover:underline">View</a>
+                                            <button type="button" onclick="deleteSupplierDoc('REG_CERT')" title="Delete uploaded Registration Certificate" class="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/25 transition-all">
+                                                <i class="fas fa-trash-alt text-[11px]"></i>
+                                            </button>
                                         </c:if>
                                     </div>
                                 </form>
                             </div>
                         </div>
+                        <form id="deleteDocForm" method="post" action="${pageContext.request.contextPath}/bidding" class="hidden">
+                            <input type="hidden" name="action" value="deleteDocument">
+                            <input type="hidden" name="docType" id="deleteDocType">
+                        </form>
                     </div>
                 </section>
 
@@ -676,6 +689,11 @@
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
+        }
+
+        function deleteSupplierDoc(docType) {
+            document.getElementById('deleteDocType').value = docType;
+            document.getElementById('deleteDocForm').submit();
         }
 
         function syncLivePreview() {
