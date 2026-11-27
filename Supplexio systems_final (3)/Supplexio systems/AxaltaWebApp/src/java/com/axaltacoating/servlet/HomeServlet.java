@@ -34,6 +34,11 @@ public class HomeServlet extends HttpServlet {
         String action = request.getParameter("action");
         String servletPath = request.getServletPath();
 
+        if ("liveJson".equalsIgnoreCase(action)) {
+            sendLiveLaunchJson(request, response);
+            return;
+        }
+
         if ("workspace".equalsIgnoreCase(action) || "/dashboard".equalsIgnoreCase(servletPath)) {
             showInternalWorkspace(request, response);
             return;
@@ -79,6 +84,67 @@ public class HomeServlet extends HttpServlet {
         }
 
         request.getRequestDispatcher("/index.jsp").forward(request, response);
+    }
+
+    private void sendLiveLaunchJson(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("activeAuctions", 0L);
+        stats.put("activeSuppliers", 0L);
+        stats.put("liveBids", 0L);
+        stats.put("products", 0L);
+        List<Map<String, Object>> auctions = new ArrayList<>();
+
+        if (DatabaseStatusChecker.isDatabaseReady()) {
+            try {
+                stats = getPublicStats();
+                auctions = getFeaturedActiveAuctions();
+            } catch (SQLException e) {
+                LOGGER.log(Level.WARNING, "Unable to load live launch JSON", e);
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append("\"stats\":{");
+        sb.append("\"activeAuctions\":").append(stats.get("activeAuctions")).append(",");
+        sb.append("\"activeSuppliers\":").append(stats.get("activeSuppliers")).append(",");
+        sb.append("\"liveBids\":").append(stats.get("liveBids")).append(",");
+        sb.append("\"products\":").append(stats.get("products"));
+        sb.append("},");
+        sb.append("\"auctions\":[");
+        for (int i = 0; i < auctions.size(); i++) {
+            Map<String, Object> a = auctions.get(i);
+            if (i > 0) sb.append(",");
+            java.sql.Timestamp endTs = (java.sql.Timestamp) a.get("endTime");
+            long endMs = endTs != null ? endTs.getTime() : 0L;
+            sb.append("{");
+            sb.append("\"id\":").append(a.get("id")).append(",");
+            sb.append("\"productName\":\"").append(escapeJson(String.valueOf(a.get("productName")))).append("\",");
+            sb.append("\"category\":\"").append(escapeJson(a.get("category") != null ? String.valueOf(a.get("category")) : "Strategic Sourcing")).append("\",");
+            sb.append("\"unit\":\"").append(escapeJson(a.get("unit") != null ? String.valueOf(a.get("unit")) : "units")).append("\",");
+            sb.append("\"requiredQuantity\":").append(a.get("requiredQuantity")).append(",");
+            sb.append("\"startPrice\":").append(a.get("startPrice")).append(",");
+            sb.append("\"currentPrice\":").append(a.get("currentPrice")).append(",");
+            sb.append("\"savingsPct\":").append(a.get("savingsPct")).append(",");
+            sb.append("\"bidCount\":").append(a.get("bidCount")).append(",");
+            sb.append("\"endTimeMs\":").append(endMs);
+            sb.append("}");
+        }
+        sb.append("]}");
+        response.getWriter().write(sb.toString());
+    }
+
+    private String escapeJson(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "")
+                .replace("\n", " ");
     }
 
     private void showPublicLaunchpad(HttpServletRequest request, HttpServletResponse response)
